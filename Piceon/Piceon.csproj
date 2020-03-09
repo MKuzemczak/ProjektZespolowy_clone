@@ -263,6 +263,12 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Images\subdir0\IMG_4995.JPG" />
+    <Content Include="Assets\Images\subdir0\IMG_4996.JPG" />
+    <Content Include="Assets\Images\subdir0\IMG_4999.JPG" />
+    <Content Include="Assets\Images\subdir1\IMG_4980.JPG" />
+    <Content Include="Assets\Images\subdir1\IMG_4981.JPG" />
+    <Content Include="Assets\Images\subdir1\IMG_4986.JPG" />
     <Content Include="Assets\PlaceholderImage.png" />
     <Content Include="Assets\SampleData\SamplePhoto1.png" />
     <Content Include="Assets\SampleData\SamplePhoto10.png" />
@@ -299,6 +305,7 @@
       <Name>Piceon.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
