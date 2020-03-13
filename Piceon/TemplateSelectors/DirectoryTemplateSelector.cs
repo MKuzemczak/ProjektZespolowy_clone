@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Piceon.Core.Models;
+using Piceon.Models;
 
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

@@ -6,9 +6,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-using Piceon.Core.Models;
-using Piceon.Core.Services;
+using Piceon.Models;
+using Piceon.Services;
 
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -38,7 +39,7 @@ namespace Piceon.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            DirectoryItem data = await DirectoryScannerService.GetDirectoryTreeUnder("Assets");
+            DirectoryItem data = await DirectoryScannerService.GetLibraryFolderUnder(KnownFolders.PicturesLibrary);
             foreach (var item in data.Subdirectories)
             {
                 Directories.Add(item);
@@ -49,7 +50,7 @@ namespace Piceon.Views
         {
             if (args.InvokedItem.GetType() == typeof(DirectoryItem))
             {
-                SelectedItem = (args.InvokedItem as DirectoryItem).Path;
+                SelectedItem = (args.InvokedItem as DirectoryItem).Folder.Path;
                 imageGalleryPage.AccessDirectory(SelectedItem as string);
             }
         }

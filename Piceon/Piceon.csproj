@@ -144,6 +144,7 @@
     <Compile Include="Helpers\ImagesNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Models\DirectoryItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
     <Compile Include="Models\ImageItem.cs" />
     <Compile Include="Models\ItemCacheManager.cs" />
@@ -151,6 +152,7 @@
     <Compile Include="Models\ItemIndexRangeList.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
+    <Compile Include="Services\DirectoryScannerService.cs" />
     <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
