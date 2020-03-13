@@ -5,23 +5,25 @@
     xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Piceon.Core.Models"
+    xmlns:models="using:Piceon.Models"
     KeyDown="OnPageKeyDown"
     mc:Ignorable="d">
 
     <Grid>
         <FlipView
+            x:Name="flipView"
             animations:Connected.Key="galleryAnimationKey"
             animations:Connected.AnchorElement="{Binding ElementName=detailImage}"
-            ItemsSource="{x:Bind Source, Mode=OneWay}"
-            SelectedItem="{x:Bind SelectedImage, Mode=TwoWay}">
+            SelectedItem="{x:Bind SelectedImage, Mode=TwoWay}"
+            SelectionChanged="FlipView_SelectionChanged">
+            <!--ItemsSource="{x:Bind Source, Mode=OneWay}"-->
             <FlipView.ItemTemplate>
-                <DataTemplate x:DataType="models:SampleImage">
-                    <Viewbox StretchDirection="DownOnly">
+                <DataTemplate x:DataType="models:ImageItem">
+                    <Viewbox StretchDirection="Both" >
                         <Image                            
                             x:Name="detailImage"
-                            Source="{x:Bind Source}" 
-                            Stretch="None" />
+                            Source="{x:Bind ImageData}" 
+                            Stretch="Fill" />
                     </Viewbox>
                 </DataTemplate>
             </FlipView.ItemTemplate>

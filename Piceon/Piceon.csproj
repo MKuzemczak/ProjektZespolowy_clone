@@ -144,12 +144,19 @@
     <Compile Include="Helpers\ImagesNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Models\ImageDataSource.cs" />
+    <Compile Include="Models\ImageItem.cs" />
+    <Compile Include="Models\ItemCacheManager.cs" />
+    <Compile Include="Models\ItemIndexRangeExtensions.cs" />
+    <Compile Include="Models\ItemIndexRangeList.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
+    <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ViewLifetimeControl.cs" />
     <Compile Include="Services\WindowManagerService.cs" />
+    <Compile Include="TemplateSelectors\DirectoryTemplateSelector.cs" />
     <Compile Include="TemplateSelectors\SampleDataTemplateSelector.cs" />
     <Compile Include="Views\ContentGridDetailPage.xaml.cs">
       <DependentUpon>ContentGridDetailPage.xaml</DependentUpon>
@@ -263,12 +270,6 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Images\subdir0\IMG_4995.JPG" />
-    <Content Include="Assets\Images\subdir0\IMG_4996.JPG" />
-    <Content Include="Assets\Images\subdir0\IMG_4999.JPG" />
-    <Content Include="Assets\Images\subdir1\IMG_4980.JPG" />
-    <Content Include="Assets\Images\subdir1\IMG_4981.JPG" />
-    <Content Include="Assets\Images\subdir1\IMG_4986.JPG" />
     <Content Include="Assets\PlaceholderImage.png" />
     <Content Include="Assets\SampleData\SamplePhoto1.png" />
     <Content Include="Assets\SampleData\SamplePhoto10.png" />
@@ -305,7 +306,9 @@
       <Name>Piceon.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

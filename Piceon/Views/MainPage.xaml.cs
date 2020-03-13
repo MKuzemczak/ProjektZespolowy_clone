@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Piceon.Core.Models;
 using Piceon.Core.Services;
@@ -25,8 +26,8 @@ namespace Piceon.Views
             get { return _selectedItem; }
             set { Set(ref _selectedItem, value); }
         }
-
-        public ObservableCollection<SampleCompany> SampleItems { get; } = new ObservableCollection<SampleCompany>();
+        
+        public ObservableCollection<DirectoryItem> Directories { get; } = new ObservableCollection<DirectoryItem>();
 
 
         public MainPage()
@@ -37,15 +38,21 @@ namespace Piceon.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            var data = await SampleDataService.GetTreeViewDataAsync();
-            foreach (var item in data)
+            DirectoryItem data = await DirectoryScannerService.GetDirectoryTreeUnder("Assets");
+            foreach (var item in data.Subdirectories)
             {
-                SampleItems.Add(item);
+                Directories.Add(item);
             }
         }
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
-            => SelectedItem = args.InvokedItem;
+        {
+            if (args.InvokedItem.GetType() == typeof(DirectoryItem))
+            {
+                SelectedItem = (args.InvokedItem as DirectoryItem).Path;
+                imageGalleryPage.AccessDirectory(SelectedItem as string);
+            }
+        }
 
         private void OnCollapseAll(object sender, RoutedEventArgs e)
             => CollapseNodes(treeView.RootNodes);
