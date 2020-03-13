@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Piceon.Models;
@@ -39,19 +40,26 @@ namespace Piceon.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            DirectoryItem data = await DirectoryScannerService.GetLibraryFolderUnder(KnownFolders.PicturesLibrary);
-            foreach (var item in data.Subdirectories)
-            {
-                Directories.Add(item);
-            }
+            DirectoryItem data = await DirectoryScannerService.GetLibraryFolderUnder(StorageLibrary.GetLibraryAsync(
+                        KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder);
+            Directories.Add(data);
+
+            // wait for treeview to load data
+            await Task.Delay(500);
+            treeView.Expand(treeView.RootNodes[0]);
+            
+            //foreach (var item in data.Subdirectories)
+            //{
+            //    Directories.Add(data);
+            //}
         }
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
         {
             if (args.InvokedItem.GetType() == typeof(DirectoryItem))
             {
-                SelectedItem = (args.InvokedItem as DirectoryItem).Folder.Path;
-                imageGalleryPage.AccessDirectory(SelectedItem as string);
+                SelectedItem = (args.InvokedItem as DirectoryItem).Folder;
+                imageGalleryPage.AccessDirectory(SelectedItem as StorageFolder);
             }
         }
 

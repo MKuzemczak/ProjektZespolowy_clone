@@ -335,13 +335,13 @@
                 ContentTemplateSelector="{StaticResource ContentTemplateSelector}" />
         </ScrollViewer>-->
 
-        <!--<controls:GridSplitter
+        <controls:GridSplitter
             Grid.Column="1"
             GripperCursor="Default"
             HorizontalAlignment="Left"
             ResizeDirection="Auto"
             ResizeBehavior="BasedOnAlignment"
             CursorBehavior="ChangeOnSplitterHover"
-            Width="16" />-->
+            Width="16" />
     </Grid>
 </Page>

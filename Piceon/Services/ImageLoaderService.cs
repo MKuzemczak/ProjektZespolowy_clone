@@ -17,6 +17,7 @@ namespace Piceon.Services
     public static class ImageLoaderService
     {
         private static ImageDataSource previouslyExtractedDataSource = null;
+        public static StorageFolder PreviouslyAccessedFolder = null;
         //async void initdata()
         //{
         //    StorageLibrary pictures = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
@@ -34,9 +35,9 @@ namespace Piceon.Services
         //}
 
         //[System.Diagnostics.CodeAnalysis.SuppressMessage("Safety", "UWP003:UWP-only", Justification = "<Pending>")]
-        public static async Task<ImageDataSource> GetImageGalleryDataAsync(string path)
+        public static async Task<ImageDataSource> GetImageGalleryDataAsync(StorageFolder folder)
         {
-            if (previouslyExtractedDataSource != null)
+            if (PreviouslyAccessedFolder == folder && previouslyExtractedDataSource != null)
             {
                 return previouslyExtractedDataSource;
             }
@@ -44,14 +45,10 @@ namespace Piceon.Services
             StorageLibrary pictures = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
             string saveFolderPath = pictures.SaveFolder.Path;
 
-            ImageDataSource ds = await ImageDataSource.GetDataSoure(saveFolderPath);
-            if (ds.Count > 0)
-            {
-                previouslyExtractedDataSource = ds;
-                return ds;
-            }
-
-            return null;
+            ImageDataSource ds = await ImageDataSource.GetDataSoure(folder.Path);
+            previouslyExtractedDataSource = ds;
+            PreviouslyAccessedFolder = folder;
+            return ds;
             //else
             //{
             //    MainPage.Current.NotifyUser("Error: The pictures folder doesn't contain any files", NotifyType.ErrorMessage);

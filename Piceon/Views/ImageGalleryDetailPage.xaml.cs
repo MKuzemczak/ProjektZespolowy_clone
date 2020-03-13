@@ -11,6 +11,7 @@ using Piceon.Models;
 using Piceon.Services;
 using Piceon.Helpers;
 
+using Windows.Storage;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -60,7 +61,8 @@ namespace Piceon.Views
             Source.Clear();
 
             // TODO WTS: Replace this with your actual data
-            ImageDataSource data = await ImageLoaderService.GetImageGalleryDataAsync("ms-appx:///Assets");
+            ImageDataSource data =
+                await ImageLoaderService.GetImageGalleryDataAsync(ImageLoaderService.PreviouslyAccessedFolder);
 
             if (data != null)
             {
@@ -118,16 +120,14 @@ namespace Piceon.Views
         // Makes sure that only one FlipView_SelectionChanged is running at a time.
         // Otherwise, during fast flipping, some unexpected behavior might occur as the selection is changing rapidly
         private SemaphoreSlim FlipView_SelectionChanging = new SemaphoreSlim(1);
-        private int currentlyRunningSelectionChanges = 0;
 
         private async void FlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            currentlyRunningSelectionChanges++;
-            if (SelectedImage == null)
-            {
-                var list = e.AddedItems;
-                return;
-            }
+            //if (SelectedImage == null)
+            //{
+            //    var list = e.AddedItems.Count;
+            //    return;
+            //}
 
             await FlipView_SelectionChanging.WaitAsync();
 
@@ -164,13 +164,13 @@ namespace Piceon.Views
             }
 
             FlipView_SelectionChanging.Release();
-            currentlyRunningSelectionChanges--;
         }
 
         private void UpdateFlipViewRanges(int currentIndex, int cnt, int hlfRng)
         {
-            CurrentTrackedItemsRange = new ItemIndexRange(
-                Math.Max(0, currentIndex - hlfRng), (uint)Math.Min(cnt - 1, currentIndex + hlfRng));
+            int firstIndex = Math.Max(0, currentIndex - hlfRng);
+            int length = hlfRng + Math.Min(cnt - 1, currentIndex + hlfRng) - currentIndex;
+            CurrentTrackedItemsRange = new ItemIndexRange(firstIndex, (uint)length);
             (flipView.ItemsSource as ImageDataSource).RangesChanged(
                 new ItemIndexRange(currentIndex, 1), new List<ItemIndexRange>() { CurrentTrackedItemsRange });
         }

@@ -9,6 +9,7 @@ using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -19,11 +20,13 @@ namespace Piceon.Views
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
         public ObservableCollection<ImageItem> Source { get; } = new ObservableCollection<ImageItem>();
-        public string SelectedContentDirectory { get; set; } = "B:\\Dane\\Projects\\Repos\\ProjektZespołowy\\Piceon\\Assets\\SampleData";
+        public StorageFolder SelectedContentDirectory { get; set; }
 
         public ImageGalleryPage()
         {
             InitializeComponent();
+            SelectedContentDirectory
+                = StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder;
             Loaded += ImageGalleryPage_OnLoaded;
         }
 
@@ -31,7 +34,7 @@ namespace Piceon.Views
         {
             Source.Clear();
 
-            var data = await ImageLoaderService.GetImageGalleryDataAsync("B:\\Dane\\Projects\\Repos\\ProjektZespołowy\\Piceon\\Assets\\SampleData");
+            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
 
             //foreach (var item in data)
             //{
@@ -44,18 +47,11 @@ namespace Piceon.Views
             }
         }
 
-        public async void AccessDirectory(string path)
+        public async void AccessDirectory(StorageFolder path)
         {
             SelectedContentDirectory = path;
-
-            Source.Clear();
-
+            
             var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
-
-            //foreach (var item in data)
-            //{
-            //    Source.Add(item);
-            //}
 
             if (data != null)
             {
