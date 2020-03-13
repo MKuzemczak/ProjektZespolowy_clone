@@ -5,8 +5,7 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Toolkit.Uwp.UI.Animations;
 
-using Piceon.Core.Models;
-using Piceon.Core.Services;
+using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 
@@ -19,7 +18,8 @@ namespace Piceon.Views
     {
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
-        public ObservableCollection<SampleImage> Source { get; } = new ObservableCollection<SampleImage>();
+        public ObservableCollection<ImageItem> Source { get; } = new ObservableCollection<ImageItem>();
+        public string SelectedContentDirectory { get; set; } = "B:\\Dane\\Projects\\Repos\\ProjektZespołowy\\Piceon\\Assets\\SampleData";
 
         public ImageGalleryPage()
         {
@@ -31,21 +31,47 @@ namespace Piceon.Views
         {
             Source.Clear();
 
-            // TODO WTS: Replace this with your actual data
-            var data = await SampleDataService.GetImageGalleryDataAsync("ms-appx:///Assets");
+            var data = await ImageLoaderService.GetImageGalleryDataAsync("B:\\Dane\\Projects\\Repos\\ProjektZespołowy\\Piceon\\Assets\\SampleData");
 
-            foreach (var item in data)
+            //foreach (var item in data)
+            //{
+            //    Source.Add(item);
+            //}
+
+            if (data != null)
             {
-                Source.Add(item);
+                imagesGridView.ItemsSource = data;
+            }
+        }
+
+        public async void AccessDirectory(string path)
+        {
+            SelectedContentDirectory = path;
+
+            Source.Clear();
+
+            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
+
+            //foreach (var item in data)
+            //{
+            //    Source.Add(item);
+            //}
+
+            if (data != null)
+            {
+                imagesGridView.ItemsSource = data;
             }
         }
 
         private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            var selected = e.ClickedItem as SampleImage;
-            ImagesNavigationHelper.AddImageId(ImageGallerySelectedIdKey, selected.ID);
-            NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
-            NavigationService.Navigate<ImageGalleryDetailPage>(selected.ID);
+            var selected = e.ClickedItem as ImageItem;
+            if (selected != null)
+            {
+                ImagesNavigationHelper.AddImageId(ImageGallerySelectedIdKey, selected.Key);
+                NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
+                NavigationService.Navigate<ImageGalleryDetailPage>(selected);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

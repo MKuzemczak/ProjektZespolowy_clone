@@ -8,10 +8,19 @@
     xmlns:model="using:Piceon.Core.Models"
     xmlns:templateSelectors="using:Piceon.TemplateSelectors"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:views="using:Piceon.Views"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:DirectoryItem">
+            <winui:TreeViewItem
+                AutomationProperties.Name="{x:Bind Name}"
+                ItemsSource="{x:Bind Subdirectories}" IsExpanded="False">
+                <TextBlock Text="{x:Bind Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+        
         <DataTemplate x:Key="CompanyTemplate" x:DataType="model:SampleCompany">
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind CompanyName}"
@@ -255,10 +264,14 @@
             </StackPanel>
         </DataTemplate>
 
-        <templateSelectors:SampleDataTemplateSelector x:Key="TreeViewTemplateSelector"
+        <templateSelectors:DirectoryTemplateSelector
+            x:Key="TreeViewTemplateSelector"
+            DirectoryTemplate="{StaticResource DirectoryTemplate}" />
+
+        <!--<templateSelectors:SampleDataTemplateSelector x:Key="TreeViewTemplateSelector"
             CompanyTemplate="{StaticResource CompanyTemplate}"
             OrderTemplate="{StaticResource OrderTemplate}"
-            OrderDetailTemplate="{StaticResource OrderDetailTemplate}" />
+            OrderDetailTemplate="{StaticResource OrderDetailTemplate}" />-->
 
         <templateSelectors:SampleDataTemplateSelector x:Key="ContentTemplateSelector"
             CompanyTemplate="{StaticResource CompanyContentTemplate}"
@@ -305,18 +318,22 @@
                 x:Name="treeView"
                 Grid.Row="1"
                 SelectionMode="Single"
-                ItemsSource="{x:Bind SampleItems}"
+                ItemsSource="{x:Bind Directories}"
                 ItemInvoked="OnItemInvoked"
                 ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}" />
         </Grid>
 
-        <ScrollViewer
+        <views:ImageGalleryPage
+            Grid.Column="1"
+            x:Name="imageGalleryPage" /> 
+        
+        <!--<ScrollViewer
             Grid.Column="1"
             Padding="{StaticResource DetailPageMargin}">
             <ContentControl
                 Content="{x:Bind SelectedItem, Mode=OneWay}"
                 ContentTemplateSelector="{StaticResource ContentTemplateSelector}" />
-        </ScrollViewer>
+        </ScrollViewer>-->
 
         <!--<controls:GridSplitter
             Grid.Column="1"
