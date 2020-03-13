@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
-    xmlns:model="using:Piceon.Core.Models"
+    xmlns:model="using:Piceon.Models"
     xmlns:templateSelectors="using:Piceon.TemplateSelectors"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:views="using:Piceon.Views"
@@ -15,13 +15,13 @@
     <Page.Resources>
         <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:DirectoryItem">
             <winui:TreeViewItem
-                AutomationProperties.Name="{x:Bind Name}"
+                AutomationProperties.Name="{x:Bind Folder.Name}"
                 ItemsSource="{x:Bind Subdirectories}" IsExpanded="False">
-                <TextBlock Text="{x:Bind Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
+                <TextBlock Text="{x:Bind Folder.Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
             </winui:TreeViewItem>
         </DataTemplate>
         
-        <DataTemplate x:Key="CompanyTemplate" x:DataType="model:SampleCompany">
+        <!--<DataTemplate x:Key="CompanyTemplate" x:DataType="model:SampleCompany">
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind CompanyName}"
                 ItemsSource="{x:Bind Orders}" IsExpanded="False">
@@ -262,7 +262,7 @@
                     Text="{x:Bind Total}" />
 
             </StackPanel>
-        </DataTemplate>
+        </DataTemplate>-->
 
         <templateSelectors:DirectoryTemplateSelector
             x:Key="TreeViewTemplateSelector"
