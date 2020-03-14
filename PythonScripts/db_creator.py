@@ -1,0 +1,1 @@
+# tworzenie bazy sqlite
