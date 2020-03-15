@@ -159,15 +159,17 @@ namespace Piceon.Views
                 var it = (sender as FlipView).Items.IndexOf(e.AddedItems[0]);
                 var count = (sender as FlipView).Items.Count;
                 var halfRange = 3;
-                UpdateFlipViewRanges(
+                await UpdateFlipViewRanges(
                     (sender as FlipView).Items.IndexOf(e.AddedItems[0]), (sender as FlipView).Items.Count, halfRange);
             }
 
             FlipView_SelectionChanging.Release();
         }
 
-        private void UpdateFlipViewRanges(int currentIndex, int cnt, int hlfRng)
+        private async Task UpdateFlipViewRanges(int currentIndex, int cnt, int hlfRng)
         {
+            // wait for the flip to end
+            await Task.Delay(100);
             int firstIndex = Math.Max(0, currentIndex - hlfRng);
             int length = hlfRng + Math.Min(cnt - 1, currentIndex + hlfRng) - currentIndex;
             CurrentTrackedItemsRange = new ItemIndexRange(firstIndex, (uint)length);

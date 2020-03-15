@@ -18,12 +18,14 @@ namespace Piceon.Services
     {
         private static ImageDataSource previouslyExtractedDataSource = null;
         public static StorageFolder PreviouslyAccessedFolder = null;
+
+        // TODO: delete dis
         //async void initdata()
         //{
         //    StorageLibrary pictures = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
         //    string path = pictures.SaveFolder.Path;
 
-        //    ImageDataSource ds = await ImageDataSource.GetDataSoure(path);
+        //    ImageDataSource ds = await ImageDataSource.GetDataSource(path);
         //    if (ds.Count > 0)
         //    {
         //        Grid1.ItemsSource = ds;
@@ -42,13 +44,16 @@ namespace Piceon.Services
                 return previouslyExtractedDataSource;
             }
 
-            StorageLibrary pictures = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
-            string saveFolderPath = pictures.SaveFolder.Path;
+            // TODO: delete dis
+            //StorageLibrary pictures = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures);
+            //string saveFolderPath = pictures.SaveFolder.Path;
 
-            ImageDataSource ds = await ImageDataSource.GetDataSoure(folder.Path);
+            ImageDataSource ds = await ImageDataSource.GetDataSource(folder.Path);
             previouslyExtractedDataSource = ds;
             PreviouslyAccessedFolder = folder;
             return ds;
+
+            // TODO: delete dis
             //else
             //{
             //    MainPage.Current.NotifyUser("Error: The pictures folder doesn't contain any files", NotifyType.ErrorMessage);

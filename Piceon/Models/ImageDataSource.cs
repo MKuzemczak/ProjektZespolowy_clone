@@ -43,7 +43,7 @@ namespace Piceon.Models
 
         // Factory method to create the datasource
         // Requires async work which is why it needs a factory rather than being part of the constructor
-        public static async Task<ImageDataSource> GetDataSoure(string path)
+        public static async Task<ImageDataSource> GetDataSource(string path)
         {
             ImageDataSource ds = new ImageDataSource();
             StorageFolder f = await StorageFolder.GetFolderFromPathAsync(path);
@@ -94,19 +94,13 @@ namespace Piceon.Models
             // Create a new instance of the cache manager
             this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback, 50);
             this.itemCache.CacheChanged += ItemCache_CacheChanged;
-            if (CollectionChanged != null)
-            {
-                CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            }
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         async Task UpdateCount()
         {
             _count = (int)await _queryResult.GetItemCountAsync();
-            if (CollectionChanged != null)
-            {
-                CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            }
+            CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         #region IList Implementation
