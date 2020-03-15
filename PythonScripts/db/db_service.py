@@ -5,12 +5,13 @@ import sys
 
 class DBService:
     select_all = 'SELECT * FROM '
-    select = 'SELECT'
-    from_ = 'from'
-    where = 'WHERE '
+    select = 'SELECT '
+    from_ = ' FROM '
+    where = ' WHERE '
     condition = ' IN '
     insert = 'INSERT INTO '
     values = 'VALUES'
+    order_by = 'ORDER BY Id DESC;'
 
     def __init__(self, db_path=DBCreator.path_to_db):
         self.db_path = db_path
@@ -34,22 +35,18 @@ class DBService:
         """
 
         conn = self.create_conn()
-        conn.execute(
-            DBService.select +
-            response_records +
-            DBService.from_ +
-            table +
-            DBService.where +
-            record +
-            DBService.condition +
-            comparator
+        cur = conn.cursor()
+        query = DBService.select + response_records + DBService.from_ + table + DBService.where + record + DBService.condition + comparator + DBService.order_by
+        cur.execute(
+            query
         )
 
-        records = conn.fetchall()
+        records = cur.fetchall()
+        cur.close()
         conn.close()
         return records
 
-    def create_insert(self, table, records, values):
+    def create_insert(self, table, records, values, data):
         """"
             @ table - nazwa tabeli
             @ records - rekordy,( w kolejności) do którch wrzucamy dane - string w formie: (column, column 1,...)
@@ -62,24 +59,12 @@ class DBService:
             void
         """
         conn = self.create_conn()
-        conn.execute(
-            DBService.insert +
-            table +
-            records +
-            DBService.values +
-            values +
-            ';'
+        cur = conn.cursor()
+        query = DBService.insert + table + ' ' + records + ' ' + DBService.values + values
+        print(query)
+        cur.executemany(
+            query, data
         )
-
-    def prepare_args_to_call_select(self):
-        if len(sys.argv) >= 3:
-            comparator = '('
-            args = [arg for arg in sys.argv if arg != ' ']
-            for arg in range(len(args) - 1):
-                comparator = comparator + str(arg) + ', '
-            comparator = comparator + str(args[len(args)-1]) + ');'
-            return comparator
-        else:
-            return 'no_argv'
-
-
+        conn.commit()
+        cur.close()
+        conn.close()
