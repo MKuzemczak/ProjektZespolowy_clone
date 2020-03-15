@@ -1,5 +1,6 @@
 from PythonScripts.db.db_creator import DBCreator
 import sqlite3
+import sys
 
 
 class DBService:
@@ -12,7 +13,7 @@ class DBService:
     values = 'VALUES'
 
     def __init__(self, db_path=DBCreator.path_to_db):
-        self.db_path
+        self.db_path = db_path
 
     def create_conn(self, db_path=DBCreator.path_to_db):
         conn = None
@@ -69,3 +70,16 @@ class DBService:
             values +
             ';'
         )
+
+    def prepare_args_to_call_select(self):
+        if len(sys.argv) >= 3:
+            comparator = '('
+            args = [arg for arg in sys.argv if arg != ' ']
+            for arg in range(len(args) - 1):
+                comparator = comparator + str(arg) + ', '
+            comparator = comparator + str(args[len(args)-1]) + ');'
+            return comparator
+        else:
+            return 'no_argv'
+
+
