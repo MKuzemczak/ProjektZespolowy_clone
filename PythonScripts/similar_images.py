@@ -1,5 +1,8 @@
 import cv2
-import os
+import sys
+
+from PythonScripts.db.db_service import DBService
+from PythonScripts.db.query_service import QueryService
 
 
 class SimilarImageRecognizer:
@@ -48,27 +51,45 @@ class SimilarImageRecognizer:
         img_template_diff = 1 - probability_match
 
         # srednia wazona bo histogram jest mniej miarodajny ale wnosi informacje
-        # commutative_image_diff = (hist_diff+ img_template_diff) / 2
-        commutative_image_diff = (hist_diff / 10) + img_template_diff
+        commutative_image_diff = (hist_diff + img_template_diff) / 2
+
+        # commutative_image_diff = (hist_diff / 10) + img_template_diff
 
         # 20% odchyłu
-        if commutative_image_diff < 0.15:
+        if commutative_image_diff < 0.2:
             return True
         return False
 
     @staticmethod
-    def find_similar_in_folder(filepath):
-        path = os.path.dirname(filepath)
-        main_img = os.path.basename(filepath)
-        images = []
-        for file in os.listdir(path):
-            if file.endswith(".jpg") and not file == main_img:
-                images.append(os.path.join(path, file))
-
+    def find_similar_in_list(list_of_db_image):
+        main_img = list_of_db_image[0][1]
+        print(main_img)
         similar = []
-        for img in images:
-            if SimilarImageRecognizer.compare_histogram_and_probability(filepath, img):
-                similar.append(img)
+
+        for index in range(1, len(list_of_db_image)):
+
+            if SimilarImageRecognizer.compare_histogram_and_probability(main_img, list_of_db_image[index][1]):
+                similar.append(list_of_db_image[index][0])
 
         return similar
 
+
+# TODO kolejnosc pobierania
+def main():
+    qs = QueryService()
+    comparator = qs.prepare_args_to_call_select(sys.argv)
+    if comparator == 'no_argv':
+        return False
+    else:
+        db_service = DBService()
+        # list of (Id,path)
+        images = db_service.create_select('IMAGE', 'Id', comparator)
+        similar = SimilarImageRecognizer.find_similar_in_list(images)
+        func = map(lambda x: (images[0][0], x), similar)
+        values = list(func)
+        db_service.create_insert("SIMILAR_IMAGES", '(FIRST_IMAGE_Id, SECOND_IMAGE_Id)', '(?,?)', values)
+        return True
+
+
+if __name__ == '__main__':
+    main()
