@@ -36,11 +36,6 @@ namespace Piceon.Views
 
             var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
 
-            //foreach (var item in data)
-            //{
-            //    Source.Add(item);
-            //}
-
             if (data != null)
             {
                 imagesGridView.ItemsSource = data;
