@@ -23,6 +23,8 @@ namespace Piceon.Models
 
         public string Key { get; private set; }
 
+        public int GalleryIndex { get; set; }
+
         // Needed for displaying single image in the flip view
         public StorageFile File { get; set; }
 
@@ -59,7 +61,7 @@ namespace Piceon.Models
 
         // Fetches all the data for the specified file
         public async static Task<ImageItem> FromStorageFile(
-            StorageFile f, CancellationToken ct, Options options = Options.Image)
+            StorageFile f, int index, CancellationToken ct, Options options = Options.Image)
         {
             ImageItem item = new ImageItem()
             {
@@ -85,6 +87,7 @@ namespace Piceon.Models
 
             item.Size = (int)bp.Size;
             item.Key = f.FolderRelativeId;
+            item.GalleryIndex = index;
 
             BitmapImage img = new BitmapImage();
 
@@ -108,9 +111,9 @@ namespace Piceon.Models
             return item;
         }
 
-        public async static Task<ImageItem> FromStorageFile(StorageFile f,  Options options = Options.Image)
+        public async static Task<ImageItem> FromStorageFile(StorageFile f, int index, Options options = Options.Image)
         {
-            return await FromStorageFile(f, new CancellationToken(), options);
+            return await FromStorageFile(f, index, new CancellationToken(), options);
         }
     }
 }

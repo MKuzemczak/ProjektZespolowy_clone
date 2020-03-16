@@ -173,7 +173,7 @@ namespace Piceon.Models
                     // Check if request has been cancelled, if so abort getting additional data
                     ct.ThrowIfCancellationRequested();
                     // Create our ImageItem object with the file data and thumbnail 
-                    ImageItem newItem = await ImageItem.FromStorageFile(results[i], ct, ImageItem.Options.Thumbnail);
+                    ImageItem newItem = await ImageItem.FromStorageFile(results[i], batch.FirstIndex + i, ct, ImageItem.Options.Thumbnail);
                     files.Add(newItem);
                 }
             }

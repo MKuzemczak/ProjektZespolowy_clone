@@ -169,6 +169,9 @@
     <Compile Include="Views\DataGridPage.xaml.cs">
       <DependentUpon>DataGridPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ImageDetailPage.xaml.cs">
+      <DependentUpon>ImageDetailPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ImageGalleryDetailPage.xaml.cs">
       <DependentUpon>ImageGalleryDetailPage.xaml</DependentUpon>
     </Compile>
@@ -198,6 +201,18 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Styles\Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\FlyoutPresenter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles\FlipView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Image.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -205,6 +220,10 @@
     <Page Include="Styles\Page.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Styles\Viewbox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Styles\_Colors.xaml">
       <SubType>Designer</SubType>
@@ -233,6 +252,10 @@
     <Page Include="Views\DataGridPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ImageDetailPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ImageGalleryDetailPage.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -272,7 +295,11 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\PlaceholderImage.png" />
+    <Content Include="Assets\LeftArrow.png" />
+    <Content Include="Assets\PlaceholderImage.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\RightArrow.png" />
     <Content Include="Assets\SampleData\SamplePhoto1.png" />
     <Content Include="Assets\SampleData\SamplePhoto10.png" />
     <Content Include="Assets\SampleData\SamplePhoto2.png" />

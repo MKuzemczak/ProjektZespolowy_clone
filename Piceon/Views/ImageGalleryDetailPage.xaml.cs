@@ -121,8 +121,11 @@ namespace Piceon.Views
         // Otherwise, during fast flipping, some unexpected behavior might occur as the selection is changing rapidly
         private SemaphoreSlim FlipView_SelectionChanging = new SemaphoreSlim(1);
 
+        private int callCntr = 0;
+
         private async void FlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            int callCntrSave = ++callCntr;
             //if (SelectedImage == null)
             //{
             //    var list = e.AddedItems.Count;
@@ -144,7 +147,7 @@ namespace Piceon.Views
                 }
             }
 
-            if (e.AddedItems != null && e.AddedItems.Count == 1 && e.AddedItems[0] != null)
+            if (e.AddedItems != null && e.AddedItems.Count == 1 && e.AddedItems[0] != null )
             {
                 try
                 {
@@ -154,27 +157,30 @@ namespace Piceon.Views
                 {
                     Console.WriteLine("Exception in FlipView_SelectionChanged: " + exception.Message);
                 }
-
-
-                var it = (sender as FlipView).Items.IndexOf(e.AddedItems[0]);
+                
+                var it = (e.AddedItems[0] as ImageItem).GalleryIndex;
                 var count = (sender as FlipView).Items.Count;
-                var halfRange = 3;
-                await UpdateFlipViewRanges(
-                    (sender as FlipView).Items.IndexOf(e.AddedItems[0]), (sender as FlipView).Items.Count, halfRange);
+                var halfRange = 25;
+                await UpdateFlipViewRanges(it, count, halfRange);
             }
-
+            callCntr--;
             FlipView_SelectionChanging.Release();
         }
 
         private async Task UpdateFlipViewRanges(int currentIndex, int cnt, int hlfRng)
         {
             // wait for the flip to end
-            await Task.Delay(100);
+            await Task.Delay(500);
             int firstIndex = Math.Max(0, currentIndex - hlfRng);
             int length = hlfRng + Math.Min(cnt - 1, currentIndex + hlfRng) - currentIndex;
             CurrentTrackedItemsRange = new ItemIndexRange(firstIndex, (uint)length);
             (flipView.ItemsSource as ImageDataSource).RangesChanged(
                 new ItemIndexRange(currentIndex, 1), new List<ItemIndexRange>() { CurrentTrackedItemsRange });
+        }
+
+        private void FlipView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            int a = 0;
         }
     }
 }
