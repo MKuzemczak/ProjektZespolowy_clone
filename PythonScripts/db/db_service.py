@@ -26,10 +26,10 @@ class DBService:
 
     def create_select(self, table, record, comparator, response_records='*'):
         """
-         @response_record - zwracane recordy ,string w formie: wanted_record, wanted_record2, wanted_record3
-         @table - tabela np IMAGE
-         @record - rekord który porównujemy np Id
-         @comparator - String w formie: (warunek, warunek2, warunek3,....)
+         @ response_record - zwracane recordy ,string w formie: wanted_record, wanted_record2, wanted_record3
+         @ table - tabela np IMAGE
+         @ record - rekord który porównujemy np Id
+         @ comparator - String w formie: (warunek, warunek2, warunek3,....)
 
          return - tablica 2d, 1 wymiar to zwrocone rekordy, 2 wymiar to dane w kolejności  @response_record
         """
@@ -50,11 +50,7 @@ class DBService:
         """"
             @ table - nazwa tabeli
             @ records - rekordy,( w kolejności) do którch wrzucamy dane - string w formie: (column, column 1,...)
-            @ values wartosci dodawane, string w formie:
-                (value1,value2 ,...),
-                (value1,value2 ,...),
-                    ...
-                (value1,value2 ,...)
+            @ values wartosci dodawane, Tablica krotek
 
             void
         """
