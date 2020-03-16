@@ -47,11 +47,6 @@ namespace Piceon.Views
             // wait for treeview to load data
             await Task.Delay(500);
             treeView.Expand(treeView.RootNodes[0]);
-            
-            //foreach (var item in data.Subdirectories)
-            //{
-            //    Directories.Add(data);
-            //}
         }
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)

@@ -30,26 +30,6 @@ namespace Piceon.Services
             return ret;
         }
 
-        //public static async Task<DirectoryItem> GetDirectoryTreeUnder(string parentDir)
-        //{
-        //    // var library await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Pictures);
-
-        //    DirectoryItem parentDirectory = new DirectoryItem
-        //    {
-        //        Name = parentDir.Split('\\').Last(),
-        //        Path = parentDir,
-        //        Subdirectories = new List<DirectoryItem>()
-        //    };
-
-        //    string[] directories = Directory.GetDirectories(parentDir);
-
-        //    foreach(string dir in directories)
-        //    {
-        //        parentDirectory.Subdirectories.Add(GetDirectoryTreeUnder(dir).Result);
-        //    }
-
-        //    await Task.CompletedTask;
-        //    return parentDirectory;
-        //}
+        
     }
 }

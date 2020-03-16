@@ -25,11 +25,6 @@
             x:Key="TreeViewTemplateSelector"
             DirectoryTemplate="{StaticResource DirectoryTemplate}" />
 
-        <templateSelectors:SampleDataTemplateSelector x:Key="ContentTemplateSelector"
-            CompanyTemplate="{StaticResource CompanyContentTemplate}"
-            OrderTemplate="{StaticResource OrderContentTemplate}"
-            OrderDetailTemplate="{StaticResource OrderDetailContentTemplate}" />
-
     </Page.Resources>
 
     <Grid>
