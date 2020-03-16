@@ -41,11 +41,6 @@ namespace Piceon.Views
             MenuNavigationHelper.UpdateView(typeof(MainPage));
         }
 
-        private void ShellMenuItemClick_Views_TreeView(object sender, RoutedEventArgs e)
-        {
-            MenuNavigationHelper.UpdateView(typeof(TreeViewPage));
-        }
-
         private void ShellMenuItemClick_Views_ContentGrid(object sender, RoutedEventArgs e)
         {
             MenuNavigationHelper.UpdateView(typeof(ContentGridPage));

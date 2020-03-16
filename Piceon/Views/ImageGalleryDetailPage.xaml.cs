@@ -32,8 +32,6 @@ namespace Piceon.Views
             set
             {
                 Set(ref _selectedImage, value);
-                //ImagesNavigationHelper.UpdateImageId(
-                //    ImageGalleryPage.ImageGallerySelectedIdKey, ((ImageItem)SelectedImage).Key);
             }
         }
 
@@ -60,7 +58,6 @@ namespace Piceon.Views
             base.OnNavigatedTo(e);
             Source.Clear();
 
-            // TODO WTS: Replace this with your actual data
             ImageDataSource data =
                 await ImageLoaderService.GetImageGalleryDataAsync(ImageLoaderService.PreviouslyAccessedFolder);
 
@@ -80,7 +77,6 @@ namespace Piceon.Views
             if (e.NavigationMode == NavigationMode.Back)
             {
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(SelectedImage);
-                ImagesNavigationHelper.RemoveImageId(ImageGalleryPage.ImageGallerySelectedIdKey);
             }
         }
 
@@ -126,10 +122,6 @@ namespace Piceon.Views
         private async void FlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int callCntrSave = ++callCntr;
-            //if (SelectedImage == null)
-            //{
-            //    var list = e.AddedItems.Count;
-            //    return;
             //}
 
             await FlipView_SelectionChanging.WaitAsync();

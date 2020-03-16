@@ -32,13 +32,6 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!--<Viewbox
-                x:Name="leftArrowViewbox"
-                Grid.Column="0"
-                Stretch="Uniform"
-                HorizontalAlignment="Center">-->
-            <!--</Viewbox>-->
-
             <Rectangle
                 Grid.Column="0"
                 Tapped="Previous_Tapped">
