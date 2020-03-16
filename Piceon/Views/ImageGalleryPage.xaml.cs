@@ -66,7 +66,7 @@ namespace Piceon.Views
             {
                 ImagesNavigationHelper.AddImageId(ImageGallerySelectedIdKey, selected.Key);
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
-                NavigationService.Navigate<ImageGalleryDetailPage>(selected);
+                NavigationService.Navigate<ImageDetailPage>(selected);
             }
         }
 
