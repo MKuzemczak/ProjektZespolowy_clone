@@ -64,9 +64,11 @@ namespace Piceon.Views
             var selected = e.ClickedItem as ImageItem;
             if (selected != null)
             {
-                ImagesNavigationHelper.AddImageId(ImageGallerySelectedIdKey, selected.Key);
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
-                NavigationService.Navigate<ImageDetailPage>(selected);
+
+                // to test new flip view, change here to:
+                // NavigationService.Navigate<ImageDetailPage>(selected);
+                NavigationService.Navigate<ImageGalleryDetailPage>(selected);
             }
         }
 

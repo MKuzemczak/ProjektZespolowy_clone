@@ -35,7 +35,6 @@
                 </winui:MenuBarItem>
                 <winui:MenuBarItem x:Uid="ShellMenuBarItem_Views">
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_Main" Click="ShellMenuItemClick_Views_Main" />
-                    <MenuFlyoutItem x:Uid="ShellMenuItem_Views_TreeView" Click="ShellMenuItemClick_Views_TreeView" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_ContentGrid" Click="ShellMenuItemClick_Views_ContentGrid" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_DataGrid" Click="ShellMenuItemClick_Views_DataGrid" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_ImageGallery" Click="ShellMenuItemClick_Views_ImageGallery" />

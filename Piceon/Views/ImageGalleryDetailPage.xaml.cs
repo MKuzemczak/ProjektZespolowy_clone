@@ -80,7 +80,6 @@ namespace Piceon.Views
             if (e.NavigationMode == NavigationMode.Back)
             {
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(SelectedImage);
-                ImagesNavigationHelper.RemoveImageId(ImageGalleryPage.ImageGallerySelectedIdKey);
             }
         }
 
