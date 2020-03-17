@@ -5,11 +5,11 @@ using System.Runtime.CompilerServices;
 
 using Microsoft.Toolkit.Uwp.UI.Animations;
 
-using Piceon.Core.Models;
-using Piceon.Core.Services;
+using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -19,11 +19,14 @@ namespace Piceon.Views
     {
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
-        public ObservableCollection<SampleImage> Source { get; } = new ObservableCollection<SampleImage>();
+        public ObservableCollection<ImageItem> Source { get; } = new ObservableCollection<ImageItem>();
+        public StorageFolder SelectedContentDirectory { get; set; }
 
         public ImageGalleryPage()
         {
             InitializeComponent();
+            SelectedContentDirectory
+                = StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder;
             Loaded += ImageGalleryPage_OnLoaded;
         }
 
@@ -31,21 +34,37 @@ namespace Piceon.Views
         {
             Source.Clear();
 
-            // TODO WTS: Replace this with your actual data
-            var data = await SampleDataService.GetImageGalleryDataAsync("ms-appx:///Assets");
+            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
 
-            foreach (var item in data)
+            if (data != null)
             {
-                Source.Add(item);
+                imagesGridView.ItemsSource = data;
+            }
+        }
+
+        public async void AccessDirectory(StorageFolder path)
+        {
+            SelectedContentDirectory = path;
+            
+            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
+
+            if (data != null)
+            {
+                imagesGridView.ItemsSource = data;
             }
         }
 
         private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            var selected = e.ClickedItem as SampleImage;
-            ImagesNavigationHelper.AddImageId(ImageGallerySelectedIdKey, selected.ID);
-            NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
-            NavigationService.Navigate<ImageGalleryDetailPage>(selected.ID);
+            var selected = e.ClickedItem as ImageItem;
+            if (selected != null)
+            {
+                NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
+
+                // to test new flip view, change here to:
+                // NavigationService.Navigate<ImageDetailPage>(selected);
+                NavigationService.Navigate<ImageGalleryDetailPage>(selected);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
