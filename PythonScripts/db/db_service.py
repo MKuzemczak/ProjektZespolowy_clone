@@ -1,6 +1,5 @@
 from PythonScripts.db.db_creator import DBCreator
 import sqlite3
-import sys
 
 
 class DBService:
@@ -50,14 +49,14 @@ class DBService:
         """"
             @ table - nazwa tabeli
             @ records - rekordy,( w kolejności) do którch wrzucamy dane - string w formie: (column, column 1,...)
-            @ values wartosci dodawane, Tablica krotek
+            @ values ilosc jak dane sa wstawiane np jezeli dwie kolumny: (?,?)
+            @ data wartosci dodawane, Tablica krotek
 
-            void
+            :return void
         """
         conn = self.create_conn()
         cur = conn.cursor()
         query = DBService.insert + table + ' ' + records + ' ' + DBService.values + values
-        print(query)
         cur.executemany(
             query, data
         )
