@@ -26,9 +26,9 @@ class SimilarImageRecognizer:
         search_params = dict()
 
         flann = cv2.FlannBasedMatcher(index_param, search_params)
-        matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
-
+        matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_SL2)
         matches = matcher.match(desc, desc2, None)
+
         # w zależności od odlgełosci humminga
         matches = [m for m in matches if m.distance < 30]
 
@@ -63,9 +63,7 @@ class SimilarImageRecognizer:
     @staticmethod
     def find_similar_in_list(list_of_db_image):
         main_img = list_of_db_image[0][1]
-        print(main_img)
         similar = []
-
         for index in range(1, len(list_of_db_image)):
 
             if SimilarImageRecognizer.compare_histogram_and_probability(main_img, list_of_db_image[index][1]):
@@ -78,12 +76,16 @@ class SimilarImageRecognizer:
 def main():
     qs = QueryService()
     comparator = qs.prepare_args_to_call_select(sys.argv)
+    c1, c2 = qs.prepare_args_to_two_selct(sys.argv)
+
     if comparator == 'no_argv':
         return False
     else:
         db_service = DBService()
+        main_image = db_service.create_select('IMAGE', 'Id', c1)
         # list of (Id,path)
-        images = db_service.create_select('IMAGE', 'Id', comparator)
+        images = [*main_image]
+        images = images + db_service.create_select('IMAGE', 'Id', c2)
         similar = SimilarImageRecognizer.find_similar_in_list(images)
         func = map(lambda x: (images[0][0], x), similar)
         values = list(func)
