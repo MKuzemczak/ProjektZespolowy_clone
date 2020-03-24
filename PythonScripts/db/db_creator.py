@@ -2,9 +2,9 @@ import sqlite3
 
 
 class DBCreator:
-    path_to_db = 'projekt_zesp.db'
+    #path_to_db = 'projekt_zesp.db'
 
-    # path_to_db = 'D:\Programming\python\SIFT\\venv\Include\projekt_zesp.db'
+    path_to_db = 'D:\Programming\python\SIFT\\venv\Include\projekt_zesp.db'
 
     @staticmethod
     def create_database():
@@ -19,6 +19,9 @@ class DBCreator:
                          (IMAGE_Id REFERENCES IMAGE(Id) NOT NULL ,VIRTUALFOLDER_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL )''')
         c.execute('''CREATE TABLE IF NOT EXISTS SIMILAR_IMAGES
                          (FIRST_IMAGE_Id REFERENCES IMAGE(Id)NOT NULL ,SECOND_IMAGE_Id REFERENCES IMAGE(Id)NOT NULL )''')
+        c.execute('''CREATE TABLE IF NOT EXISTS VIRTUALFOLDER_RELATION
+                         (PARENT_Id REFERENCES IMAGE(Id)NOT NULL ,CHILD_Id REFERENCES IMAGE(Id)NOT NULL )''')
+
         c.execute('''CREATE TRIGGER IF NOT EXISTS path_validator
                          BEFORE INSERT ON IMAGE
                          BEGIN
