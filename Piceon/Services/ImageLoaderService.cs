@@ -17,16 +17,16 @@ namespace Piceon.Services
     public static class ImageLoaderService
     {
         private static ImageDataSource previouslyExtractedDataSource = null;
-        public static StorageFolder PreviouslyAccessedFolder = null;
+        public static FolderItem PreviouslyAccessedFolder = null;
 
-        public static async Task<ImageDataSource> GetImageGalleryDataAsync(StorageFolder folder)
+        public static async Task<ImageDataSource> GetImageGalleryDataAsync(FolderItem folder)
         {
-            if (PreviouslyAccessedFolder == folder && previouslyExtractedDataSource != null)
-            {
-                return previouslyExtractedDataSource;
-            }
+            //if (PreviouslyAccessedFolder.Name == folder && previouslyExtractedDataSource != null)
+            //{
+            //    return previouslyExtractedDataSource;
+            //}
 
-            ImageDataSource ds = await ImageDataSource.GetDataSource(folder.Path);
+            ImageDataSource ds = await ImageDataSource.GetDataSource(folder);
             previouslyExtractedDataSource = ds;
             PreviouslyAccessedFolder = folder;
             return ds;

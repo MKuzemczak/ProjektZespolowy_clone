@@ -15,15 +15,7 @@
             Source="/Assets/PlaceholderImage.png">
         </Image>
 
-        <Button
-            x:Name="closeButton"
-            VerticalAlignment="Top"
-            Background="Transparent"
-            BorderThickness="0"
-            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-            Click="OnGoBack">
-            <SymbolIcon Symbol="Back" />
-        </Button>
+        
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -43,7 +35,8 @@
                 </Rectangle.Fill>
             </Rectangle>
             <Viewbox Grid.Column="0">
-                <Image 
+                <Image
+                    x:Name="previousArrow"
                     Source="/Assets/LeftArrow.png"
                     HorizontalAlignment="Left"
                     Tapped="Previous_Tapped"/>
@@ -60,12 +53,23 @@
                 </Rectangle.Fill>
             </Rectangle>
             <Viewbox Grid.Column="2">
-                <Image 
+                <Image
+                    x:Name="nextArrow"
                     Source="/Assets/RightArrow.png"
                     HorizontalAlignment="Right"
                     Tapped="Next_Tapped" />
             </Viewbox>
         </Grid>
+
+        <Button
+            x:Name="closeButton"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            BorderThickness="0"
+            Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
+            Click="OnGoBack">
+            <SymbolIcon Symbol="Back" />
+        </Button>
     </Grid>
 
 </Page>

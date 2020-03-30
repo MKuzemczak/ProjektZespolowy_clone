@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Piceon.DatabaseAccess;
 using Piceon.Models;
 using Piceon.Services;
 
@@ -35,7 +36,7 @@ namespace Piceon.Views
             set { Set(ref _selectedItem, value); }
         }
 
-        public ObservableCollection<DirectoryItem> Directories { get; } = new ObservableCollection<DirectoryItem>();
+        public ObservableCollection<FolderItem> Directories { get; } = new ObservableCollection<FolderItem>();
 
         public TreeViewPage()
         {
@@ -45,13 +46,23 @@ namespace Piceon.Views
 
         private async void TreeViewPage_OnLoaded(object sender, RoutedEventArgs e)
         {
-            DirectoryItem data = await DirectoryScannerService.GetLibraryFolderUnder(StorageLibrary.GetLibraryAsync(
-                        KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder);
-            Directories.Add(data);
+            var virtualFoldersRootNodes = DatabaseAccessService.GetRootVirtualFolders();
+
+            foreach (var item in virtualFoldersRootNodes)
+            {
+                Directories.Add(FolderItem.FolderItemFromDatabaseVirtualFolder(item));
+            }
+
+            var saveFolder = (await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures)).SaveFolder;
+
+            Directories.Add(await FolderItem.FolderItemFromStorageFolder(saveFolder));
 
             // wait for treeview to load data
-            await Task.Delay(500);
-            treeView.Expand(treeView.RootNodes[0]);
+            if (Directories.Count == 1)
+            {
+                await Task.Delay(500);
+                treeView.Expand(treeView.RootNodes[0]);
+            }
         }
 
 
@@ -59,11 +70,10 @@ namespace Piceon.Views
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItem.GetType() == typeof(DirectoryItem))
+            if (args.InvokedItem.GetType() == typeof(FolderItem))
             {
-                SelectedItem = (args.InvokedItem as DirectoryItem).Folder;
-                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(args.InvokedItem as DirectoryItem));
-                //imageGalleryPage.AccessDirectory(SelectedItem as StorageFolder);
+                SelectedItem = args.InvokedItem as FolderItem;
+                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem as FolderItem));
             }
         }
 

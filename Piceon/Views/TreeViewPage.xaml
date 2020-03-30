@@ -13,11 +13,11 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:DirectoryItem">
+        <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:FolderItem">
             <winui:TreeViewItem
-                AutomationProperties.Name="{x:Bind Folder.Name}"
-                ItemsSource="{x:Bind Subdirectories}" IsExpanded="False">
-                <TextBlock Text="{x:Bind Folder.Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
+                AutomationProperties.Name="{x:Bind Name}"
+                ItemsSource="{x:Bind Subfolders}" IsExpanded="False">
+                <TextBlock Text="{x:Bind Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
             </winui:TreeViewItem>
         </DataTemplate>
 

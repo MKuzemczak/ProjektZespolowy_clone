@@ -143,10 +143,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
+    <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
+    <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
-    <Compile Include="Models\DirectoryItem.cs" />
+    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
     <Compile Include="Models\ImageItem.cs" />
     <Compile Include="Models\ItemCacheManager.cs" />
@@ -155,8 +157,7 @@
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
-    <Compile Include="Services\DatabaseAccessService.cs" />
-    <Compile Include="Services\DirectoryScannerService.cs" />
+    <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
     <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />

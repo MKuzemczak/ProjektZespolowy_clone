@@ -10,13 +10,12 @@ using Windows.Storage.Search;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Data;
 
-
 namespace Piceon.Models
 {
     public class ImageDataSource : INotifyCollectionChanged, System.Collections.IList, IItemsRangeInfo
     {
         // Folder that we are browsing
-        private StorageFolder _folder;
+        private FolderItem _folder;
         // Query object that will tell us if the folder content changed
         private StorageFileQueryResult _queryResult;
         // Dispatcher so we can marshal calls back to the UI thread
@@ -43,28 +42,18 @@ namespace Piceon.Models
 
         // Factory method to create the datasource
         // Requires async work which is why it needs a factory rather than being part of the constructor
-        public static async Task<ImageDataSource> GetDataSource(string path)
+        public static async Task<ImageDataSource> GetDataSource(FolderItem folder)
         {
             ImageDataSource ds = new ImageDataSource();
-            StorageFolder f = await StorageFolder.GetFolderFromPathAsync(path);
-            await ds.SetFolder(f);
+            await ds.SetFolder(folder);
             return ds;
         }
 
         // Set functionality for the folder
-        public async Task SetFolder(StorageFolder folder)
+        public async Task SetFolder(FolderItem folder)
         {
-            //unhook the old contents changed event if applicable
-            if (_queryResult != null)
-            {
-                _queryResult.ContentsChanged -= QueryResult_ContentsChanged;
-            }
             // Initialize the query and register for changes
             _folder = folder;
-            QueryOptions options = new QueryOptions();
-            // options.IndexerOption = IndexerOption.DoNotUseIndexer;
-            _queryResult = _folder.CreateFileQueryWithOptions(options);
-            _queryResult.ContentsChanged += QueryResult_ContentsChanged;
             await UpdateCount();
         }
 
@@ -99,7 +88,7 @@ namespace Piceon.Models
 
         async Task UpdateCount()
         {
-            _count = (int)await _queryResult.GetItemCountAsync();
+            _count = await _folder.GetFilesCountAsync();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -163,8 +152,8 @@ namespace Piceon.Models
         private async Task<ImageItem[]> fetchDataCallback(ItemIndexRange batch, CancellationToken ct)
         {
             // Fetch file objects from filesystem
-            IReadOnlyList<StorageFile> results =
-                await _queryResult.GetFilesAsync((uint)batch.FirstIndex, Math.Max(batch.Length, 20)).AsTask(ct);
+            IReadOnlyList<StorageFile> results = await _folder.GetStorageFilesRangeAsync(
+                    batch.FirstIndex, Math.Min(Math.Max((int)batch.Length, 20), await _folder.GetFilesCountAsync() - batch.FirstIndex));
             List<ImageItem> files = new List<ImageItem>();
             if (results != null)
             {

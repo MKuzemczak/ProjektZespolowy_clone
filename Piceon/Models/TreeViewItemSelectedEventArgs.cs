@@ -10,9 +10,9 @@ namespace Piceon.Models
 {
     public class TreeViewItemSelectedEventArgs : EventArgs
     {
-        public DirectoryItem Parameter;
+        public FolderItem Parameter;
 
-        public TreeViewItemSelectedEventArgs(DirectoryItem param) => Parameter = param;
+        public TreeViewItemSelectedEventArgs(FolderItem param) => Parameter = param;
 
     }
 }

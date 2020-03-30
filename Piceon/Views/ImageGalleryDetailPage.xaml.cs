@@ -60,7 +60,6 @@ namespace Piceon.Views
 
             ImageDataSource data =
                 await ImageLoaderService.GetImageGalleryDataAsync(ImageLoaderService.PreviouslyAccessedFolder);
-
             if (data != null)
             {
                 flipView.ItemsSource = data;
@@ -122,7 +121,6 @@ namespace Piceon.Views
         private async void FlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             int callCntrSave = ++callCntr;
-            //}
 
             await FlipView_SelectionChanging.WaitAsync();
 
