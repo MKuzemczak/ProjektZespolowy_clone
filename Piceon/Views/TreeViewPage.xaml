@@ -1,0 +1,68 @@
+﻿<Page
+    x:Class="Piceon.Views.TreeViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:model="using:Piceon.Models"
+    xmlns:templateSelectors="using:Piceon.TemplateSelectors"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:views="using:Piceon.Views"
+    Style="{StaticResource PageStyle}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:DirectoryItem">
+            <winui:TreeViewItem
+                AutomationProperties.Name="{x:Bind Folder.Name}"
+                ItemsSource="{x:Bind Subdirectories}" IsExpanded="False">
+                <TextBlock Text="{x:Bind Folder.Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
+            </winui:TreeViewItem>
+        </DataTemplate>
+
+        <templateSelectors:DirectoryTemplateSelector
+            x:Key="TreeViewTemplateSelector"
+            DirectoryTemplate="{StaticResource DirectoryTemplate}" />
+
+    </Page.Resources>
+
+    <Grid
+        Background="{ThemeResource  SystemChromeMediumLowColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            x:Name="header">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                x:Uid="TreeViewTitle"
+                Margin="{StaticResource SmallLeftMargin}"
+                Style="{StaticResource ListTitleStyle}"
+                VerticalAlignment="Center" />
+            <Button
+                Grid.Column="1"
+                x:Uid="TreeView_CollapseAllButton"
+                Content="&#xF165;"
+                FontSize="14"
+                Padding="{StaticResource SmallLeftRightMargin}"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                FontFamily="Segoe MDL2 Assets"
+                Background="Transparent"
+                Click="OnCollapseAll" />
+        </Grid>
+        <winui:TreeView
+            x:Name="treeView"
+            Grid.Row="1"
+            SelectionMode="Single"
+            ItemsSource="{x:Bind Directories}"
+            ItemInvoked="OnItemInvoked"
+            ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}" />
+    </Grid>
+
+</Page>
