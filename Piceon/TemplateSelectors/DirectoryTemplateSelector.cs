@@ -29,7 +29,7 @@ namespace Piceon.TemplateSelectors
         {
             switch (item)
             {
-                case DirectoryItem directoryItem:
+                case FolderItem directoryItem:
                     return DirectoryTemplate;
             }
 

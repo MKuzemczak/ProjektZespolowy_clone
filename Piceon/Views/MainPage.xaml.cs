@@ -7,10 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Piceon.DatabaseAccess;
 using Piceon.Models;
 using Piceon.Services;
 
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -29,45 +31,18 @@ namespace Piceon.Views
             set { Set(ref _selectedItem, value); }
         }
         
-        public ObservableCollection<DirectoryItem> Directories { get; } = new ObservableCollection<DirectoryItem>();
+        public ObservableCollection<FolderItem> Directories { get; } = new ObservableCollection<FolderItem>();
 
 
         public MainPage()
         {
             InitializeComponent();
+            DatabaseAccessService.InitializeDatabase();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
-            DirectoryItem data = await DirectoryScannerService.GetLibraryFolderUnder(StorageLibrary.GetLibraryAsync(
-                        KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder);
-            Directories.Add(data);
-
-            // wait for treeview to load data
-            await Task.Delay(500);
-            treeView.Expand(treeView.RootNodes[0]);
-        }
-
-        private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
-        {
-            if (args.InvokedItem.GetType() == typeof(DirectoryItem))
-            {
-                SelectedItem = (args.InvokedItem as DirectoryItem).Folder;
-                imageGalleryPage.AccessDirectory(SelectedItem as StorageFolder);
-            }
-        }
-
-        private void OnCollapseAll(object sender, RoutedEventArgs e)
-            => CollapseNodes(treeView.RootNodes);
-
-        private void CollapseNodes(IList<WinUI.TreeViewNode> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                CollapseNodes(node.Children);
-                treeView.Collapse(node);
-            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -84,5 +59,10 @@ namespace Piceon.Views
         }
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        private void TreeViewPage_ItemSelected(object sender, TreeViewItemSelectedEventArgs e)
+        {
+            imageGalleryPage.AccessDirectory(e.Parameter);
+        }
     }
 }

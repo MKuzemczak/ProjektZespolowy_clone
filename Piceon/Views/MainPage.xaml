@@ -12,7 +12,7 @@
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
 
-    <Page.Resources>
+    <!--<Page.Resources>
         <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:DirectoryItem">
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind Folder.Name}"
@@ -25,14 +25,14 @@
             x:Key="TreeViewTemplateSelector"
             DirectoryTemplate="{StaticResource DirectoryTemplate}" />
 
-    </Page.Resources>
+    </Page.Resources>-->
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="treeViewColumn" MinWidth="150" MaxWidth="350" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid
+        <!--<Grid
             Background="{ThemeResource  SystemChromeMediumLowColor}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40" />
@@ -68,7 +68,11 @@
                 ItemsSource="{x:Bind Directories}"
                 ItemInvoked="OnItemInvoked"
                 ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}" />
-        </Grid>
+        </Grid>-->
+        <views:TreeViewPage
+            Grid.Column="0"
+            x:Name="treeViewPage"
+            ItemSelected="TreeViewPage_ItemSelected" />
 
         <views:ImageGalleryPage
             Grid.Column="1"

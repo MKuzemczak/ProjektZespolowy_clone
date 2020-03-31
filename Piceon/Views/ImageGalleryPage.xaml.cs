@@ -20,13 +20,11 @@ namespace Piceon.Views
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
         public ObservableCollection<ImageItem> Source { get; } = new ObservableCollection<ImageItem>();
-        public StorageFolder SelectedContentDirectory { get; set; }
+        public FolderItem SelectedContentFolder { get; set; } = null;
 
         public ImageGalleryPage()
         {
             InitializeComponent();
-            SelectedContentDirectory
-                = StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures).AsTask().GetAwaiter().GetResult().SaveFolder;
             Loaded += ImageGalleryPage_OnLoaded;
         }
 
@@ -34,19 +32,22 @@ namespace Piceon.Views
         {
             Source.Clear();
 
-            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
-
-            if (data != null)
+            if (SelectedContentFolder != null)
             {
-                imagesGridView.ItemsSource = data;
+                var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
+
+                if (data != null)
+                {
+                    imagesGridView.ItemsSource = data;
+                }
             }
         }
 
-        public async void AccessDirectory(StorageFolder path)
+        public async void AccessDirectory(FolderItem folder)
         {
-            SelectedContentDirectory = path;
+            SelectedContentFolder = folder;
             
-            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentDirectory);
+            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
 
             if (data != null)
             {
@@ -60,10 +61,13 @@ namespace Piceon.Views
             if (selected != null)
             {
                 NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
+                ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
+                ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
+                ImageNavigationHelper.SelectedImage = selected;
 
                 // to test new flip view, change here to:
-                // NavigationService.Navigate<ImageDetailPage>(selected);
-                NavigationService.Navigate<ImageGalleryDetailPage>(selected);
+                NavigationService.Navigate<ImageDetailPage>(selected);
+                // NavigationService.Navigate<ImageGalleryDetailPage>(selected);
             }
         }
 
