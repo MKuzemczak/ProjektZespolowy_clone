@@ -44,6 +44,10 @@ namespace Piceon.DatabaseAccess
                          "(PARENT_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL, CHILD_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL)", db))
                 { command.ExecuteReader(); }
 
+                using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS ACCESSEDFOLDER" +
+                         "(Id INTEGER PRIMARY KEY NOT NULL, token text NOT NULL)", db))
+                { command.ExecuteReader(); }
+
                 using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS path_validator " +
                         "BEFORE INSERT ON IMAGE " +
                         "BEGIN " +
@@ -282,6 +286,47 @@ namespace Piceon.DatabaseAccess
         public static int GetImagesCountInFolder(DatabaseVirtualFolder folder)
         {
             return GetImagesCountInFolder(folder.Id);
+        }
+
+        public static void AddAccessedFolder(string token)
+        {
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO ACCESSEDFOLDER (token) " +
+                         $"VALUES ('{token}')", db))
+                { command.ExecuteReader(); }
+            }
+        }
+
+        public static List<string> GetAccessedFolders()
+        {
+            var result = new List<string>();
+
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                SqliteCommand selectCommand = new SqliteCommand
+                    ($"SELECT token FROM ACCESSEDFOLDER", db);
+
+                SqliteDataReader query = selectCommand.ExecuteReader();
+
+
+                while (query.Read())
+                {
+                    result.Add(query.GetString(0));
+                }
+
+                db.Close();
+            }
+
+            return result;
         }
     }
 }

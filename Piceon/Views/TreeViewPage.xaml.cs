@@ -12,6 +12,7 @@ using Piceon.Models;
 using Piceon.Services;
 
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -28,6 +29,9 @@ namespace Piceon.Views
     /// </summary>
     public sealed partial class TreeViewPage : Page, INotifyPropertyChanged
     {
+        private static bool AlreadyLoaded = false;
+        private static ObservableCollection<FolderItem> PreviouslyAccessedDirectories = new ObservableCollection<FolderItem>();
+
         private object _selectedItem;
 
         public object SelectedItem
@@ -46,6 +50,13 @@ namespace Piceon.Views
 
         private async void TreeViewPage_OnLoaded(object sender, RoutedEventArgs e)
         {
+            if (AlreadyLoaded)
+            {
+                foreach (var item in PreviouslyAccessedDirectories)
+                    Directories.Add(item);
+                return;
+            }
+
             var virtualFoldersRootNodes = DatabaseAccessService.GetRootVirtualFolders();
 
             foreach (var item in virtualFoldersRootNodes)
@@ -63,8 +74,26 @@ namespace Piceon.Views
                 await Task.Delay(500);
                 treeView.Expand(treeView.RootNodes[0]);
             }
+
+            var tokenList = DatabaseAccessService.GetAccessedFolders();
+
+            foreach (var token in tokenList)
+            {
+                var storageFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
+                Directories.Add(await FolderItem.FolderItemFromStorageFolder(storageFolder));
+            }
+
+            foreach (var item in Directories)
+                PreviouslyAccessedDirectories.Add(item);
+
+            AlreadyLoaded = true;
         }
 
+        public async Task AddFolder(StorageFolder folder)
+        {
+            Directories.Add(await FolderItem.FolderItemFromStorageFolder(folder));
+            PreviouslyAccessedDirectories.Add(Directories.Last());
+        }
 
         public event EventHandler<TreeViewItemSelectedEventArgs> ItemSelected;
 
@@ -104,5 +133,23 @@ namespace Piceon.Views
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        private async void OnOpenFolder(object sender, RoutedEventArgs e)
+        {
+            var folderPicker = new FolderPicker
+            {
+                SuggestedStartLocation = PickerLocationId.Desktop
+            };
+            folderPicker.FileTypeFilter.Add("*");
+
+            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
+            if (folder != null)
+            {
+                // Application now has read/write access to all contents in the picked folder
+                // (including other sub-folder contents)
+                string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
+                await AddFolder(folder);
+                DatabaseAccessService.AddAccessedFolder(token);
+            }
+        }
     }
 }
