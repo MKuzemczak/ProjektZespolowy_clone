@@ -36,7 +36,7 @@ namespace Piceon.Core.Services
                     Country = "Germany",
                     Phone = "030-0074321",
                     Fax = "030-0076545",
-                    Orders = new List<SampleOrder>()
+                    Orders = new List<SampleOrder>()   
                     {
                         new SampleOrder()
                         {
