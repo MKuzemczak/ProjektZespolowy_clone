@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Piceon.Controls;
 using Piceon.DatabaseAccess;
 using Piceon.Models;
 using Piceon.Services;
@@ -14,6 +15,7 @@ using Piceon.Services;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -32,9 +34,13 @@ namespace Piceon.Views
         private static bool AlreadyLoaded = false;
         private static ObservableCollection<FolderItem> PreviouslyAccessedDirectories = new ObservableCollection<FolderItem>();
 
-        private object _selectedItem;
+        private FolderItem _selectedItem;
 
-        public object SelectedItem
+        private EditableTextBlock RightClickedTreeViewItemEditableTextBlock;
+
+        private bool ItemInvokedWithThisClick = false;
+
+        public FolderItem SelectedItem
         {
             get { return _selectedItem; }
             set { Set(ref _selectedItem, value); }
@@ -57,16 +63,42 @@ namespace Piceon.Views
                 return;
             }
 
+            await ReloadFolders();
+
+            AlreadyLoaded = true;
+        }
+
+        public async Task AddFolder(StorageFolder folder)
+        {
+            var folderItem = await StorageFolderItem.FromStorageFolder(folder);
+            if (FolderTreeContains(Directories, folderItem))
+                return;
+            Directories.Add(folderItem);
+            PreviouslyAccessedDirectories.Add(Directories.Last());
+        }
+
+
+
+
+        public async Task ReloadFolders()
+        {
+            Directories.Clear();
+            PreviouslyAccessedDirectories.Clear();
+
             var virtualFoldersRootNodes = DatabaseAccessService.GetRootVirtualFolders();
 
             foreach (var item in virtualFoldersRootNodes)
             {
-                Directories.Add(FolderItem.FolderItemFromDatabaseVirtualFolder(item));
+                Directories.Add(await VirtualFolderItem.FromDatabaseVirtualFolder(item));
             }
 
-            var saveFolder = (await StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures)).SaveFolder;
+            var tokenList = DatabaseAccessService.GetAccessedFolders();
 
-            Directories.Add(await FolderItem.FolderItemFromStorageFolder(saveFolder));
+            foreach (var token in tokenList)
+            {
+                var storageFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
+                Directories.Add(await StorageFolderItem.FromStorageFolder(storageFolder));
+            }
 
             // wait for treeview to load data
             if (Directories.Count == 1)
@@ -75,34 +107,19 @@ namespace Piceon.Views
                 treeView.Expand(treeView.RootNodes[0]);
             }
 
-            var tokenList = DatabaseAccessService.GetAccessedFolders();
-
-            foreach (var token in tokenList)
-            {
-                var storageFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
-                Directories.Add(await FolderItem.FolderItemFromStorageFolder(storageFolder));
-            }
-
             foreach (var item in Directories)
                 PreviouslyAccessedDirectories.Add(item);
-
-            AlreadyLoaded = true;
-        }
-
-        public async Task AddFolder(StorageFolder folder)
-        {
-            Directories.Add(await FolderItem.FolderItemFromStorageFolder(folder));
-            PreviouslyAccessedDirectories.Add(Directories.Last());
         }
 
         public event EventHandler<TreeViewItemSelectedEventArgs> ItemSelected;
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItem.GetType() == typeof(FolderItem))
+            if (typeof(FolderItem).IsAssignableFrom(args.InvokedItem.GetType()))
             {
+                ItemInvokedWithThisClick = true;
                 SelectedItem = args.InvokedItem as FolderItem;
-                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem as FolderItem));
+                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
             }
         }
 
@@ -150,6 +167,166 @@ namespace Piceon.Views
                 await AddFolder(folder);
                 DatabaseAccessService.AddAccessedFolder(token);
             }
+        }
+
+        private async void OnAddFolder(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var folderItem = await VirtualFolderItem.GetNew("New Album");
+
+                if (treeView.SelectedItem != null)
+                {
+                    try
+                    {
+                        await folderItem.SetParentAsync(treeView.SelectedItem as FolderItem);
+                    }
+                    catch (Exception exception)
+                    {
+                        var messageDialog = new MessageDialog("Error: " + exception.Message);
+                        messageDialog.Commands.Add(new UICommand("Close"));
+                        messageDialog.DefaultCommandIndex = 0;
+                        messageDialog.CancelCommandIndex = 0;
+                        await messageDialog.ShowAsync();
+                        await folderItem.DeleteAsync();
+                        return;
+                    }
+                }
+
+                var newNode = new WinUI.TreeViewNode() { Content = folderItem };
+
+                if (treeView.SelectedNode != null)
+                {
+                    treeView.SelectedNode.Children.Add(newNode);
+                    treeView.SelectedNode.HasUnrealizedChildren = true;
+                    treeView.Expand(treeView.SelectedNode);
+                }
+                else
+                {
+                    treeView.RootNodes.Add(newNode);
+                }
+
+                treeView.SelectedNodes.Clear();
+                treeView.SelectedNodes.Add(newNode);
+                await Task.Delay(100);
+                var container = treeView.ContainerFromNode(newNode);
+
+                if (container != null)
+                {
+                    var tvi = container as WinUI.TreeViewItem;
+                    (tvi?.Content as EditableTextBlock)?.EnableEditMode();
+                }
+            }
+            catch (Exception exception)
+            {
+                var messageDialog = new MessageDialog("Error: " + exception.Message);
+                messageDialog.Commands.Add(new UICommand("Close"));
+                messageDialog.DefaultCommandIndex = 0;
+                messageDialog.CancelCommandIndex = 0;
+                await messageDialog.ShowAsync();
+                return;
+            }
+            
+        }
+
+        private void TreeViewItemMenuFlyout_Rename(object sender, RoutedEventArgs e)
+        {
+            RightClickedTreeViewItemEditableTextBlock.EnableEditMode();
+        }
+
+        private async void TreeViewItemEditableTextBlock_TextChanged(object sender, EditableTextBlockTextChangedEventArgs e)
+        {
+            var folderItem = (sender as EditableTextBlock).DataContext as FolderItem;
+
+            if (e.Text != folderItem.Name && e.Text.Any())
+            {
+                try
+                {
+                    await folderItem.RenameAsync(e.Text);
+                }
+                catch (FormatException)
+                {
+                    var messageDialog = new MessageDialog("Error: Album name cannot contain any of these characters: \\/:*?\"<>|");
+                    messageDialog.Commands.Add(new UICommand("Close"));
+                    messageDialog.DefaultCommandIndex = 0;
+                    messageDialog.CancelCommandIndex = 0;
+                    await messageDialog.ShowAsync();
+                    (sender as EditableTextBlock).EnableEditMode();
+                    return;
+                }
+                catch (Exception exception)
+                {
+                    var messageDialog = new MessageDialog("Error: " + exception.Message);
+                    messageDialog.Commands.Add(new UICommand("Close"));
+                    messageDialog.DefaultCommandIndex = 0;
+                    messageDialog.CancelCommandIndex = 0;
+                    await messageDialog.ShowAsync();
+                    return;
+                }
+                var cont = treeView.ContainerFromItem(folderItem);
+                var node = treeView.NodeFromContainer(cont);
+                if (node.Depth == 0)
+                {
+                    await ReloadFolders();
+                }
+                else
+                {
+                    treeView.Collapse(node.Parent);
+                    await Task.Delay(50);
+                    treeView.Expand(node.Parent);
+                }
+            }
+        }
+
+        private void TreeViewItemMenuFlyout_Opened(object sender, object e)
+        {
+            RightClickedTreeViewItemEditableTextBlock = ((sender as MenuFlyout).Target as WinUI.TreeViewItem).Content as EditableTextBlock;
+        }
+
+        private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if (ItemInvokedWithThisClick)
+            {
+                ItemInvokedWithThisClick = false;
+                return;
+            }
+
+            treeView.SelectedItem = null;
+        }
+
+        private bool FolderTreeContains(ICollection<FolderItem> tree, FolderItem folder)
+        {
+            foreach (var item in tree)
+            {
+                if (item == folder)
+                    return true;
+
+                if (item.Subfolders.Any())
+                    FolderTreeContains(item.Subfolders, folder);
+            }
+
+            return false;
+        }
+
+        private async void OnDeleteFolder(object sender, RoutedEventArgs e)
+        {
+            var folderItem = (sender as MenuFlyoutItem).DataContext as FolderItem;
+            ContentDialog deleteFileDialog = new ContentDialog
+            {
+                Title = "Delete folder permanently?",
+                Content = "All subfolders will be deleted. Continue?",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+
+            ContentDialogResult result = await deleteFileDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                await folderItem.DeleteAsync();
+                Directories.Remove(folderItem);
+            }
+            
         }
     }
 }

@@ -5,178 +5,77 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Windows.Storage;
+using Windows.System;
 
 using Piceon.DatabaseAccess;
 using Windows.Storage.Search;
+using Windows.UI.Popups;
 
 namespace Piceon.Models
 {
-    public class FolderItem
+    public abstract class FolderItem
     {
-        //public StorageFolder Folder { get; set; }
-        public List<FolderItem> Subfolders
-        {
-            get
-            {
-                return GetSubfolders();
-            }
-        }
+        public List<FolderItem> Subfolders { get; protected set; } = new List<FolderItem>();
 
-        public FolderItem ParentFolder
-        {
-            get
-            {
-                return GetParentFolder();
-            }
-        }
+        public FolderItem ParentFolder { get; protected set; }
 
         public string Name { get; set; }
 
-        private int DatabaseId { get; set; }
+        public abstract Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length);
 
-        public Func<int, int, Task<IReadOnlyList<StorageFile>>> GetStorageFilesRangeAsync { get; private set; }
+        public abstract Task<int> GetFilesCountAsync();
 
-        public Func<Task<int>> GetFilesCountAsync { get; private set; }
+        public abstract Task RenameAsync(string newName);
 
-        private Func<List<FolderItem>> GetSubfolders { get; set; }
+        public  abstract Task SetParentAsync(FolderItem parent);
 
-        private Func<FolderItem> GetParentFolder { get; set; }
+        public abstract Task DeleteAsync();
 
-        private StorageFolder SourceStorageFolder { get; set; }
+        protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
 
-        private StorageFileQueryResult SourceStorageFolderImageQuery { get; set; }
+        protected FolderItem() { }
 
-        private FolderItem() { }
+        // TODO: delete dis
+        //public static FolderItem FolderItemFromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
+        //{
+        //    FolderItem result = new FolderItem();
 
-        public static FolderItem FolderItemFromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
-        {
-            FolderItem result = new FolderItem();
+        //    result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromDatabaseAsync;
+        //    result.GetFilesCountAsync = result.GetFilesCountFromDatabaseAsync;
+        //    result.Name = virtualFolder.Name;
+        //    result.DatabaseId = virtualFolder.Id;
+        //    result.RenameAsync = result.RenameDatabaseVirtualFolderAsync;
+        //    result.SetParentAsync = result.SetParentDatabase;
+        //    result.DeleteAsync = result.DeleteFromDatabaseAsync;
+        //    result.Subfolders = result.GetSubfoldersFromDatabase();
 
-            result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromDatabaseAsync;
-            result.GetFilesCountAsync = result.GetFilesCountFromDatabaseAsync;
-            result.GetSubfolders = result.GetSubfoldersFromDatabase;
-            result.GetParentFolder = result.GetParentFolderFromDatabase;
-            result.Name = virtualFolder.Name;
-            result.DatabaseId = virtualFolder.Id;
+        //    return result;
+        //}
 
-            return result;
-        }
+        //public static async Task<FolderItem> FolderItemFromStorageFolder(StorageFolder folder)
+        //{
+        //    FolderItem result = new FolderItem();
 
-        public static async Task<FolderItem> FolderItemFromStorageFolder(StorageFolder folder)
-        {
-            FolderItem result = new FolderItem();
+        //    result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromStorageFolderAsync;
+        //    result.GetFilesCountAsync = result.GetFilesCountFromStorageFolderAsync;
+        //    result.SourceStorageFolder = folder;
+        //    result.Name = folder.Name;
+        //    result.RenameAsync = result.RenameStorageFolderAsync;
+        //    result.SetParentAsync = result.SetParentStorageAsync;
+        //    result.DeleteAsync = result.DeleteStorageAsync;
+        //    result.Subfolders = await result.GetSubfoldersFromStorageFolder();
 
-            result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromStorageFolderAsync;
-            result.GetFilesCountAsync = result.GetFilesCountFromStorageFolderAsync;
-            result.GetSubfolders = result.GetSubfoldersFromStorageFolder;
-            result.GetParentFolder = result.GetParentFolderFromStorageFolder;
-            result.SourceStorageFolder = folder;
-            result.Name = folder.Name;
+        //    List<string> fileTypeFilter = new List<string>
+        //    {
+        //        ".jpg", ".png", ".bmp", ".gif"
+        //    };
+        //    var queryOptions = new QueryOptions(CommonFileQuery.OrderByName, fileTypeFilter);
 
-            List<string> fileTypeFilter = new List<string>
-            {
-                ".jpg", ".png", ".bmp", ".gif"
-            };
-            var queryOptions = new QueryOptions(CommonFileQuery.OrderByName, fileTypeFilter);
+        //    // Create query and retrieve files
+        //    result.SourceStorageFolderImageQuery = result.SourceStorageFolder.CreateFileQueryWithOptions(queryOptions);
 
-            // Create query and retrieve files
-            result.SourceStorageFolderImageQuery = result.SourceStorageFolder.CreateFileQueryWithOptions(queryOptions);
+        //    return result;
+        //}
 
-            return result;
-        }
-
-
-        private async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeFromDatabaseAsync(int firstIndex, int length)
-        {
-            var virtualFolders = DatabaseAccessService.GetImagesInFolder(DatabaseId);
-
-            if (firstIndex + length > virtualFolders.Count)
-                throw new IndexOutOfRangeException();
-
-            var selectedRangeVirtualFolders = virtualFolders.GetRange(firstIndex, length);
-
-            var result = new List<StorageFile>();
-
-            foreach (var item in selectedRangeVirtualFolders)
-            {
-                result.Add(await StorageFile.GetFileFromPathAsync(item));
-            }
-
-            return result;
-        }
-
-        private async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeFromStorageFolderAsync(int firstIndex, int length)
-        {
-            if (SourceStorageFolder == null || SourceStorageFolderImageQuery == null)
-            {
-                throw new MemberAccessException();
-            }
-
-            return await SourceStorageFolderImageQuery.GetFilesAsync((uint)firstIndex, (uint)length);
-        }
-
-        private async Task<int> GetFilesCountFromDatabaseAsync()
-        {
-            return DatabaseAccessService.GetImagesCountInFolder(DatabaseId);
-        }
-
-        private async Task<int> GetFilesCountFromStorageFolderAsync()
-        {
-            if (SourceStorageFolder == null || SourceStorageFolderImageQuery == null)
-            {
-                throw new MemberAccessException();
-            }
-
-            return (int)await SourceStorageFolderImageQuery.GetItemCountAsync();
-        }
-
-        private List<FolderItem> GetSubfoldersFromDatabase()
-        {
-            var virtualFolders = DatabaseAccessService.GetChildrenOfFolder(DatabaseId);
-
-            var result = new List<FolderItem>();
-
-            foreach (var item in virtualFolders)
-            {
-                result.Add(FolderItemFromDatabaseVirtualFolder(item));
-            }
-
-            return result;
-        }
-
-        private List<FolderItem> GetSubfoldersFromStorageFolder()
-        {
-            if (SourceStorageFolder == null)
-            {
-                throw new MemberAccessException();
-            }
-
-            var subfolders = SourceStorageFolder.GetFoldersAsync().AsTask().GetAwaiter().GetResult();
-
-            var result = new List<FolderItem>();
-
-            foreach (var item in subfolders)
-            {
-                result.Add(FolderItemFromStorageFolder(item).GetAwaiter().GetResult());
-            }
-
-            return result;
-        }
-
-        private FolderItem GetParentFolderFromDatabase()
-        {
-            var virtualFolder = DatabaseAccessService.GetParentOfFolder(DatabaseId);
-
-            return FolderItemFromDatabaseVirtualFolder(virtualFolder);
-        }
-
-        private FolderItem GetParentFolderFromStorageFolder()
-        {
-            if (SourceStorageFolder == null)
-            {
-                throw new MemberAccessException();
-            }
-            return FolderItemFromStorageFolder(SourceStorageFolder.GetParentAsync().AsTask().GetAwaiter().GetResult()).GetAwaiter().GetResult();
-        }
     }
 }

@@ -11,6 +11,17 @@ using Windows.Storage;
 
 namespace Piceon.DatabaseAccess
 {
+    [Serializable]
+    public class AlreadyHasParentException : Exception
+    {
+        public AlreadyHasParentException() { }
+        public AlreadyHasParentException(string message) : base(message) { }
+        public AlreadyHasParentException(string message, Exception inner) : base(message, inner) { }
+        protected AlreadyHasParentException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
     public static class DatabaseAccessService
     {
         public static bool Initialized = false;
@@ -23,6 +34,9 @@ namespace Piceon.DatabaseAccess
                new SqliteConnection($"Filename={dbpath}"))
             {
                 db.Open();
+
+                using (SqliteCommand command = new SqliteCommand("PRAGMA recursive_triggers = ON", db))
+                { command.ExecuteReader(); }
 
                 using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS IMAGE" +
                          "(Id INTEGER PRIMARY KEY NOT NULL, path text NOT NULL)", db))
@@ -62,7 +76,7 @@ namespace Piceon.DatabaseAccess
                 using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS after_image_delete " +
                         "AFTER DELETE ON IMAGE " +
                         "BEGIN " +
-                            "DELETE FROM VIRTUALFOLDER_IMAGE WHERE IMAGE_id = OLD.Id; " +
+                            "DELETE FROM VIRTUALFOLDER_IMAGE WHERE IMAGE_Id = OLD.Id; " +
                             "DELETE FROM SIMILAR_IMAGES WHERE FIRST_IMAGE_Id = OLD.Id; " +
                             "DELETE FROM SIMILAR_IMAGES WHERE SECOND_IMAGE_Id = OLD.Id; " +
                         "END ; ", db))
@@ -72,6 +86,8 @@ namespace Piceon.DatabaseAccess
                         "AFTER DELETE ON VIRTUALFOLDER " +
                         "BEGIN " +
                             "DELETE FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id = OLD.Id; " +
+                            "DELETE FROM VIRTUALFOLDER_RELATION WHERE CHILD_Id = OLD.Id; " +
+                            "DELETE FROM VIRTUALFOLDER WHERE Id IN (SELECT CHILD_Id FROM VIRTUALFOLDER_RELATION WHERE PARENT_Id = OLD.Id); " +
                         "END; ", db))
                 { command.ExecuteReader(); }
 
@@ -186,6 +202,11 @@ namespace Piceon.DatabaseAccess
 
                 SqliteDataReader query = selectCommand.ExecuteReader();
 
+                if (!query.HasRows)
+                {
+                    db.Close();
+                    return null;
+                }
 
                 while (query.Read())
                 {
@@ -327,6 +348,94 @@ namespace Piceon.DatabaseAccess
             }
 
             return result;
+        }
+
+        public static DatabaseVirtualFolder AddVirtualFolder(string name, int parentId = -1)
+        {
+            DatabaseVirtualFolder result = new DatabaseVirtualFolder()
+            {
+                Name = name
+            };
+
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER (name) " +
+                         $"VALUES ('{name}')", db))
+                { command.ExecuteReader(); }
+
+                Int64 rowid = 0;
+
+                using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", db))
+                { rowid = (Int64)command.ExecuteScalar(); }
+
+                if (parentId > -1)
+                {
+                    using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_RELATION (PARENT_Id, CHILD_Id) " +
+                        $"VALUES ({parentId}, {rowid})", db))
+                    { rowid = (Int64)command.ExecuteScalar(); }
+                }
+
+                result.Id = (int)rowid;
+            }
+
+            return result;
+        }
+
+        public static async Task RenameVirtualFolder(int id, string newName)
+        {
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                using (SqliteCommand command = new SqliteCommand("UPDATE VIRTUALFOLDER " +
+                         $"SET name = '{newName}' " +
+                         $"WHERE Id = {id}", db))
+                { await command.ExecuteReaderAsync(); }
+            }
+        }
+
+        public static async Task SetParentOfFolder(int childId, int parentId)
+        {
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                using (SqliteCommand command = new SqliteCommand("SELECT CHILD_Id FROM VIRTUALFOLDER_RELATION " +
+                        $"WHERE CHILD_Id={childId}", db))
+                {
+                    var query = await command.ExecuteReaderAsync();
+                    if (query.HasRows)
+                    {
+                        db.Close();
+                        throw new AlreadyHasParentException();
+                    }
+                }
+
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_RELATION (PARENT_Id, CHILD_Id) " +
+                        $"VALUES ({parentId}, {childId})", db))
+                { await command.ExecuteReaderAsync(); }
+            }
+        }
+
+        public static async Task DeleteVirtualFolderAsync(int id)
+        {
+            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            using (SqliteConnection db =
+               new SqliteConnection($"Filename={dbpath}"))
+            {
+                db.Open();
+
+                using (SqliteCommand command = new SqliteCommand($"DELETE FROM VIRTUALFOLDER WHERE Id = {id}", db))
+                { await command.ExecuteReaderAsync(); }
+            }
         }
     }
 }
