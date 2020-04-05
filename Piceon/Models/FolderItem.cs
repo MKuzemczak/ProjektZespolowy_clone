@@ -35,47 +35,5 @@ namespace Piceon.Models
 
         protected FolderItem() { }
 
-        // TODO: delete dis
-        //public static FolderItem FolderItemFromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
-        //{
-        //    FolderItem result = new FolderItem();
-
-        //    result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromDatabaseAsync;
-        //    result.GetFilesCountAsync = result.GetFilesCountFromDatabaseAsync;
-        //    result.Name = virtualFolder.Name;
-        //    result.DatabaseId = virtualFolder.Id;
-        //    result.RenameAsync = result.RenameDatabaseVirtualFolderAsync;
-        //    result.SetParentAsync = result.SetParentDatabase;
-        //    result.DeleteAsync = result.DeleteFromDatabaseAsync;
-        //    result.Subfolders = result.GetSubfoldersFromDatabase();
-
-        //    return result;
-        //}
-
-        //public static async Task<FolderItem> FolderItemFromStorageFolder(StorageFolder folder)
-        //{
-        //    FolderItem result = new FolderItem();
-
-        //    result.GetStorageFilesRangeAsync = result.GetStorageFilesRangeFromStorageFolderAsync;
-        //    result.GetFilesCountAsync = result.GetFilesCountFromStorageFolderAsync;
-        //    result.SourceStorageFolder = folder;
-        //    result.Name = folder.Name;
-        //    result.RenameAsync = result.RenameStorageFolderAsync;
-        //    result.SetParentAsync = result.SetParentStorageAsync;
-        //    result.DeleteAsync = result.DeleteStorageAsync;
-        //    result.Subfolders = await result.GetSubfoldersFromStorageFolder();
-
-        //    List<string> fileTypeFilter = new List<string>
-        //    {
-        //        ".jpg", ".png", ".bmp", ".gif"
-        //    };
-        //    var queryOptions = new QueryOptions(CommonFileQuery.OrderByName, fileTypeFilter);
-
-        //    // Create query and retrieve files
-        //    result.SourceStorageFolderImageQuery = result.SourceStorageFolder.CreateFileQueryWithOptions(queryOptions);
-
-        //    return result;
-        //}
-
     }
 }
