@@ -37,7 +37,7 @@ namespace Piceon.Views
         public MainPage()
         {
             InitializeComponent();
-            DatabaseAccessService.InitializeDatabase();
+            DatabaseAccessService.InitializeDatabaseAsync();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

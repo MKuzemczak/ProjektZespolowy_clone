@@ -67,7 +67,7 @@
             <Button
                 Grid.Column="1"
                 x:Uid="TreeView_AddFolderButton"
-                Content="&#xE710;"
+                Content="&#xE8F4;"
                 FontSize="14"
                 Padding="{StaticResource SmallLeftRightMargin}"
                 VerticalAlignment="Stretch"

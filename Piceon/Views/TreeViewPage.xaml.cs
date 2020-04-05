@@ -85,14 +85,14 @@ namespace Piceon.Views
             Directories.Clear();
             PreviouslyAccessedDirectories.Clear();
 
-            var virtualFoldersRootNodes = DatabaseAccessService.GetRootVirtualFolders();
+            var virtualFoldersRootNodes = await DatabaseAccessService.GetRootVirtualFoldersAsync();
 
             foreach (var item in virtualFoldersRootNodes)
             {
                 Directories.Add(await VirtualFolderItem.FromDatabaseVirtualFolder(item));
             }
 
-            var tokenList = DatabaseAccessService.GetAccessedFolders();
+            var tokenList = await DatabaseAccessService.GetAccessedFoldersAsync();
 
             foreach (var token in tokenList)
             {
@@ -165,7 +165,7 @@ namespace Piceon.Views
                 // (including other sub-folder contents)
                 string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
                 await AddFolder(folder);
-                DatabaseAccessService.AddAccessedFolder(token);
+                DatabaseAccessService.AddAccessedFolderAsync(token);
             }
         }
 

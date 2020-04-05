@@ -30,14 +30,14 @@ namespace Piceon.Models
 
         public static async Task<VirtualFolderItem> GetNew(string name)
         {
-            var dbvf = DatabaseAccessService.AddVirtualFolder(name);
+            var dbvf = await DatabaseAccessService.AddVirtualFolderAsync(name);
 
             return await FromDatabaseVirtualFolder(dbvf);
         }
 
         public override async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length)
         {
-            var virtualFolders = DatabaseAccessService.GetImagesInFolder(DatabaseId);
+            var virtualFolders = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
 
             if (firstIndex + length > virtualFolders.Count)
                 throw new IndexOutOfRangeException();
@@ -56,12 +56,12 @@ namespace Piceon.Models
 
         public override async Task<int> GetFilesCountAsync()
         {
-            return DatabaseAccessService.GetImagesCountInFolder(DatabaseId);
+            return await DatabaseAccessService.GetImagesCountInFolderAsync(DatabaseId);
         }
 
         protected override async Task<List<FolderItem>> GetSubfoldersAsync()
         {
-            var virtualFolders = DatabaseAccessService.GetChildrenOfFolder(DatabaseId);
+            var virtualFolders = await DatabaseAccessService.GetChildrenOfFolderAsync(DatabaseId);
 
             var result = new List<FolderItem>();
 
@@ -81,7 +81,7 @@ namespace Piceon.Models
             {
                 throw new FormatException();
             }
-            await DatabaseAccessService.RenameVirtualFolder(DatabaseId, newName);
+            await DatabaseAccessService.RenameVirtualFolderAsync(DatabaseId, newName);
             Name = newName;
         }
 
@@ -89,7 +89,7 @@ namespace Piceon.Models
         {
             if (folder is VirtualFolderItem)
             {
-                await DatabaseAccessService.SetParentOfFolder(DatabaseId, (folder as VirtualFolderItem).DatabaseId);
+                await DatabaseAccessService.SetParentOfFolderAsync(DatabaseId, (folder as VirtualFolderItem).DatabaseId);
                 ParentFolder?.Subfolders?.Remove(this);
                 ParentFolder = folder;
                 folder.Subfolders.Add(this);
