@@ -7,6 +7,7 @@
     xmlns:winui="using:Microsoft.UI.Xaml.Controls"
     xmlns:model="using:Piceon.Models"
     xmlns:templateSelectors="using:Piceon.TemplateSelectors"
+    xmlns:mycontrols="using:Piceon.Controls"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:views="using:Piceon.Views"
     Style="{StaticResource PageStyle}"
@@ -16,11 +17,27 @@
         <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:FolderItem">
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind Name}"
-                ItemsSource="{x:Bind Subfolders}" IsExpanded="False">
-                <TextBlock Text="{x:Bind Name}" Margin="{StaticResource XXSmallTopRightBottomMargin}" />
+                ItemsSource="{x:Bind Subfolders}" IsExpanded="False" >
+                <winui:TreeViewItem.ContextFlyout>
+                    <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
+                        <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
+                        <MenuFlyoutItem Text="Delete" Click="OnDeleteFolder" />
+                    </MenuFlyout>
+                </winui:TreeViewItem.ContextFlyout>
+                <mycontrols:EditableTextBlock
+                    TextBlockText="{x:Bind Name}"
+                    Margin="{StaticResource XXSmallTopRightBottomMargin}"
+                    TextChanged="TreeViewItemEditableTextBlock_TextChanged"
+                    Width="300">
+                    <!--<mycontrols:EditableTextBlock.ContextFlyout>
+                        <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
+                            <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
+                        </MenuFlyout>
+                    </mycontrols:EditableTextBlock.ContextFlyout>-->
+                </mycontrols:EditableTextBlock>
             </winui:TreeViewItem>
         </DataTemplate>
-
+        
         <templateSelectors:DirectoryTemplateSelector
             x:Key="TreeViewTemplateSelector"
             DirectoryTemplate="{StaticResource DirectoryTemplate}" />
@@ -28,7 +45,8 @@
     </Page.Resources>
 
     <Grid
-        Background="{ThemeResource  SystemChromeMediumLowColor}">
+        Background="{ThemeResource  SystemChromeMediumLowColor}"
+        Tapped="Grid_Tapped">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition Height="*" />
@@ -39,6 +57,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 x:Uid="TreeViewTitle"
@@ -47,6 +66,17 @@
                 VerticalAlignment="Center" />
             <Button
                 Grid.Column="1"
+                x:Uid="TreeView_AddFolderButton"
+                Content="&#xE8F4;"
+                FontSize="14"
+                Padding="{StaticResource SmallLeftRightMargin}"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                FontFamily="Segoe MDL2 Assets"
+                Background="Transparent"
+                Click="OnAddFolder" />
+            <Button
+                Grid.Column="2"
                 x:Uid="TreeView_OpenFolderButton"
                 Content="&#xE838;"
                 FontSize="14"
@@ -57,7 +87,7 @@
                 Background="Transparent"
                 Click="OnOpenFolder" />
             <Button
-                Grid.Column="2"
+                Grid.Column="3"
                 x:Uid="TreeView_CollapseAllButton"
                 Content="&#xF165;"
                 FontSize="14"

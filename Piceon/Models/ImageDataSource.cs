@@ -16,8 +16,7 @@ namespace Piceon.Models
     {
         // Folder that we are browsing
         private FolderItem _folder;
-        // Query object that will tell us if the folder content changed
-        private StorageFileQueryResult _queryResult;
+
         // Dispatcher so we can marshal calls back to the UI thread
         private CoreDispatcher _dispatcher;
 

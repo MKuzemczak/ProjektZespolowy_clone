@@ -143,18 +143,24 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
+    <Compile Include="Controls\EditableTextBlock.xaml.cs">
+      <DependentUpon>EditableTextBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Models\EditableTextBlockTextChangedEventArgs.cs" />
     <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
     <Compile Include="Models\ImageItem.cs" />
     <Compile Include="Models\ItemCacheManager.cs" />
     <Compile Include="Models\ItemIndexRangeExtensions.cs" />
     <Compile Include="Models\ItemIndexRangeList.cs" />
+    <Compile Include="Models\StorageFolderItem.cs" />
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
+    <Compile Include="Models\VirtualFolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
@@ -205,6 +211,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\EditableTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Image.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
