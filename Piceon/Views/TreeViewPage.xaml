@@ -17,7 +17,8 @@
         <DataTemplate x:Key="DirectoryTemplate" x:DataType="model:FolderItem">
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind Name}"
-                ItemsSource="{x:Bind Subfolders}" IsExpanded="False" >
+                ItemsSource="{x:Bind Subfolders}" IsExpanded="False"
+                DoubleTapped="TreeViewItem_DoubleTapped">
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
                         <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>

@@ -115,12 +115,7 @@ namespace Piceon.Views
 
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
         {
-            if (typeof(FolderItem).IsAssignableFrom(args.InvokedItem.GetType()))
-            {
-                ItemInvokedWithThisClick = true;
-                SelectedItem = args.InvokedItem as FolderItem;
-                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
-            }
+            ItemInvokedWithThisClick = true;
         }
 
         private void OnCollapseAll(object sender, RoutedEventArgs e)
@@ -327,6 +322,17 @@ namespace Piceon.Views
                 Directories.Remove(folderItem);
             }
             
+        }
+
+        private void TreeViewItem_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            var data = (sender as WinUI.TreeViewItem).DataContext;
+            if (typeof(FolderItem).IsAssignableFrom(data.GetType()))
+            {
+                ItemInvokedWithThisClick = true;
+                SelectedItem = data as FolderItem;
+                ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
+            }
         }
     }
 }
