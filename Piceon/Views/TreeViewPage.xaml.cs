@@ -165,7 +165,7 @@ namespace Piceon.Views
                 // (including other sub-folder contents)
                 string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
                 await AddFolder(folder);
-                DatabaseAccessService.AddAccessedFolderAsync(token);
+                await DatabaseAccessService.AddAccessedFolderAsync(token);
             }
         }
 
