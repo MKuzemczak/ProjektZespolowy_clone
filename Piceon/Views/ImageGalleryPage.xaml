@@ -39,7 +39,18 @@
                         AutomationProperties.Name="{x:Bind Filename}"
                         Source="{x:Bind ImageData}"
                         Style="{StaticResource ThumbnailImageStyle}"
-                        ToolTipService.ToolTip="{x:Bind Filename}" />
+                        ToolTipService.ToolTip="{x:Bind Filename}" >
+                        <Image.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Share" Icon="Share" Click="ShareImage_Click"/>
+                                <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
+                                <MenuFlyoutItem Text="Delete" Icon="Delete" Click="DeleteImage_Click"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
+                                <MenuFlyoutItem Text="Select" Click="SelectImage_Click"/>
+                            </MenuFlyout>
+                        </Image.ContextFlyout>
+                    </Image>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

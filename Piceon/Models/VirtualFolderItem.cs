@@ -16,6 +16,8 @@ namespace Piceon.Models
 
         public const string NameInvalidCharacters = "\\/:*?\"<>|";
 
+        public override event EventHandler ContentsChanged;
+
         public static async Task<VirtualFolderItem> FromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
         {
             VirtualFolderItem result = new VirtualFolderItem

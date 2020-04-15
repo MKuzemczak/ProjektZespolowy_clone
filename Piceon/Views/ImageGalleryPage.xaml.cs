@@ -12,6 +12,10 @@ using Piceon.Services;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.ApplicationModel.DataTransfer;
+using System.Collections.Generic;
+using System.IO;
+
 
 namespace Piceon.Views
 {
@@ -86,5 +90,74 @@ namespace Piceon.Views
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        private void ShareImage_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async void CopyImage_Click(object sender, RoutedEventArgs e)
+        {
+            StorageFile file = ((sender as MenuFlyoutItem).DataContext as ImageItem).File;
+            List<StorageFile> storageFiles = new List<StorageFile>(1);
+            storageFiles.Add(file);
+
+            var dataPackage = new DataPackage();
+            dataPackage.SetStorageItems(storageFiles);
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+
+            try
+            {
+                Clipboard.SetContent(dataPackage);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        private async void DeleteImage_Click(object sender, RoutedEventArgs e)
+        {
+
+            var file = ((sender as MenuFlyoutItem).DataContext as ImageItem);
+
+            ContentDialog deleteFileDialog = new ContentDialog
+            {
+                Title = "Delete Image",
+                Content = "If you delete this file, you won't be able to recover it. Do you want to delete it?",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+
+            ContentDialogResult result = await deleteFileDialog.ShowAsync();
+
+            // Delete the file if the user clicked the primary button.
+            /// Otherwise, do nothing.
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    await file.File.DeleteAsync();
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            else
+            {
+                // The user clicked the CLoseButton, pressed ESC, Gamepad B, or the system back button.
+                // Do nothing.
+            }
+        }
+
+        private void RenameImage_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SelectImage_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

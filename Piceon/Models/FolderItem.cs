@@ -33,6 +33,8 @@ namespace Piceon.Models
 
         protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
 
+        public abstract event EventHandler ContentsChanged;
+
         protected FolderItem() { }
 
     }
