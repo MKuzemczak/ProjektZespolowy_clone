@@ -51,13 +51,18 @@ namespace Piceon.Models
         // Set functionality for the folder
         public async Task SetFolder(FolderItem folder)
         {
-            // Initialize the query and register for changes
+            if (_folder is object)
+            {
+                _folder.ContentsChanged -= Folder_ContentsChanged;
+            }
+
             _folder = folder;
+            folder.ContentsChanged += Folder_ContentsChanged;
             await UpdateCount();
         }
 
         // Handler for when the filesystem notifies us of a change to the file list
-        private void QueryResult_ContentsChanged(IStorageQueryResultBase sender, object args)
+        private void Folder_ContentsChanged(object sender, EventArgs e)
         {
             // This callback can occur on a different thread so we need to marshal it back to the UI thread
             if (!_dispatcher.HasThreadAccess)

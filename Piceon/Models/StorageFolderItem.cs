@@ -17,6 +17,8 @@ namespace Piceon.Models
 
         private StorageFileQueryResult SourceStorageFolderImageQuery { get; set; }
 
+        public override event EventHandler ContentsChanged;
+
         public static async Task<StorageFolderItem> FromStorageFolder(StorageFolder folder)
         {
             StorageFolderItem result = new StorageFolderItem
@@ -34,6 +36,7 @@ namespace Piceon.Models
 
             // Create query and retrieve files
             result.SourceStorageFolderImageQuery = result.SourceStorageFolder.CreateFileQueryWithOptions(queryOptions);
+            result.SourceStorageFolderImageQuery.ContentsChanged += result.Query_ContentsChanged;
 
             return result;
         }
@@ -148,6 +151,11 @@ namespace Piceon.Models
             hashCode = hashCode * -1521134295 + base.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<StorageFolder>.Default.GetHashCode(SourceStorageFolder);
             return hashCode;
+        }
+
+        private void Query_ContentsChanged(IStorageQueryResultBase sender, object args)
+        {
+            ContentsChanged?.Invoke(this, new EventArgs());
         }
     }
 }
