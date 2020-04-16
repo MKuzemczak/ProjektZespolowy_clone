@@ -122,12 +122,6 @@ namespace Piceon.Views
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private void ShareImage_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-            // TODO: share image on instagram or fb
-        }
-
         private async void CopyImage_Click(object sender, RoutedEventArgs e)
         {
             StorageFile file = ((sender as MenuFlyoutItem).DataContext as ImageItem).File;
