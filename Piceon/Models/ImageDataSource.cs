@@ -51,13 +51,8 @@ namespace Piceon.Models
         // Set functionality for the folder
         public async Task SetFolder(FolderItem folder)
         {
-            if (_folder is object)
-            {
-                _folder.ContentsChanged -= Folder_ContentsChanged;
-            }
-
+            // Initialize the query and register for changes
             _folder = folder;
-            folder.ContentsChanged += Folder_ContentsChanged;
             await UpdateCount();
         }
 
