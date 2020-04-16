@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Windows.UI.Core;
 
 
 namespace Piceon.Views
@@ -23,39 +25,69 @@ namespace Piceon.Views
     {
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
-        public ObservableCollection<ImageItem> Source { get; } = new ObservableCollection<ImageItem>();
+        public ImageDataSource Source { get; set; }
+
         public FolderItem SelectedContentFolder { get; set; } = null;
+
+        // needed for marshaling calls back to UI thread
+        private CoreDispatcher _uiThreadDispatcher;
 
         public ImageGalleryPage()
         {
             InitializeComponent();
             Loaded += ImageGalleryPage_OnLoaded;
+
+            _uiThreadDispatcher = Window.Current.Dispatcher;
         }
 
         private async void ImageGalleryPage_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Source.Clear();
-
             if (SelectedContentFolder != null)
             {
-                var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
+                SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
 
-                if (data != null)
+                Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
+
+                if (Source != null)
                 {
-                    imagesGridView.ItemsSource = data;
+                    imagesGridView.ItemsSource = Source;
                 }
             }
         }
 
         public async void AccessDirectory(FolderItem folder)
         {
-            SelectedContentFolder = folder;
-            
-            var data = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
-
-            if (data != null)
+            if (SelectedContentFolder != folder)
             {
-                imagesGridView.ItemsSource = data;
+                if (SelectedContentFolder is object)
+                    SelectedContentFolder.ContentsChanged -= SelectedContentFolder_ContentsChanged;
+                SelectedContentFolder = folder;
+                SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
+            }
+
+            Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
+
+            if (Source != null)
+            {
+                imagesGridView.ItemsSource = Source;
+            }
+        }
+
+        public void ReloadFolder()
+        {
+            AccessDirectory(SelectedContentFolder);
+        }
+
+        private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
+        {
+            // This callback can occur on a different thread so we need to marshal it back to the UI thread
+            if (!_uiThreadDispatcher.HasThreadAccess)
+            {
+                var t = _uiThreadDispatcher.RunAsync(CoreDispatcherPriority.Normal, ReloadFolder);
+            }
+            else
+            {
+                ReloadFolder();
             }
         }
 
