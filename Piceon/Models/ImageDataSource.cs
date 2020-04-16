@@ -57,7 +57,7 @@ namespace Piceon.Models
         }
 
         // Handler for when the filesystem notifies us of a change to the file list
-        private void QueryResult_ContentsChanged(IStorageQueryResultBase sender, object args)
+        private void Folder_ContentsChanged(object sender, EventArgs e)
         {
             // This callback can occur on a different thread so we need to marshal it back to the UI thread
             if (!_dispatcher.HasThreadAccess)
