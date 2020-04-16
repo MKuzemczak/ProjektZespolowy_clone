@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.UI.Core;
-
+using Windows.UI.Popups;
 
 namespace Piceon.Views
 {
@@ -144,7 +144,8 @@ namespace Piceon.Views
             }
             catch (Exception)
             {
-
+                var messageDialog = new MessageDialog("It is filed to copy this file");
+                await messageDialog.ShowAsync();
             }
         }
 
@@ -173,13 +174,9 @@ namespace Piceon.Views
                 }
                 catch (Exception)
                 {
-
+                    var messageDialog = new MessageDialog("It is filed to delete this file");
+                    await messageDialog.ShowAsync();
                 }
-            }
-            else
-            {
-                // The user clicked the CLoseButton, pressed ESC, Gamepad B, or the system back button.
-                // Do nothing.
             }
         }
 
@@ -189,10 +186,5 @@ namespace Piceon.Views
             //TODO: change name of an image
         }
 
-        private void SelectImage_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-            //TODO: select images to sth
-        }
     }
 }
