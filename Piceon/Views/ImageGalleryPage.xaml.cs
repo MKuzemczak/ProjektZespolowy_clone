@@ -124,7 +124,8 @@ namespace Piceon.Views
 
         private void ShareImage_Click(object sender, RoutedEventArgs e)
         {
-
+            throw new NotImplementedException();
+            // TODO: share image on instagram or fb
         }
 
         private async void CopyImage_Click(object sender, RoutedEventArgs e)
@@ -184,12 +185,14 @@ namespace Piceon.Views
 
         private void RenameImage_Click(object sender, RoutedEventArgs e)
         {
-
+            throw new NotImplementedException();
+            //TODO: change name of an image
         }
 
         private void SelectImage_Click(object sender, RoutedEventArgs e)
         {
-
+            throw new NotImplementedException();
+            //TODO: select images to sth
         }
     }
 }
