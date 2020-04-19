@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Microsoft.Toolkit.Uwp.UI.Animations;
+
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.UI.Core;
+using Windows.UI.Popups;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 
-using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using System.Threading.Tasks;
-using Windows.UI.Core;
 
 namespace Piceon.Views
 {
@@ -118,5 +122,54 @@ namespace Piceon.Views
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+        private async void CopyImage_Click(object sender, RoutedEventArgs e)
+        {
+            StorageFile file = ((sender as MenuFlyoutItem).DataContext as ImageItem).File;
+            List<StorageFile> storageFiles = new List<StorageFile>(1);
+            storageFiles.Add(file);
+            var dataPackage = new DataPackage();
+            dataPackage.SetStorageItems(storageFiles);
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            try
+            {
+                Clipboard.SetContent(dataPackage);
+            }
+            catch (Exception)
+            {
+                var messageDialog = new MessageDialog("It is filed to copy this file");
+                await messageDialog.ShowAsync();
+            }
+        }
+        private async void DeleteImage_Click(object sender, RoutedEventArgs e)
+        {
+            var file = ((sender as MenuFlyoutItem).DataContext as ImageItem);
+            ContentDialog deleteFileDialog = new ContentDialog
+            {
+                Title = "Delete Image",
+                Content = "If you delete this file, you won't be able to recover it. Do you want to delete it?",
+                PrimaryButtonText = "Delete",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult result = await deleteFileDialog.ShowAsync();
+            // Delete the file if the user clicked the primary button.
+            /// Otherwise, do nothing.
+            if (result == ContentDialogResult.Primary)
+            {
+                try
+                {
+                    await file.File.DeleteAsync();
+                }
+                catch (Exception)
+                {
+                    var messageDialog = new MessageDialog("It is filed to delete this file");
+                    await messageDialog.ShowAsync();
+                }
+            }
+        }
+        private void RenameImage_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+            //TODO: change name of an image
+        }
     }
 }
