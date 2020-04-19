@@ -243,10 +243,15 @@ namespace Piceon.DatabaseAccess
 
             SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 
-            while (query.Read())
-            {
-                result = query.GetInt32(0);
-            }
+                if (!query.HasRows)
+                {
+                    throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+                }
+
+                while (query.Read())
+                {
+                    result = query.GetInt32(0);
+                }
 
             return result;
         }
@@ -299,11 +304,15 @@ namespace Piceon.DatabaseAccess
             using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
             { rowid = (Int64)await command.ExecuteScalarAsync(); }
 
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
             if (parentId > -1)
             {
                 using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_RELATION (PARENT_Id, CHILD_Id) " +
                     $"VALUES ({parentId}, {rowid})", Database))
-                { rowid = (Int64)await command.ExecuteScalarAsync(); }
+                { await command.ExecuteReaderAsync(); }
             }
 
             result.Id = (int)rowid;
