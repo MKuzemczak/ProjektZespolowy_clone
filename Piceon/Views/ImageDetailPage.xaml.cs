@@ -37,6 +37,11 @@ namespace Piceon.Views
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
+        }
+
+        public async Task ShowAsync()
+        {
+            this.Visibility = Visibility.Visible;
             CurrentIndexInFolder = ImageNavigationHelper.SelectedImage.GalleryIndex;
             CurrentlyDisplayedImageItem = ImageNavigationHelper.SelectedImage;
             await UpdateArrowsVisibilityAsync();
@@ -46,10 +51,7 @@ namespace Piceon.Views
 
         private void OnGoBack(object sender, RoutedEventArgs e)
         {
-            if (NavigationService.CanGoBack)
-            {
-                NavigationService.GoBack();
-            }
+            this.Visibility = Visibility.Collapsed;
         }
 
         private async Task UpdateImageToIndex(CancellationToken ct)

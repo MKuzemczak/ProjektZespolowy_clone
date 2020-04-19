@@ -12,8 +12,6 @@ namespace Piceon.Models
 {
     public class VirtualFolderItem : FolderItem
     {
-        int DatabaseId;
-
         public const string NameInvalidCharacters = "\\/:*?\"<>|";
 
         public override event EventHandler ContentsChanged;
@@ -32,7 +30,7 @@ namespace Piceon.Models
 
         public static async Task<VirtualFolderItem> GetNew(string name)
         {
-            var dbvf = await DatabaseAccessService.AddVirtualFolderAsync(name);
+            var dbvf = await DatabaseAccessService.InsertVirtualFolderAsync(name);
 
             return await FromDatabaseVirtualFolder(dbvf);
         }

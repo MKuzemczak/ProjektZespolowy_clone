@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Piceon.DatabaseAccess;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Windows.Storage;
+using Windows.Storage.AccessCache;
 using Windows.Storage.Search;
 using Windows.System;
 using Windows.UI.Popups;
@@ -19,7 +21,7 @@ namespace Piceon.Models
 
         public override event EventHandler ContentsChanged;
 
-        public static async Task<StorageFolderItem> FromStorageFolder(StorageFolder folder)
+        public static async Task<StorageFolderItem> FromStorageFolderAsync(StorageFolder folder, int databaseId = -1)
         {
             StorageFolderItem result = new StorageFolderItem
             {
@@ -37,6 +39,7 @@ namespace Piceon.Models
             // Create query and retrieve files
             result.SourceStorageFolderImageQuery = result.SourceStorageFolder.CreateFileQueryWithOptions(queryOptions);
             result.SourceStorageFolderImageQuery.ContentsChanged += result.Query_ContentsChanged;
+            result.DatabaseId = databaseId;
 
             return result;
         }
@@ -74,7 +77,7 @@ namespace Piceon.Models
 
             foreach (var item in subfolders)
             {
-                var newFolder = await FromStorageFolder(item);
+                var newFolder = await FromStorageFolderAsync(item);
                 newFolder.ParentFolder = this;
                 result.Add(newFolder);
             }
@@ -104,6 +107,8 @@ namespace Piceon.Models
         public override async Task DeleteAsync()
         {
             await Launcher.LaunchFolderAsync(SourceStorageFolder);
+            if (DatabaseId > 0)
+                await DatabaseAccessService.DeleteAccessedFolderAsync(DatabaseId);
             //await SourceStorageFolder.DeleteAsync();
             //SourceStorageFolder = null;
             //SourceStorageFolderImageQuery = null;

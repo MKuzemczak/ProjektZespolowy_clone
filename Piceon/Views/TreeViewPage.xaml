@@ -22,7 +22,7 @@
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
                         <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
-                        <MenuFlyoutItem Text="Delete" Click="OnDeleteFolder" />
+                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="OnDeleteFolder" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
                 <mycontrols:EditableTextBlock
@@ -59,14 +59,20 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
                 x:Uid="TreeViewTitle"
                 Margin="{StaticResource SmallLeftMargin}"
                 Style="{StaticResource ListTitleStyle}"
                 VerticalAlignment="Center" />
+            <TextBlock x:Name="loadingTextBlock"
+                       Text="Loading..."
+                       Visibility="Collapsed"
+                       Grid.Column="1"
+                       VerticalAlignment="Center"/>
             <Button
-                Grid.Column="1"
+                Grid.Column="2"
                 x:Uid="TreeView_AddFolderButton"
                 Content="&#xE8F4;"
                 FontSize="14"
@@ -75,9 +81,9 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnAddFolder" />
+                Click="OnCreateFolder" />
             <Button
-                Grid.Column="2"
+                Grid.Column="3"
                 x:Uid="TreeView_OpenFolderButton"
                 Content="&#xE838;"
                 FontSize="14"
@@ -88,7 +94,7 @@
                 Background="Transparent"
                 Click="OnOpenFolder" />
             <Button
-                Grid.Column="3"
+                Grid.Column="4"
                 x:Uid="TreeView_CollapseAllButton"
                 Content="&#xF165;"
                 FontSize="14"

@@ -15,6 +15,8 @@ namespace Piceon.Models
 {
     public abstract class FolderItem
     {
+        public int DatabaseId;
+
         public List<FolderItem> Subfolders { get; protected set; } = new List<FolderItem>();
 
         public FolderItem ParentFolder { get; protected set; }

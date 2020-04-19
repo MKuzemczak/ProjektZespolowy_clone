@@ -30,25 +30,30 @@
             animations:Connected.ListItemKey="galleryAnimationKey"
             IsItemClickEnabled="True"
             ItemClick="ImagesGridView_ItemClick"
-            SelectionMode="None">
-            <!--ItemsSource="{x:Bind Source, Mode=OneWay}"-->
+            Tapped="ImagesGridView_Tapped"
+            DoubleTapped="ImagesGridView_DoubleTapped"
+            SelectionMode="Extended"
+            IsMultiSelectCheckBoxEnabled="False" >
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
-                    <Image
-                        x:Name="thumbnailImage"
-                        AutomationProperties.Name="{x:Bind Filename}"
-                        Source="{x:Bind ImageData}"
-                        Style="{StaticResource ThumbnailImageStyle}"
-                        ToolTipService.ToolTip="{x:Bind Filename}" >
-                        <Image.ContextFlyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
-                                <MenuFlyoutItem Text="Delete" Icon="Delete" Click="DeleteImage_Click"/>
-                                <MenuFlyoutSeparator/>
-                                <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
-                            </MenuFlyout>
-                        </Image.ContextFlyout>
-                    </Image>
+                    <Grid>
+                        <Image
+                            x:Name="thumbnailImage"
+                            AutomationProperties.Name="{x:Bind Filename}"
+                            Source="{x:Bind ImageData}"
+                            Style="{StaticResource ThumbnailImageStyle}"
+                            ToolTipService.ToolTip="{x:Bind Filename}" >
+                            <Image.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
+                                    <MenuFlyoutItem Text="Delete" Icon="Delete" Click="DeleteImage_Click"/>
+                                    <MenuFlyoutSeparator/>
+                                    <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
+                                </MenuFlyout>
+                            </Image.ContextFlyout>
+                        </Image>
+                        <!-- here add anything that should be displayed on top of an image thumbnail -->
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

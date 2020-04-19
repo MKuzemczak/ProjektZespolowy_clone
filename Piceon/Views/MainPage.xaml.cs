@@ -64,5 +64,10 @@ namespace Piceon.Views
         {
             imageGalleryPage.AccessDirectory(e.Parameter);
         }
+
+        private async void imageGalleryPage_ImageClicked(object sender, EventArgs e)
+        {
+            await imageDetailPage.ShowAsync();
+        }
     }
 }

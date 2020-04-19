@@ -31,6 +31,9 @@ namespace Piceon.Views
         // needed for marshaling calls back to UI thread
         private CoreDispatcher _uiThreadDispatcher;
 
+        private bool IsItemClickedWithThisClick = false;
+        private ImageItem ClickedItem { get; set; }
+
         public ImageGalleryPage()
         {
             InitializeComponent();
@@ -93,18 +96,8 @@ namespace Piceon.Views
 
         private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            var selected = e.ClickedItem as ImageItem;
-            if (selected != null)
-            {
-                NavigationService.Frame.SetListDataItemForNextConnectedAnimation(selected);
-                ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
-                ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
-                ImageNavigationHelper.SelectedImage = selected;
-
-                // to test new flip view, change here to:
-                NavigationService.Navigate<ImageDetailPage>(selected);
-                // NavigationService.Navigate<ImageGalleryDetailPage>(selected);
-            }
+            ClickedItem = e.ClickedItem as ImageItem;
+            IsItemClickedWithThisClick = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -170,6 +163,29 @@ namespace Piceon.Views
         {
             throw new NotImplementedException();
             //TODO: change name of an image
+        }
+
+        public event EventHandler ImageClicked;
+
+        private void ImagesGridView_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            if (ClickedItem != null)
+            {
+                ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
+                ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
+                ImageNavigationHelper.SelectedImage = ClickedItem;
+                ImageClicked?.Invoke(this, new EventArgs());
+            }
+        }
+
+        private void ImagesGridView_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if (!IsItemClickedWithThisClick)
+            {
+                imagesGridView.SelectedItems.Clear();
+            }
+
+            IsItemClickedWithThisClick = false;
         }
     }
 }
