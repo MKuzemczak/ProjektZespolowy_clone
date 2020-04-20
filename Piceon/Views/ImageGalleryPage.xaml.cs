@@ -1,23 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 using Microsoft.Toolkit.Uwp.UI.Animations;
+
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.UI.Core;
+using Windows.UI.Popups;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 
-using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.ApplicationModel.DataTransfer;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.UI.Core;
-using Windows.UI.Popups;
 
 namespace Piceon.Views
 {
@@ -26,7 +26,6 @@ namespace Piceon.Views
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
         public ImageDataSource Source { get; set; }
-
         public FolderItem SelectedContentFolder { get; set; } = null;
 
         // needed for marshaling calls back to UI thread
@@ -55,6 +54,7 @@ namespace Piceon.Views
             }
         }
 
+
         public async void AccessDirectory(FolderItem folder)
         {
             if (SelectedContentFolder != folder)
@@ -64,7 +64,7 @@ namespace Piceon.Views
                 SelectedContentFolder = folder;
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
             }
-
+            
             Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
 
             if (Source != null)
@@ -127,11 +127,9 @@ namespace Piceon.Views
             StorageFile file = ((sender as MenuFlyoutItem).DataContext as ImageItem).File;
             List<StorageFile> storageFiles = new List<StorageFile>(1);
             storageFiles.Add(file);
-
             var dataPackage = new DataPackage();
             dataPackage.SetStorageItems(storageFiles);
             dataPackage.RequestedOperation = DataPackageOperation.Copy;
-
             try
             {
                 Clipboard.SetContent(dataPackage);
@@ -142,12 +140,9 @@ namespace Piceon.Views
                 await messageDialog.ShowAsync();
             }
         }
-
         private async void DeleteImage_Click(object sender, RoutedEventArgs e)
         {
-
             var file = ((sender as MenuFlyoutItem).DataContext as ImageItem);
-
             ContentDialog deleteFileDialog = new ContentDialog
             {
                 Title = "Delete Image",
@@ -155,9 +150,7 @@ namespace Piceon.Views
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel"
             };
-
             ContentDialogResult result = await deleteFileDialog.ShowAsync();
-
             // Delete the file if the user clicked the primary button.
             /// Otherwise, do nothing.
             if (result == ContentDialogResult.Primary)
@@ -173,12 +166,10 @@ namespace Piceon.Views
                 }
             }
         }
-
         private void RenameImage_Click(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
             //TODO: change name of an image
         }
-
     }
 }

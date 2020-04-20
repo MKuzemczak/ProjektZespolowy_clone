@@ -153,7 +153,7 @@ namespace Piceon.Models
             return hashCode;
         }
 
-        private async void Query_ContentsChanged(IStorageQueryResultBase sender, object args)
+        private void Query_ContentsChanged(IStorageQueryResultBase sender, object args)
         {
             ContentsChanged?.Invoke(this, new EventArgs());
         }
