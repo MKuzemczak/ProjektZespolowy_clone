@@ -72,7 +72,7 @@ class Controller:
             'COMPARE': self.run_comparator,
             'LOCALISATION': self.tag_localisation
         }
-        func = switcher.get(param, self.__bad_function())
+        func = switcher.get(param, self.__bad_function)
         try:
             return func(body)
         except Exception as e:
@@ -84,7 +84,7 @@ class Controller:
     def init_path(self, db_path):
         if not os.path.exists(db_path[0]):
             raise Exception('BRAK PLIKU')
-        if db_path[0].endswith('.db'):
+        if not db_path[0].endswith('.db'):
             raise Exception('ZLE ROZSZERZENIE')
         if self.db_path is None:
             self.db_path = db_path[0]
