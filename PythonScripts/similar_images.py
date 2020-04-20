@@ -1,13 +1,17 @@
 import cv2
 import sys
 
+from PythonScripts.db.db_creator import DBCreator
 from PythonScripts.db.db_service import DBService
 from PythonScripts.db.query_service import QueryService
 
 
 class SimilarImageRecognizer:
-    @staticmethod
-    def compare_orb_bd(filepath, filepath2):
+    def __init__(self, path_to_db):
+        self.qs = QueryService()
+        self.db_service = DBService(db_path=path_to_db)
+
+    def __compare_orb_bd(self, filepath, filepath2):
         # 0 oznacza wczytanie tylko czarno biale
         image = cv2.imread(filepath, 0)
         image2 = cv2.imread(filepath2, 0)
@@ -37,8 +41,7 @@ class SimilarImageRecognizer:
             return True
         return False
 
-    @staticmethod
-    def compare_histogram_and_probability(filepath, filepath2):
+    def __compare_histogram_and_probability(self, filepath, filepath2):
         image = cv2.imread(filepath, 0)
         image2 = cv2.imread(filepath2, 0)
 
@@ -60,38 +63,35 @@ class SimilarImageRecognizer:
             return True
         return False
 
-    @staticmethod
-    def find_similar_in_list(list_of_db_image):
+    def __find_similar_in_list(self, list_of_db_image):
         main_img = list_of_db_image[0][1]
         similar = []
         for index in range(1, len(list_of_db_image)):
 
-            if SimilarImageRecognizer.compare_histogram_and_probability(main_img, list_of_db_image[index][1]):
+            if self.__compare_histogram_and_probability(main_img, list_of_db_image[index][1]):
                 similar.append(list_of_db_image[index][0])
 
         return similar
 
+    def compare_images(self, images_id):
+        c1, c2 = self.qs.prepare_args_to_two_selct(images_id)
+        if c1 == 'no_arg':
+            return False
 
-# TODO kolejnosc pobierania
-def main():
-    qs = QueryService()
-    comparator = qs.prepare_args_to_call_select(sys.argv)
-    c1, c2 = qs.prepare_args_to_two_selct(sys.argv)
-
-    if comparator == 'no_argv':
-        return False
-    else:
-        db_service = DBService()
-        main_image = db_service.create_select('IMAGE', 'Id', c1)
+        main_image = self.db_service.create_select('IMAGE', 'Id', c1)
         # list of (Id,path)
         images = [*main_image]
-        images = images + db_service.create_select('IMAGE', 'Id', c2)
-        similar = SimilarImageRecognizer.find_similar_in_list(images)
+        images = images + self.db_service.create_select('IMAGE', 'Id', c2)
+        similar = self.__find_similar_in_list(images)
         func = map(lambda x: (images[0][0], x), similar)
         values = list(func)
-        db_service.create_insert("SIMILAR_IMAGES", '(FIRST_IMAGE_Id, SECOND_IMAGE_Id)', '(?,?)', values)
+        self.db_service.create_insert("SIMILAR_IMAGES", '(FIRST_IMAGE_Id, SECOND_IMAGE_Id)', '(?,?)', values)
+
         return True
 
-
-if __name__ == '__main__':
-    main()
+#
+# if __name__ == '__main__':
+#     print(sys.argv)
+#     sir = SimilarImageRecognizer(DBCreator.path_to_db)
+#     isDone = sir.compare(sys.argv)
+#     print(isDone)
