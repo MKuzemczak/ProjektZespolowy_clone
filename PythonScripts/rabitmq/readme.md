@@ -34,15 +34,16 @@ np COMPARE 4 1 2 3->DONE
 - ->BAD PARAMS AND DATA oznacza puste zapytanie
 - ->NO DATA oznacza brak danych
 - ->BAD REQUEST oznacza probe trollowania
+- ->LACK OF METHOD oznacza brak metody o podanej nazwie
 
 <h3>Dla PATH:</h3>
-- ->BRAK PLIKU oznacza nie poprawna sciezke do bazy
-- ->ZLE ROZSZERZENIE oznacza ze to jest plik ale nie .db
+- ->LACK OF FILE oznacza nie poprawna sciezke do bazy
+- ->WRONG EXTENSION oznacza ze to jest plik ale nie .db
 
 <h3>Dla COMPARE:</h3>
-- ->BRAK SCIEZKI oznacza ze controller nie dostal poprawnej sciezki
+- ->LACK OF PATH oznacza ze controller nie dostal poprawnej sciezki
  wiec nie moze wywołac funkcji
-- ->NIE POPRAWNE ID oznacza ze wsrod id jest nie Integer
+- ->WRONG ID oznacza ze wsrod id jest nie Integer
 
  
 

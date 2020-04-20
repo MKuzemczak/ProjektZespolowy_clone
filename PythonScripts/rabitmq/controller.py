@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os
-import sys
-from pathlib import Path
+
 
 import pika
 
@@ -79,13 +78,13 @@ class Controller:
             raise e
 
     def __bad_function(self):
-        raise Exception("BRAK FUNKCJI")
+        raise Exception("LACK OF METHOD")
 
     def init_path(self, db_path):
         if not os.path.exists(db_path[0]):
-            raise Exception('BRAK PLIKU')
+            raise Exception('LACK OF FILE')
         if not db_path[0].endswith('.db'):
-            raise Exception('ZLE ROZSZERZENIE')
+            raise Exception('WRONG EXTENSION')
         if self.db_path is None:
             self.db_path = db_path[0]
             self.image_comparator = SimilarImageRecognizer(db_path[0])
@@ -95,12 +94,12 @@ class Controller:
 
     def run_comparator(self, images_id):
         if self.db_path is None:
-            raise Exception("BRAK SCIEZKI")
+            raise Exception("LACK OF PATH")
         for i in images_id:
             try:
                 int(i)
             except ValueError:
-                raise Exception('NIE POPRAWNE ID')
+                raise Exception('WRONG ID')
         return self.image_comparator.compare_images(images_id)
 
     def tag_localisation(self, body):
