@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 using Piceon.Controls;
 using Piceon.DatabaseAccess;
+using Piceon.Helpers;
 using Piceon.Models;
 using Piceon.Services;
 
@@ -18,6 +19,7 @@ using Windows.Storage.Pickers;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
 using WinUI = Microsoft.UI.Xaml.Controls;
@@ -39,6 +41,7 @@ namespace Piceon.Views
         private EditableTextBlock RightClickedTreeViewItemEditableTextBlock;
 
         private bool ItemInvokedWithThisClick = false;
+        private bool IsDragOverItem = false;
 
         public FolderItem SelectedItem
         {
@@ -322,6 +325,41 @@ namespace Piceon.Views
         private void HideTreeViewLoadingIndicator()
         {
             loadingTextBlock.Visibility = Visibility.Collapsed;
+        }
+
+        private void TreeViewItem_DragOver(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = "Add";
+            e.DragUIOverride.IsCaptionVisible = true;
+            e.DragUIOverride.IsContentVisible = true;
+            e.DragUIOverride.IsGlyphVisible = false;
+            IsDragOverItem = true;
+        }
+
+        private void treeView_DragOver(object sender, DragEventArgs e)
+        {
+            if (IsDragOverItem)
+            {
+                e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+                e.DragUIOverride.Caption = "Add";
+                e.DragUIOverride.IsCaptionVisible = true;
+                e.DragUIOverride.IsContentVisible = true;
+                e.DragUIOverride.IsGlyphVisible = false;
+            }
+
+            IsDragOverItem = false;
+        }
+
+        private async void TreeViewItem_Drop(object sender, DragEventArgs e)
+        {
+            foreach (var item in DragAndDropHelper.DraggedItems)
+            {
+                if (item is ImageItem imageItem)
+                {
+                    await DatabaseAccessService.AddImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
+                }
+            }
         }
     }
 }

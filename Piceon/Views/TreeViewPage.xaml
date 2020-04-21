@@ -18,7 +18,10 @@
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind Name}"
                 ItemsSource="{x:Bind Subfolders}" IsExpanded="False"
-                DoubleTapped="TreeViewItem_DoubleTapped">
+                DoubleTapped="TreeViewItem_DoubleTapped"
+                AllowDrop="True"
+                DragOver="TreeViewItem_DragOver"
+                Drop="TreeViewItem_Drop">
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
                         <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
@@ -111,7 +114,8 @@
             SelectionMode="Single"
             ItemsSource="{x:Bind Directories}"
             ItemInvoked="OnItemInvoked"
-            ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}" />
+            ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}"
+            DragOver="treeView_DragOver"/>
     </Grid>
 
 </Page>

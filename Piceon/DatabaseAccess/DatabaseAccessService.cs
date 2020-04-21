@@ -393,5 +393,12 @@ namespace Piceon.DatabaseAccess
                 $"VALUES ({rowid}, {parentId})", Database))
             { await command.ExecuteReaderAsync(); }
         }
+
+        public static async Task AddImageToVirtualfolderAsync(int imageId, int virtualfolderId)
+        {
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_iMAGE (IMAGE_Id, VIRTUALFOLDER_Id) " +
+                    $"VALUES ({imageId}, {virtualfolderId})", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
     }
 }

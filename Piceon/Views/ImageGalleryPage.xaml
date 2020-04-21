@@ -33,7 +33,9 @@
             Tapped="ImagesGridView_Tapped"
             DoubleTapped="ImagesGridView_DoubleTapped"
             SelectionMode="Extended"
-            IsMultiSelectCheckBoxEnabled="False" >
+            IsMultiSelectCheckBoxEnabled="False"
+            CanDragItems="True"
+            DragItemsStarting="ImagesGridView_DragItemsStarting">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
                     <Grid>

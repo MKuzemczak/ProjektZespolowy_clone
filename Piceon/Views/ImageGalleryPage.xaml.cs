@@ -187,5 +187,11 @@ namespace Piceon.Views
 
             IsItemClickedWithThisClick = false;
         }
+
+        private void ImagesGridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            DragAndDropHelper.DraggedItems.Clear();
+            DragAndDropHelper.DraggedItems.AddRange(imagesGridView.SelectedItems);
+        }
     }
 }
