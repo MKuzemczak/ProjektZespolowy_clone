@@ -78,7 +78,7 @@ namespace Piceon.Views
 
         public async Task ReloadFolders()
         {
-            loadingTextBlock.Visibility = Visibility.Visible;
+            ShowTreeViewLoadingIndicator();
             Directories.Clear();
 
             var data = await FolderManagerService.GetAllFolders();
@@ -99,6 +99,7 @@ namespace Piceon.Views
                 PreviouslyAccessedDirectories.Add(item);
 
             loadingTextBlock.Visibility = Visibility.Collapsed;
+            HideTreeViewLoadingIndicator();
         }
 
         public event EventHandler<TreeViewItemSelectedEventArgs> ItemSelected;
@@ -137,8 +138,11 @@ namespace Piceon.Views
 
         private async void OnOpenFolder(object sender, RoutedEventArgs e)
         {
+            ShowTreeViewLoadingIndicator();
             var folder = await FolderManagerService.OpenFolderAsync();
-            AddFolder(folder);
+            if (folder is object)
+                AddFolder(folder);
+            HideTreeViewLoadingIndicator();
         }
 
         private async void OnCreateFolder(object sender, RoutedEventArgs e)
@@ -262,8 +266,6 @@ namespace Piceon.Views
                 ItemInvokedWithThisClick = false;
                 return;
             }
-
-            treeView.SelectedItem = null;
         }
 
         private bool FolderTreeContains(ICollection<FolderItem> tree, FolderItem folder)
@@ -310,6 +312,16 @@ namespace Piceon.Views
                 SelectedItem = data as FolderItem;
                 ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
             }
+        }
+
+        private void ShowTreeViewLoadingIndicator()
+        {
+            loadingTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private void HideTreeViewLoadingIndicator()
+        {
+            loadingTextBlock.Visibility = Visibility.Collapsed;
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Windows.Storage;
@@ -53,6 +54,12 @@ namespace Piceon.Models
 
             return await SourceStorageFolderImageQuery.GetFilesAsync((uint)firstIndex, (uint)length);
         }
+
+        public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public override async Task<int> GetFilesCountAsync()
         {

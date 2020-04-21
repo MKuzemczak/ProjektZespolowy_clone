@@ -80,7 +80,7 @@ namespace Piceon.Views
             }
             catch(TaskCanceledException)
             {
-
+                return;
             }
 
             if (ct.IsCancellationRequested)
@@ -97,7 +97,7 @@ namespace Piceon.Views
             }
             catch(TaskCanceledException)
             {
-
+                return;
             }
         }
 

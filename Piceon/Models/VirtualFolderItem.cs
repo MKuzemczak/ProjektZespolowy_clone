@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 
 using Piceon.DatabaseAccess;
+using System.Threading;
 
 namespace Piceon.Models
 {
@@ -37,18 +38,42 @@ namespace Piceon.Models
 
         public override async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length)
         {
-            var virtualFolders = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
+            var allFilePaths = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
 
-            if (firstIndex + length > virtualFolders.Count)
+            if (firstIndex + length > allFilePaths.Count)
                 throw new IndexOutOfRangeException();
 
-            var selectedRangeVirtualFolders = virtualFolders.GetRange(firstIndex, length);
+            var selectedRangeFilePaths = allFilePaths.GetRange(firstIndex, length);
 
             var result = new List<StorageFile>();
 
-            foreach (var item in selectedRangeVirtualFolders)
+            foreach (var item in selectedRangeFilePaths)
             {
-                result.Add(await StorageFile.GetFileFromPathAsync(item));
+                result.Add(await StorageFile.GetFileFromPathAsync(item.Item2));
+            }
+
+            return result;
+        }
+
+        public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
+        {
+            ct.ThrowIfCancellationRequested();
+            var allFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
+
+            if (firstIndex + length > allFiles.Count)
+                throw new IndexOutOfRangeException();
+
+            var selectedRangeFiles = allFiles.GetRange(firstIndex, length);
+
+            var result = new List<ImageItem>();
+
+            for (int i = 0; i < selectedRangeFiles.Count(); i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Item2);
+                var image = await ImageItem.FromStorageFile(storageFile, i + firstIndex, ct, ImageItem.Options.Thumbnail);
+                image.DatabaseId = selectedRangeFiles[i].Item1;
+                result.Add(image);
             }
 
             return result;

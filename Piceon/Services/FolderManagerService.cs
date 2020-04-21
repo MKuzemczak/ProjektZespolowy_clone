@@ -9,6 +9,7 @@ using Piceon.Models;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
+using Windows.Storage.Search;
 
 namespace Piceon.Services
 {
@@ -20,12 +21,44 @@ namespace Piceon.Services
             {
                 SuggestedStartLocation = PickerLocationId.Desktop
             };
-            folderPicker.FileTypeFilter.Add("*");
 
+            folderPicker.FileTypeFilter.Add("*");
             StorageFolder folder = await folderPicker.PickSingleFolderAsync();
-            string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
-            int tokenId = await DatabaseAccessService.InsertAccessedFolderAsync(token);
-            return await StorageFolderItem.FromStorageFolderAsync(folder, tokenId);
+            if (folder is object)
+            {
+                var dbvf = await AddToDatabase(folder);
+                string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
+                return await VirtualFolderItem.FromDatabaseVirtualFolder(dbvf);
+            }
+
+            return null;
+        }
+
+        private static async Task<DatabaseVirtualFolder> AddToDatabase(StorageFolder folder, int parentId = -1)
+        {
+            var dbvf = await DatabaseAccessService.InsertVirtualFolderAsync(folder.Name, parentId);
+            var subs = await folder.GetFoldersAsync();
+
+            foreach(var item in subs)
+            {
+                await AddToDatabase(item, dbvf.Id);
+            }
+
+            List<string> fileTypeFilter = new List<string>();
+            fileTypeFilter.Add(".jpg");
+            fileTypeFilter.Add(".png");
+            fileTypeFilter.Add(".bmp");
+            fileTypeFilter.Add(".gif");
+            var queryOptions = new QueryOptions(CommonFileQuery.OrderByName, fileTypeFilter);
+            queryOptions.FolderDepth = FolderDepth.Shallow;
+            var files = await folder.CreateFileQueryWithOptions(queryOptions).GetFilesAsync();
+
+            foreach (var file in files)
+            {
+                await DatabaseAccessService.InsertImageAsync(file.Path, dbvf.Id);
+            }
+
+            return dbvf;
         }
 
         public static async Task<List<FolderItem>> GetAllFolders()

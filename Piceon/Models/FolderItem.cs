@@ -10,6 +10,7 @@ using Windows.System;
 using Piceon.DatabaseAccess;
 using Windows.Storage.Search;
 using Windows.UI.Popups;
+using System.Threading;
 
 namespace Piceon.Models
 {
@@ -24,6 +25,8 @@ namespace Piceon.Models
         public string Name { get; set; }
 
         public abstract Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length);
+
+        public abstract Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct);
 
         public abstract Task<int> GetFilesCountAsync();
 
