@@ -400,5 +400,18 @@ namespace Piceon.DatabaseAccess
                     $"VALUES ({imageId}, {virtualfolderId})", Database))
             { await command.ExecuteReaderAsync(); }
         }
+
+        public static async Task DeleteImageAsync(int imageId)
+        {
+            using (SqliteCommand command = new SqliteCommand($"DELETE FROM IMAGE WHERE Id = {imageId}", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
+
+        public static async Task DeleteImageFromVritualfolderAsync(int imageId, int virtualfolderId)
+        {
+            using (SqliteCommand command = new SqliteCommand($@"DELETE FROM VIRTUALFOLDER_IMAGE
+                WHERE IMAGE_Id = {imageId} AND VIRTUALFOLDER_Id = {virtualfolderId}", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
     }
 }

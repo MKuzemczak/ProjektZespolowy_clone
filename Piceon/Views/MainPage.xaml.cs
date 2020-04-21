@@ -62,12 +62,17 @@ namespace Piceon.Views
 
         private void TreeViewPage_ItemSelected(object sender, TreeViewItemSelectedEventArgs e)
         {
-            imageGalleryPage.AccessDirectory(e.Parameter);
+            imageGalleryPage.AccessFolder(e.Parameter);
         }
 
         private async void imageGalleryPage_ImageClicked(object sender, EventArgs e)
         {
             await imageDetailPage.ShowAsync();
+        }
+
+        private void imageGalleryPage_AccessedFolderContetsChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
