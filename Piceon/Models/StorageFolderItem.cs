@@ -124,6 +124,16 @@ namespace Piceon.Models
             //ParentFolder = null;
         }
 
+        public override async Task CheckContentAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
         public static bool operator ==(StorageFolderItem f1, StorageFolderItem f2)
         {
             if ((f1 is object && f2 is null) ||

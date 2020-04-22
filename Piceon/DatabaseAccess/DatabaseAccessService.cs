@@ -239,7 +239,7 @@ namespace Piceon.DatabaseAccess
         {
             int result = -1;
             SqliteCommand selectCommand = new SqliteCommand
-                ($"SELECT COUNT(*) FROM IMAGE WHERE Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={id})", Database);
+                ($"SELECT COUNT(*) FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={id}", Database);
 
             SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 
@@ -407,10 +407,28 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
         }
 
-        public static async Task DeleteImageFromVritualfolderAsync(int imageId, int virtualfolderId)
+        /// <summary>
+        /// Removes the relation between an image and a virtualfolder
+        /// </summary>
+        /// <param name="imageId"></param>
+        /// <param name="virtualfolderId"></param>
+        /// <returns></returns>
+        public static async Task RemoveImageRelationsFromVritualfolderAsync(int imageId, int virtualfolderId)
         {
             using (SqliteCommand command = new SqliteCommand($@"DELETE FROM VIRTUALFOLDER_IMAGE
                 WHERE IMAGE_Id = {imageId} AND VIRTUALFOLDER_Id = {virtualfolderId}", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
+
+        /// <summary>
+        /// Deletes those images from database, that have a relation with given virtual folder
+        /// </summary>
+        /// <param name="virtualfolderId"></param>
+        /// <returns></returns>
+        public static async Task DeleteAllImagesInVirtualFolderAsync(int virtualfolderId)
+        {
+            using (SqliteCommand command = new SqliteCommand($@"DELETE FROM IMAGE WHERE Id IN 
+                (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId})", Database))
             { await command.ExecuteReaderAsync(); }
         }
     }

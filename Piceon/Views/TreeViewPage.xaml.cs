@@ -110,6 +110,7 @@ namespace Piceon.Views
         private void OnItemInvoked(WinUI.TreeView sender, WinUI.TreeViewItemInvokedEventArgs args)
         {
             ItemInvokedWithThisClick = true;
+            SelectedItem = args.InvokedItem as FolderItem;
         }
 
         private void OnCollapseAll(object sender, RoutedEventArgs e)
@@ -148,64 +149,9 @@ namespace Piceon.Views
             HideTreeViewLoadingIndicator();
         }
 
-        private async void OnCreateFolder(object sender, RoutedEventArgs e)
+        private async void CreateFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var folderItem = await VirtualFolderItem.GetNew("New Album");
-
-                if (treeView.SelectedItem != null)
-                {
-                    try
-                    {
-                        await folderItem.SetParentAsync(treeView.SelectedItem as FolderItem);
-                    }
-                    catch (Exception exception)
-                    {
-                        var messageDialog = new MessageDialog("Error: " + exception.Message);
-                        messageDialog.Commands.Add(new UICommand("Close"));
-                        messageDialog.DefaultCommandIndex = 0;
-                        messageDialog.CancelCommandIndex = 0;
-                        await messageDialog.ShowAsync();
-                        await folderItem.DeleteAsync();
-                        return;
-                    }
-                }
-
-                var newNode = new WinUI.TreeViewNode() { Content = folderItem };
-
-                if (treeView.SelectedNode != null)
-                {
-                    treeView.SelectedNode.Children.Add(newNode);
-                    treeView.SelectedNode.HasUnrealizedChildren = true;
-                    treeView.Expand(treeView.SelectedNode);
-                }
-                else
-                {
-                    treeView.RootNodes.Add(newNode);
-                }
-
-                treeView.SelectedNodes.Clear();
-                treeView.SelectedNodes.Add(newNode);
-                await Task.Delay(100);
-                var container = treeView.ContainerFromNode(newNode);
-
-                if (container != null)
-                {
-                    var tvi = container as WinUI.TreeViewItem;
-                    (tvi?.Content as EditableTextBlock)?.EnableEditMode();
-                }
-            }
-            catch (Exception exception)
-            {
-                var messageDialog = new MessageDialog("Error: " + exception.Message);
-                messageDialog.Commands.Add(new UICommand("Close"));
-                messageDialog.DefaultCommandIndex = 0;
-                messageDialog.CancelCommandIndex = 0;
-                await messageDialog.ShowAsync();
-                return;
-            }
-            
+            await CreateFolderWithSelectedAsParentAsync("New album");
         }
 
         private void TreeViewItemMenuFlyout_Rename(object sender, RoutedEventArgs e)
@@ -269,6 +215,8 @@ namespace Piceon.Views
                 ItemInvokedWithThisClick = false;
                 return;
             }
+
+            DeselectAll();
         }
 
         private bool FolderTreeContains(ICollection<FolderItem> tree, FolderItem folder)
@@ -302,6 +250,7 @@ namespace Piceon.Views
             {
                 await folderItem.DeleteAsync();
                 Directories.Remove(folderItem);
+                DeselectAll();
             }
             
         }
@@ -312,7 +261,6 @@ namespace Piceon.Views
             if (typeof(FolderItem).IsAssignableFrom(data.GetType()))
             {
                 ItemInvokedWithThisClick = true;
-                SelectedItem = data as FolderItem;
                 ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
             }
         }
@@ -360,6 +308,105 @@ namespace Piceon.Views
                     await DatabaseAccessService.AddImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
                 }
             }
+        }
+
+        private FolderItem GetSelectedFolder()
+        {
+            return SelectedItem;
+        }
+
+        private void DeselectAll()
+        {
+            treeView.SelectionMode = WinUI.TreeViewSelectionMode.None;
+            treeView.SelectionMode = WinUI.TreeViewSelectionMode.Single;
+            SelectedItem = null;
+        }
+
+        private WinUI.TreeViewNode GetSelectedNode()
+        {
+            if (treeView.SelectedNode != null && (treeView.SelectedNode.Content as FolderItem).DatabaseId > 0)
+                return treeView.SelectedNode;
+
+            return null;
+        }
+
+        private async void ImportImagesButton_Click(object sender, RoutedEventArgs e)
+        {
+            FolderItem folder = null;
+            if (GetSelectedFolder() != null)
+                folder = GetSelectedFolder();
+            else
+                folder = await CreateFolderWithSelectedAsParentAsync("Imported images");
+
+            await FolderManagerService.PickAndImportImagesToFolder(folder);
+        }
+
+        private async Task<FolderItem> CreateFolderWithSelectedAsParentAsync(string name)
+        {
+            try
+            {
+                var folderItem = await VirtualFolderItem.GetNew(name);
+
+                if (GetSelectedFolder() != null)
+                {
+                    try
+                    {
+                        await folderItem.SetParentAsync(treeView.SelectedItem as FolderItem);
+                    }
+                    catch (Exception exception)
+                    {
+                        var messageDialog = new MessageDialog("Error setting folder parent: " + exception.Message);
+                        messageDialog.Commands.Add(new UICommand("Close"));
+                        messageDialog.DefaultCommandIndex = 0;
+                        messageDialog.CancelCommandIndex = 0;
+                        await messageDialog.ShowAsync();
+                        await folderItem.DeleteAsync();
+                        return null;
+                    }
+                }
+
+                var newNode = new WinUI.TreeViewNode() { Content = folderItem };
+
+                if (GetSelectedNode() != null)
+                {
+                    treeView.SelectedNode.Children.Add(newNode);
+                    treeView.SelectedNode.HasUnrealizedChildren = true;
+                    treeView.Expand(treeView.SelectedNode);
+                }
+                else
+                {
+                    treeView.RootNodes.Add(newNode);
+                }
+
+                treeView.SelectedNodes.Clear();
+                treeView.SelectedNodes.Add(newNode);
+                await Task.Delay(100);
+                var container = treeView.ContainerFromNode(newNode);
+
+                if (container != null)
+                {
+                    var tvi = container as WinUI.TreeViewItem;
+                    (tvi?.Content as EditableTextBlock)?.EnableEditMode();
+                }
+
+                return folderItem;
+            }
+            catch (Exception exception)
+            {
+                var messageDialog = new MessageDialog("Error: " + exception.Message);
+                messageDialog.Commands.Add(new UICommand("Close"));
+                messageDialog.DefaultCommandIndex = 0;
+                messageDialog.CancelCommandIndex = 0;
+                await messageDialog.ShowAsync();
+                return null;
+            }
+
+            return null;
+        }
+
+        private void TreeViewItem_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            SelectedItem = (sender as WinUI.TreeViewItem).DataContext as FolderItem;
         }
     }
 }

@@ -46,6 +46,7 @@ namespace Piceon.Views
         {
             if (SelectedContentFolder != null)
             {
+                await SelectedContentFolder.CheckContentAsync();
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
 
                 Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
@@ -67,7 +68,8 @@ namespace Piceon.Views
                 SelectedContentFolder = folder;
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
             }
-            
+
+            await SelectedContentFolder.CheckContentAsync();
             Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
 
             if (Source != null)
@@ -219,7 +221,7 @@ namespace Piceon.Views
                     {
                         try
                         {
-                            await DatabaseAccessService.DeleteImageFromVritualfolderAsync(imageItem.DatabaseId, SelectedContentFolder.DatabaseId);
+                            await DatabaseAccessService.RemoveImageRelationsFromVritualfolderAsync(imageItem.DatabaseId, SelectedContentFolder.DatabaseId);
                         }
                         catch (Exception)
                         {

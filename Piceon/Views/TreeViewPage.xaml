@@ -19,6 +19,7 @@
                 AutomationProperties.Name="{x:Bind Name}"
                 ItemsSource="{x:Bind Subfolders}" IsExpanded="False"
                 DoubleTapped="TreeViewItem_DoubleTapped"
+                RightTapped="TreeViewItem_RightTapped"
                 AllowDrop="True"
                 DragOver="TreeViewItem_DragOver"
                 Drop="TreeViewItem_Drop">
@@ -76,7 +77,7 @@
                        VerticalAlignment="Center"/>
             <Button
                 Grid.Column="2"
-                x:Uid="TreeView_AddFolderButton"
+                x:Uid="TreeView_CreateFolderButton"
                 Content="&#xE8F4;"
                 FontSize="14"
                 Padding="{StaticResource SmallLeftRightMargin}"
@@ -84,18 +85,20 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnCreateFolder" />
+                Click="CreateFolderButton_Click" 
+                ToolTipService.ToolTip="Create folder"/>
             <Button
                 Grid.Column="3"
-                x:Uid="TreeView_OpenFolderButton"
-                Content="&#xE838;"
+                x:Uid="TreeView_ImportImagesButton"
+                Content="&#xE8B5;"
                 FontSize="14"
                 Padding="{StaticResource SmallLeftRightMargin}"
                 VerticalAlignment="Stretch"
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnOpenFolder" />
+                Click="ImportImagesButton_Click"
+                ToolTipService.ToolTip="Import images" />
             <Button
                 Grid.Column="4"
                 x:Uid="TreeView_CollapseAllButton"
@@ -106,7 +109,8 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnCollapseAll" />
+                Click="OnCollapseAll" 
+                ToolTipService.ToolTip="Collaprse all"/>
         </Grid>
         <winui:TreeView
             x:Name="treeView"
