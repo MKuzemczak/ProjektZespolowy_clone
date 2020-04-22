@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 using Microsoft.Data.Sqlite;
 using Windows.Storage;
 
@@ -87,6 +86,7 @@ namespace Piceon.DatabaseAccess
                     "AFTER DELETE ON VIRTUALFOLDER " +
                     "BEGIN " +
                         "DELETE FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id = OLD.Id; " +
+                        "DELETE FROM IMAGE WHERE Id NOT IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE); " +
                         "DELETE FROM VIRTUALFOLDER_RELATION WHERE CHILD_Id = OLD.Id; " +
                         "DELETE FROM VIRTUALFOLDER WHERE Id IN (SELECT CHILD_Id FROM VIRTUALFOLDER_RELATION WHERE PARENT_Id = OLD.Id); " +
                     "END; ", Database))
@@ -207,9 +207,9 @@ namespace Piceon.DatabaseAccess
             return await GetParentOfFolderAsync(folder.Id);
         }
 
-        public static async Task<List<string>> GetImagesInFolderAsync(string id)
+        public static async Task<List<Tuple<int, string>>> GetImagesInFolderAsync(string id)
         {
-            var result = new List<string>();
+            var result = new List<Tuple<int, string>>();
 
             SqliteCommand selectCommand = new SqliteCommand
                 ($"SELECT * FROM IMAGE WHERE Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={id})", Database);
@@ -219,18 +219,18 @@ namespace Piceon.DatabaseAccess
 
             while (query.Read())
             {
-                result.Add(query.GetString(1));
+                result.Add(new Tuple<int, string>(query.GetInt32(0), query.GetString(1)));
             }
 
             return result;
         }
 
-        public static async Task<List<string>> GetImagesInFolderAsync(int id)
+        public static async Task<List<Tuple<int,string>>> GetImagesInFolderAsync(int id)
         {
             return await GetImagesInFolderAsync(id.ToString());
         }
 
-        public static async Task<List<string>> GetImagesInFolderAsync(DatabaseVirtualFolder folder)
+        public static async Task<List<Tuple<int, string>>> GetImagesInFolderAsync(DatabaseVirtualFolder folder)
         {
             return await GetImagesInFolderAsync(folder.Id);
         }
@@ -266,30 +266,49 @@ namespace Piceon.DatabaseAccess
             return await GetImagesCountInFolderAsync(folder.Id);
         }
 
-        public static async Task AddAccessedFolderAsync(string token)
+        public static async Task<int> InsertAccessedFolderAsync(string token)
         {
             using (SqliteCommand command = new SqliteCommand("INSERT INTO ACCESSEDFOLDER (token) " +
                 $"VALUES ('{token}')", Database))
-            { await command.ExecuteReaderAsync(); }        
+            { await command.ExecuteReaderAsync(); }
+
+            Int64 rowid = 0;
+
+            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+            { rowid = (Int64)await command.ExecuteScalarAsync(); }
+
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
+
+            return (int)rowid;
         }
 
-        public static async Task<List<string>> GetAccessedFoldersAsync()
+        public static async Task<List<Tuple<int,string>>> GetAccessedFoldersAsync()
         {
-            var result = new List<string>();
+            var result = new List<Tuple<int,string>>();
             SqliteCommand selectCommand = new SqliteCommand
-                ($"SELECT token FROM ACCESSEDFOLDER", Database);
+                ($"SELECT * FROM ACCESSEDFOLDER", Database);
 
             SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 
             while (await query.ReadAsync())
             {
-                result.Add(query.GetString(0));
+                var tuple = new Tuple<int, string>(query.GetInt32(0), query.GetString(1));
+                result.Add(tuple);
             }
 
             return result;
         }
 
-        public static async Task<DatabaseVirtualFolder> AddVirtualFolderAsync(string name, int parentId = -1)
+        public static async Task DeleteAccessedFolderAsync(int id)
+        {
+            using (SqliteCommand command = new SqliteCommand($"DELETE FROM ACCESSEDFOLDER WHERE Id = {id}", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
+
+        public static async Task<DatabaseVirtualFolder> InsertVirtualFolderAsync(string name, int parentId = -1)
         {
             DatabaseVirtualFolder result = new DatabaseVirtualFolder()
             {
@@ -348,6 +367,30 @@ namespace Piceon.DatabaseAccess
         public static async Task DeleteVirtualFolderAsync(int id)
         {
             using (SqliteCommand command = new SqliteCommand($"DELETE FROM VIRTUALFOLDER WHERE Id = {id}", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
+
+        public static async Task InsertImageAsync(string path, int parentId)
+        {
+            if (parentId < 1)
+                throw new ArgumentException("Error: Parent ID smaller than 1 - doesn't exist.");
+
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE (path) " +
+                        $"VALUES ('{path}')", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            Int64 rowid = 0;
+
+            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+            { rowid = (Int64)await command.ExecuteScalarAsync(); }
+
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
+
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_IMAGE (IMAGE_Id, VIRTUALFOLDER_Id) " +
+                $"VALUES ({rowid}, {parentId})", Database))
             { await command.ExecuteReaderAsync(); }
         }
     }

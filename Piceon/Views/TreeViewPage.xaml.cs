@@ -68,36 +68,24 @@ namespace Piceon.Views
             AlreadyLoaded = true;
         }
 
-        public async Task AddFolder(StorageFolder folder)
+        public void AddFolder(FolderItem folderItem)
         {
-            var folderItem = await StorageFolderItem.FromStorageFolder(folder);
             if (FolderTreeContains(Directories, folderItem))
                 return;
             Directories.Add(folderItem);
             PreviouslyAccessedDirectories.Add(Directories.Last());
         }
 
-
-
-
         public async Task ReloadFolders()
         {
+            ShowTreeViewLoadingIndicator();
             Directories.Clear();
-            PreviouslyAccessedDirectories.Clear();
 
-            var virtualFoldersRootNodes = await DatabaseAccessService.GetRootVirtualFoldersAsync();
+            var data = await FolderManagerService.GetAllFolders();
 
-            foreach (var item in virtualFoldersRootNodes)
+            foreach(var item in data)
             {
-                Directories.Add(await VirtualFolderItem.FromDatabaseVirtualFolder(item));
-            }
-
-            var tokenList = await DatabaseAccessService.GetAccessedFoldersAsync();
-
-            foreach (var token in tokenList)
-            {
-                var storageFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(token);
-                Directories.Add(await StorageFolderItem.FromStorageFolder(storageFolder));
+                Directories.Add(item);
             }
 
             // wait for treeview to load data
@@ -109,6 +97,9 @@ namespace Piceon.Views
 
             foreach (var item in Directories)
                 PreviouslyAccessedDirectories.Add(item);
+
+            loadingTextBlock.Visibility = Visibility.Collapsed;
+            HideTreeViewLoadingIndicator();
         }
 
         public event EventHandler<TreeViewItemSelectedEventArgs> ItemSelected;
@@ -147,24 +138,14 @@ namespace Piceon.Views
 
         private async void OnOpenFolder(object sender, RoutedEventArgs e)
         {
-            var folderPicker = new FolderPicker
-            {
-                SuggestedStartLocation = PickerLocationId.Desktop
-            };
-            folderPicker.FileTypeFilter.Add("*");
-
-            StorageFolder folder = await folderPicker.PickSingleFolderAsync();
-            if (folder != null)
-            {
-                // Application now has read/write access to all contents in the picked folder
-                // (including other sub-folder contents)
-                string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
-                await AddFolder(folder);
-                await DatabaseAccessService.AddAccessedFolderAsync(token);
-            }
+            ShowTreeViewLoadingIndicator();
+            var folder = await FolderManagerService.OpenFolderAsync();
+            if (folder is object)
+                AddFolder(folder);
+            HideTreeViewLoadingIndicator();
         }
 
-        private async void OnAddFolder(object sender, RoutedEventArgs e)
+        private async void OnCreateFolder(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -285,8 +266,6 @@ namespace Piceon.Views
                 ItemInvokedWithThisClick = false;
                 return;
             }
-
-            treeView.SelectedItem = null;
         }
 
         private bool FolderTreeContains(ICollection<FolderItem> tree, FolderItem folder)
@@ -333,6 +312,16 @@ namespace Piceon.Views
                 SelectedItem = data as FolderItem;
                 ItemSelected?.Invoke(this, new TreeViewItemSelectedEventArgs(SelectedItem));
             }
+        }
+
+        private void ShowTreeViewLoadingIndicator()
+        {
+            loadingTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private void HideTreeViewLoadingIndicator()
+        {
+            loadingTextBlock.Visibility = Visibility.Collapsed;
         }
     }
 }

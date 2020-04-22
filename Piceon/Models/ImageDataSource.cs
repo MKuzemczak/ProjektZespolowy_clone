@@ -150,22 +150,11 @@ namespace Piceon.Models
         // Using this callback model abstracts the details of this specific datasource from the cache implementation
         private async Task<ImageItem[]> fetchDataCallback(ItemIndexRange batch, CancellationToken ct)
         {
-            // Fetch file objects from filesystem
-            IReadOnlyList<StorageFile> results = await _folder.GetStorageFilesRangeAsync(
-                    batch.FirstIndex, Math.Min(Math.Max((int)batch.Length, 20), await _folder.GetFilesCountAsync() - batch.FirstIndex));
-            List<ImageItem> files = new List<ImageItem>();
-            if (results != null)
-            {
-                for (int i = 0; i < results.Count; i++)
-                {
-                    // Check if request has been cancelled, if so abort getting additional data
-                    ct.ThrowIfCancellationRequested();
-                    // Create our ImageItem object with the file data and thumbnail 
-                    ImageItem newItem = await ImageItem.FromStorageFile(results[i], batch.FirstIndex + i, ct, ImageItem.Options.Thumbnail);
-                    files.Add(newItem);
-                }
-            }
-            return files.ToArray();
+            IReadOnlyList<ImageItem> results = await _folder.GetImageItemsRangeAsync(
+                batch.FirstIndex,
+                Math.Min(Math.Max((int)batch.Length, 20), await _folder.GetFilesCountAsync() - batch.FirstIndex),
+                ct);
+            return results.ToArray();
         }
 
         // Event fired when items are inserted in the cache

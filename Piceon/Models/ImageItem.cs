@@ -25,6 +25,8 @@ namespace Piceon.Models
 
         public int GalleryIndex { get; set; }
 
+        public int DatabaseId { get; set; }
+
         // Needed for displaying single image in the flip view
         public StorageFile File { get; set; }
 
