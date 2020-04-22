@@ -49,6 +49,8 @@ namespace Piceon.Views
             set { Set(ref _selectedItem, value); }
         }
 
+        public WinUI.TreeViewNode SelectedNode { get; set; }
+
         public ObservableCollection<FolderItem> Directories { get; } = new ObservableCollection<FolderItem>();
 
         public TreeViewPage()
@@ -66,7 +68,7 @@ namespace Piceon.Views
                 return;
             }
 
-            await ReloadFolders();
+            await ReloadFoldersAsync();
 
             AlreadyLoaded = true;
         }
@@ -79,7 +81,7 @@ namespace Piceon.Views
             PreviouslyAccessedDirectories.Add(Directories.Last());
         }
 
-        public async Task ReloadFolders()
+        public async Task ReloadFoldersAsync()
         {
             ShowTreeViewLoadingIndicator();
             Directories.Clear();
@@ -111,6 +113,8 @@ namespace Piceon.Views
         {
             ItemInvokedWithThisClick = true;
             SelectedItem = args.InvokedItem as FolderItem;
+            var cont = treeView.ContainerFromItem(SelectedItem);
+            SelectedNode = treeView.NodeFromContainer(cont);
         }
 
         private void OnCollapseAll(object sender, RoutedEventArgs e)
@@ -192,7 +196,7 @@ namespace Piceon.Views
                 var node = treeView.NodeFromContainer(cont);
                 if (node.Depth == 0)
                 {
-                    await ReloadFolders();
+                    await ReloadFoldersAsync();
                 }
                 else
                 {
@@ -248,8 +252,27 @@ namespace Piceon.Views
 
             if (result == ContentDialogResult.Primary)
             {
+                var node = GetSelectedNode();
                 await folderItem.DeleteAsync();
-                Directories.Remove(folderItem);
+                if (node.Depth > 1)
+                {
+                    var parentNode = node.Parent;
+                    parentNode.Children.Remove(node);
+                    if (parentNode.Children.Count == 0)
+                    {
+                        treeView.Collapse(parentNode.Parent);
+                        await Task.Delay(100);
+                        treeView.Expand(parentNode.Parent);
+                    }
+                }
+                else
+                {
+                    if (node.Depth == 1)
+                        node.Parent.Children.Remove(node);
+                    else
+                        treeView.RootNodes.Remove(node);
+                    await ReloadFoldersAsync();
+                }
                 DeselectAll();
             }
             
@@ -320,14 +343,19 @@ namespace Piceon.Views
             treeView.SelectionMode = WinUI.TreeViewSelectionMode.None;
             treeView.SelectionMode = WinUI.TreeViewSelectionMode.Single;
             SelectedItem = null;
+            SelectedNode = null;
+        }
+
+        private void SelectNode(WinUI.TreeViewNode node)
+        {
+            treeView.SelectedNodes.Clear();
+            treeView.SelectedNodes.Add(node);
+            SelectedNode = node;
         }
 
         private WinUI.TreeViewNode GetSelectedNode()
         {
-            if (treeView.SelectedNode != null && (treeView.SelectedNode.Content as FolderItem).DatabaseId > 0)
-                return treeView.SelectedNode;
-
-            return null;
+            return SelectedNode;
         }
 
         private async void ImportImagesButton_Click(object sender, RoutedEventArgs e)
@@ -351,7 +379,7 @@ namespace Piceon.Views
                 {
                     try
                     {
-                        await folderItem.SetParentAsync(treeView.SelectedItem as FolderItem);
+                        await folderItem.SetParentAsync(GetSelectedFolder());
                     }
                     catch (Exception exception)
                     {
@@ -369,17 +397,15 @@ namespace Piceon.Views
 
                 if (GetSelectedNode() != null)
                 {
-                    treeView.SelectedNode.Children.Add(newNode);
-                    treeView.SelectedNode.HasUnrealizedChildren = true;
-                    treeView.Expand(treeView.SelectedNode);
+                    GetSelectedNode().Children.Add(newNode);
+                    treeView.Expand(GetSelectedNode());
                 }
                 else
                 {
                     treeView.RootNodes.Add(newNode);
                 }
 
-                treeView.SelectedNodes.Clear();
-                treeView.SelectedNodes.Add(newNode);
+                SelectNode(newNode);
                 await Task.Delay(100);
                 var container = treeView.ContainerFromNode(newNode);
 
@@ -400,13 +426,13 @@ namespace Piceon.Views
                 await messageDialog.ShowAsync();
                 return null;
             }
-
-            return null;
         }
 
         private void TreeViewItem_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
         {
             SelectedItem = (sender as WinUI.TreeViewItem).DataContext as FolderItem;
+            var cont = treeView.ContainerFromItem(SelectedItem);
+            SelectedNode = treeView.NodeFromContainer(cont);
         }
     }
 }

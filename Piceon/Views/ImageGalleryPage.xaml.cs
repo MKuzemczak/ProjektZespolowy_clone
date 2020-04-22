@@ -61,6 +61,9 @@ namespace Piceon.Views
 
         public async void AccessFolder(FolderItem folder)
         {
+            if (folder is null)
+                return;
+
             if (SelectedContentFolder != folder)
             {
                 if (SelectedContentFolder is object)

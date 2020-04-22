@@ -110,7 +110,7 @@
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
                 Click="OnCollapseAll" 
-                ToolTipService.ToolTip="Collaprse all"/>
+                ToolTipService.ToolTip="Collapse all"/>
         </Grid>
         <winui:TreeView
             x:Name="treeView"
