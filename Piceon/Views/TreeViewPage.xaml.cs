@@ -434,5 +434,10 @@ namespace Piceon.Views
             var cont = treeView.ContainerFromItem(SelectedItem);
             SelectedNode = treeView.NodeFromContainer(cont);
         }
+
+        private async void MenuFlyoutImportImages_Click(object sender, RoutedEventArgs e)
+        {
+            await FolderManagerService.PickAndImportImagesToFolder(GetSelectedFolder());
+        }
     }
 }

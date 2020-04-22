@@ -25,7 +25,17 @@
                 Drop="TreeViewItem_Drop">
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
-                        <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
+                        <MenuFlyoutItem Text="Import images" Click="MenuFlyoutImportImages_Click" >
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B5;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8AC;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
                         <MenuFlyoutItem Text="Delete" Icon="Delete" Click="OnDeleteFolder" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
