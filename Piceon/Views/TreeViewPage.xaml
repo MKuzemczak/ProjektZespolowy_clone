@@ -25,7 +25,7 @@
                 Drop="TreeViewItem_Drop">
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
-                        <MenuFlyoutItem Text="Import images" Click="MenuFlyoutImportImages_Click" >
+                        <MenuFlyoutItem Text="Import images" Click="TreeViewItemMenuFlyout_ImportImages" >
                             <MenuFlyoutItem.Icon>
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B5;"/>
                             </MenuFlyoutItem.Icon>
@@ -36,7 +36,7 @@
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8AC;"/>
                             </MenuFlyoutItem.Icon>
                         </MenuFlyoutItem>
-                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="OnDeleteFolder" />
+                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="TreeViewItemMenuFlyout_Delete" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
                 <mycontrols:EditableTextBlock
@@ -119,7 +119,7 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnCollapseAll" 
+                Click="CollapseAllButton_Click" 
                 ToolTipService.ToolTip="Collapse all"/>
         </Grid>
         <winui:TreeView
@@ -127,9 +127,9 @@
             Grid.Row="1"
             SelectionMode="Single"
             ItemsSource="{x:Bind Directories}"
-            ItemInvoked="OnItemInvoked"
+            ItemInvoked="TreeViewItem_Invoked"
             ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}"
-            DragOver="treeView_DragOver"/>
+            DragOver="TreeView_DragOver"/>
     </Grid>
 
 </Page>
