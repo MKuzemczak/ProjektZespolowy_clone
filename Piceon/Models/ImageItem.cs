@@ -117,5 +117,10 @@ namespace Piceon.Models
         {
             return await FromStorageFile(f, index, new CancellationToken(), options);
         }
+
+        public async Task DeleteFromDiskAsync()
+        {
+            await File?.DeleteAsync();
+        }
     }
 }

@@ -36,6 +36,10 @@ namespace Piceon.Models
 
         public abstract Task DeleteAsync();
 
+        public abstract Task CheckContentAsync();
+
+        public abstract Task AddFilesToFolder(IReadOnlyList<StorageFile> files);
+
         protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
 
         public abstract event EventHandler ContentsChanged;

@@ -18,11 +18,25 @@
             <winui:TreeViewItem
                 AutomationProperties.Name="{x:Bind Name}"
                 ItemsSource="{x:Bind Subfolders}" IsExpanded="False"
-                DoubleTapped="TreeViewItem_DoubleTapped">
+                DoubleTapped="TreeViewItem_DoubleTapped"
+                RightTapped="TreeViewItem_RightTapped"
+                AllowDrop="True"
+                DragOver="TreeViewItem_DragOver"
+                Drop="TreeViewItem_Drop">
                 <winui:TreeViewItem.ContextFlyout>
                     <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
-                        <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
-                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="OnDeleteFolder" />
+                        <MenuFlyoutItem Text="Import images" Click="TreeViewItemMenuFlyout_ImportImages" >
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B5;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8AC;"/>
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Text="Delete" Icon="Delete" Click="TreeViewItemMenuFlyout_Delete" />
                     </MenuFlyout>
                 </winui:TreeViewItem.ContextFlyout>
                 <mycontrols:EditableTextBlock
@@ -73,7 +87,7 @@
                        VerticalAlignment="Center"/>
             <Button
                 Grid.Column="2"
-                x:Uid="TreeView_AddFolderButton"
+                x:Uid="TreeView_CreateFolderButton"
                 Content="&#xE8F4;"
                 FontSize="14"
                 Padding="{StaticResource SmallLeftRightMargin}"
@@ -81,18 +95,20 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnCreateFolder" />
+                Click="CreateFolderButton_Click" 
+                ToolTipService.ToolTip="Create folder"/>
             <Button
                 Grid.Column="3"
-                x:Uid="TreeView_OpenFolderButton"
-                Content="&#xE838;"
+                x:Uid="TreeView_ImportImagesButton"
+                Content="&#xE8B5;"
                 FontSize="14"
                 Padding="{StaticResource SmallLeftRightMargin}"
                 VerticalAlignment="Stretch"
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnOpenFolder" />
+                Click="ImportImagesButton_Click"
+                ToolTipService.ToolTip="Import images" />
             <Button
                 Grid.Column="4"
                 x:Uid="TreeView_CollapseAllButton"
@@ -103,15 +119,17 @@
                 VerticalContentAlignment="Center"
                 FontFamily="Segoe MDL2 Assets"
                 Background="Transparent"
-                Click="OnCollapseAll" />
+                Click="CollapseAllButton_Click" 
+                ToolTipService.ToolTip="Collapse all"/>
         </Grid>
         <winui:TreeView
             x:Name="treeView"
             Grid.Row="1"
             SelectionMode="Single"
             ItemsSource="{x:Bind Directories}"
-            ItemInvoked="OnItemInvoked"
-            ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}" />
+            ItemInvoked="TreeViewItem_Invoked"
+            ItemTemplateSelector="{StaticResource TreeViewTemplateSelector}"
+            DragOver="TreeView_DragOver"/>
     </Grid>
 
 </Page>

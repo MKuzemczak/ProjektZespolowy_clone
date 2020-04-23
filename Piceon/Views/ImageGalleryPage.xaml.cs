@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Controls;
 using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
-
+using Piceon.DatabaseAccess;
 
 namespace Piceon.Views
 {
@@ -46,6 +46,7 @@ namespace Piceon.Views
         {
             if (SelectedContentFolder != null)
             {
+                await SelectedContentFolder.CheckContentAsync();
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
 
                 Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
@@ -58,8 +59,11 @@ namespace Piceon.Views
         }
 
 
-        public async void AccessDirectory(FolderItem folder)
+        public async void AccessFolder(FolderItem folder)
         {
+            if (folder is null)
+                return;
+
             if (SelectedContentFolder != folder)
             {
                 if (SelectedContentFolder is object)
@@ -67,7 +71,8 @@ namespace Piceon.Views
                 SelectedContentFolder = folder;
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
             }
-            
+
+            await SelectedContentFolder.CheckContentAsync();
             Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
 
             if (Source != null)
@@ -78,7 +83,7 @@ namespace Piceon.Views
 
         public void ReloadFolder()
         {
-            AccessDirectory(SelectedContentFolder);
+            AccessFolder(SelectedContentFolder);
         }
 
         private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
@@ -100,7 +105,13 @@ namespace Piceon.Views
             IsItemClickedWithThisClick = true;
         }
 
+        #region EVENTS
+
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler ImageClicked;
+
+        #endregion
 
         private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
         {
@@ -133,13 +144,25 @@ namespace Piceon.Views
                 await messageDialog.ShowAsync();
             }
         }
-        private async void DeleteImage_Click(object sender, RoutedEventArgs e)
+        private async void DeleteImageFromDisk_Click(object sender, RoutedEventArgs e)
         {
-            var file = ((sender as MenuFlyoutItem).DataContext as ImageItem);
+            var files = imagesGridView.SelectedItems;
+
+            string title = "Delete image";
+            string message = "If you delete this file, you won't be able to recover it. Do you want to proceed?";
+
+            if (files.Count == 0)
+                return;
+            else if (files.Count > 1)
+            {
+                title = "Delete images";
+                message = "If you delete those files, you won't be able to recover them. Do you want to proceed?";
+            }
+
             ContentDialog deleteFileDialog = new ContentDialog
             {
-                Title = "Delete Image",
-                Content = "If you delete this file, you won't be able to recover it. Do you want to delete it?",
+                Title = title,
+                Content = message,
                 PrimaryButtonText = "Delete",
                 CloseButtonText = "Cancel"
             };
@@ -148,24 +171,78 @@ namespace Piceon.Views
             /// Otherwise, do nothing.
             if (result == ContentDialogResult.Primary)
             {
-                try
+                foreach (var file in files)
                 {
-                    await file.File.DeleteAsync();
+                    if (file is ImageItem imageItem)
+                    {
+                        try
+                        {
+                            await imageItem.DeleteFromDiskAsync();
+                            await DatabaseAccessService.DeleteImageAsync(imageItem.DatabaseId);
+                        }
+                        catch (Exception)
+                        {
+                            var messageDialog = new MessageDialog("Operation failed");
+                            await messageDialog.ShowAsync();
+                        }
+                    }
                 }
-                catch (Exception)
-                {
-                    var messageDialog = new MessageDialog("It is filed to delete this file");
-                    await messageDialog.ShowAsync();
-                }
+                ReloadFolder();
             }
         }
+
+        private async void RemoveImageFromAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            var files = imagesGridView.SelectedItems;
+
+            string title = "Remove image";
+            string message = $"Are you sure you want to remove this image from {SelectedContentFolder?.Name}?";
+
+            if (files.Count == 0)
+                return;
+            else if (files.Count > 1)
+            {
+                title = "Remove images";
+                message = $"Are you sure you want to remove those images from {SelectedContentFolder?.Name}?";
+            }
+
+            ContentDialog removeImageDialog = new ContentDialog
+            {
+                Title = title,
+                Content = message,
+                PrimaryButtonText = "Remove",
+                CloseButtonText = "Cancel"
+            };
+            ContentDialogResult result = await removeImageDialog.ShowAsync();
+            // Delete the file if the user clicked the primary button.
+            /// Otherwise, do nothing.
+            if (result == ContentDialogResult.Primary)
+            {
+                foreach (var file in files)
+                {
+                    if (file is ImageItem imageItem)
+                    {
+                        try
+                        {
+                            await DatabaseAccessService.RemoveImageRelationsFromVritualfolderAsync(imageItem.DatabaseId, SelectedContentFolder.DatabaseId);
+                        }
+                        catch (Exception)
+                        {
+                            var messageDialog = new MessageDialog("Operation failed");
+                            await messageDialog.ShowAsync();
+                        }
+                    }
+                }
+                ReloadFolder();
+            }
+        }
+
         private void RenameImage_Click(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
             //TODO: change name of an image
         }
 
-        public event EventHandler ImageClicked;
 
         private void ImagesGridView_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
@@ -187,5 +264,23 @@ namespace Piceon.Views
 
             IsItemClickedWithThisClick = false;
         }
+
+        private void ImagesGridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            DragAndDropHelper.DraggedItems.Clear();
+            DragAndDropHelper.DraggedItems.AddRange(imagesGridView.SelectedItems);
+        }
+
+        private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            var imageItem = (sender as Image).DataContext as ImageItem;
+
+            if (!imagesGridView.SelectedItems.Contains(imageItem))
+            {
+                imagesGridView.SelectedItems.Clear();
+                imagesGridView.SelectedItems.Add(imageItem);
+            }
+        }
+
     }
 }

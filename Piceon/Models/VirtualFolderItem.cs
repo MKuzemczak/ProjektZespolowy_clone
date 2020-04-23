@@ -8,6 +8,7 @@ using Windows.Storage;
 
 using Piceon.DatabaseAccess;
 using System.Threading;
+using System.IO;
 
 namespace Piceon.Models
 {
@@ -137,6 +138,33 @@ namespace Piceon.Models
             ParentFolder = null;
             Subfolders = null;
             Name = null;
+        }
+
+        public override async Task CheckContentAsync()
+        {
+            var dbFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
+
+            foreach (var file in dbFiles)
+            {
+                try
+                {
+                    StorageFile f = await StorageFile.GetFileFromPathAsync(file.Item2);
+                }
+                catch (FileNotFoundException)
+                {
+                    await DatabaseAccessService.DeleteImageAsync(file.Item1);
+                }
+            }
+        }
+
+        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        {
+            foreach (var file in files)
+            {
+                await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId);
+            }
+
+            ContentsChanged?.Invoke(this, new EventArgs());
         }
 
         public static bool operator ==(VirtualFolderItem f1, VirtualFolderItem f2)

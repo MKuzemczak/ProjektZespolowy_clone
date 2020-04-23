@@ -82,5 +82,22 @@ namespace Piceon.Services
 
             return result;
         }
+
+        public static async Task PickAndImportImagesToFolder(FolderItem folder)
+        {
+            var picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".gif");
+
+            var files = await picker.PickMultipleFilesAsync();
+            if (files != null)
+            {
+                await folder.AddFilesToFolder(files);
+            }
+        }
     }
 }
