@@ -436,7 +436,7 @@ namespace Piceon.Views
             {
                 if (item is ImageItem imageItem)
                 {
-                    await DatabaseAccessService.AddImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
+                    await DatabaseAccessService.MoveImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
                 }
             }
         }

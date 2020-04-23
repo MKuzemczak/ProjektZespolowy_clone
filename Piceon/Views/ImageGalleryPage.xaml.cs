@@ -224,7 +224,7 @@ namespace Piceon.Views
                     {
                         try
                         {
-                            await DatabaseAccessService.RemoveImageRelationsFromVritualfolderAsync(imageItem.DatabaseId, SelectedContentFolder.DatabaseId);
+                            await DatabaseAccessService.DeleteImageAsync(imageItem.DatabaseId);
                         }
                         catch (Exception)
                         {
