@@ -19,6 +19,8 @@ namespace Piceon.Services
         private static string OutgoingQueueName { get; set; }
         private static string IncomingQueueName { get; set; }
 
+        private static string LauncherOutgoingQueueName { get; set; }
+
         private static Dictionary<int, string> Tasks { get; } = new Dictionary<int, string>();
 
         /// <summary>
@@ -51,11 +53,13 @@ namespace Piceon.Services
 
             OutgoingQueueName = "front";
             IncomingQueueName = "back";
+            LauncherOutgoingQueueName = "launcher";
 
             Communicator = RabbitMQCommunicationService.Instance;
             _uiThreadDispatcher = uiThreadDispatcher;
             Communicator.Initialize(uiThreadDispatcher);
 
+            Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
             Communicator.DeclareOutgoingQueue(OutgoingQueueName);
             Communicator.DeclareIncomingQueue(IncomingQueueName);
 
@@ -122,6 +126,11 @@ namespace Piceon.Services
             RunTask(taskId, message, actionToCallAfterComplete);
 
             return taskId;
+        }
+
+        public static void SendCloseApp()
+        {
+            Communicator.Send(LauncherOutgoingQueueName, "closing");
         }
     }
 

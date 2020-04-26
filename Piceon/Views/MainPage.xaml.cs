@@ -13,6 +13,7 @@ using Piceon.Services;
 
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Core.Preview;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -37,7 +38,8 @@ namespace Piceon.Views
         public MainPage()
         {
             InitializeComponent();
-            DatabaseAccessService.InitializeDatabaseAsync();
+
+            SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += App_CloseRequested;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -73,6 +75,11 @@ namespace Piceon.Views
         private void imageGalleryPage_AccessedFolderContetsChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void App_CloseRequested(object sender, SystemNavigationCloseRequestedPreviewEventArgs e)
+        {
+            BackendConctroller.SendCloseApp();
         }
     }
 }
