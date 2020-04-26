@@ -4,7 +4,8 @@ import os
 
 import pika
 
-from PythonScripts.similar_images import SimilarImageRecognizer
+#from PythonScripts.similar_images import SimilarImageRecognizer
+import images.similar_images as sm
 
 
 class Executor:
@@ -25,8 +26,8 @@ class Executor:
                 is_done = False
                 try:
                     is_done = c.caller(p, b)
-                    #if is_done == "WORNG FUNC":
-                        #raise Exception('WRONG FUNCTION')
+                    # if is_done == "WORNG FUNC":
+                    # raise Exception('WRONG FUNCTION')
                 except Exception as e:
                     response += str(e)
                 if is_done:
@@ -60,7 +61,7 @@ class Controller:
         if Controller.__instance is None:
             Controller.__instance = self
             self.db_path = None
-            self.image_comparator: SimilarImageRecognizer = None  # SimilarImageRecognizer(path)
+            self.image_comparator: sm.SimilarImageRecognizer = None  # SimilarImageRecognizer(path)
 
     def prepare_message(self, message: bytes):
         arr = message.decode('UTF-8').split(' ')
@@ -88,7 +89,7 @@ class Controller:
             raise Exception('WRONG EXTENSION')
         if self.db_path is None:
             self.db_path = db_path[0]
-            self.image_comparator = SimilarImageRecognizer(db_path[0])
+            self.image_comparator = sm.SimilarImageRecognizer(db_path[0])
             return True
         else:
             return False
