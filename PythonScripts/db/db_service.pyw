@@ -14,10 +14,10 @@ class DBService:
     def __init__(self, db_path):
         self.db_path = db_path
 
-    def create_conn(self, db_path):
+    def create_conn(self):
         conn = None
         try:
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(self.db_path)
         except sqlite3.Error as e:
             print(e)
         return conn
