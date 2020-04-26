@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 
-
 import pika
 
 from PythonScripts.similar_images import SimilarImageRecognizer
@@ -20,12 +19,14 @@ class Executor:
             c = Controller.get_instance()
             p = None
             b = None
-            response = body.decode('UTF-8') + '->'
-            p, b = c.prepare_message(body)
+            no, p, b = c.prepare_message(body)
+            response = no + '-'
             if p is not None or b is not None:
                 is_done = False
                 try:
                     is_done = c.caller(p, b)
+                    #if is_done == "WORNG FUNC":
+                        #raise Exception('WRONG FUNCTION')
                 except Exception as e:
                     response += str(e)
                 if is_done:
@@ -63,7 +64,7 @@ class Controller:
 
     def prepare_message(self, message: bytes):
         arr = message.decode('UTF-8').split(' ')
-        return arr[0], arr[1:]
+        return arr[0], arr[1], arr[2:]
 
     def caller(self, param, body):
         switcher = {
@@ -77,7 +78,7 @@ class Controller:
         except Exception as e:
             raise e
 
-    def __bad_function(self):
+    def __bad_function(self, name):
         raise Exception("LACK OF METHOD")
 
     def init_path(self, db_path):

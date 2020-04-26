@@ -1,7 +1,5 @@
 import cv2
-import sys
 
-from PythonScripts.db.db_creator import DBCreator
 from PythonScripts.db.db_service import DBService
 from PythonScripts.db.query_service import QueryService
 
@@ -85,6 +83,7 @@ class SimilarImageRecognizer:
         similar = self.__find_similar_in_list(images)
         func = map(lambda x: (images[0][0], x), similar)
         values = list(func)
+
         self.db_service.create_insert("SIMILAR_IMAGES", '(FIRST_IMAGE_Id, SECOND_IMAGE_Id)', '(?,?)', values)
 
         return True

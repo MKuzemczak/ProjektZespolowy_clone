@@ -14,7 +14,7 @@ class ControllerTest(unittest.TestCase):
         channel.queue_declare(queue='back')
         channel.basic_publish(exchange='',
                               routing_key='front',
-                              body='PATH ' + path)
+                              body='11 PATH ' + path)
         channel.basic_publish(exchange='',
                               routing_key='front',
                               body='COMPARE 4 1 2 3')

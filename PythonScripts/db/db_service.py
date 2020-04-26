@@ -1,4 +1,3 @@
-from PythonScripts.db.db_creator import DBCreator
 import sqlite3
 
 
@@ -12,10 +11,10 @@ class DBService:
     values = 'VALUES'
     order_by = 'ORDER BY Id DESC;'
 
-    def __init__(self, db_path=DBCreator.path_to_db):
+    def __init__(self, db_path):
         self.db_path = db_path
 
-    def create_conn(self, db_path=DBCreator.path_to_db):
+    def create_conn(self, db_path):
         conn = None
         try:
             conn = sqlite3.connect(db_path)
