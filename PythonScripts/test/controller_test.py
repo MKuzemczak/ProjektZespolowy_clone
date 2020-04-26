@@ -2,7 +2,7 @@ import unittest
 
 import pika
 
-from PythonScripts.rabitmq.controller import Controller, Executor
+from PythonScripts.rabitmq.controller import Executor
 
 
 class ControllerTest(unittest.TestCase):
@@ -17,7 +17,7 @@ class ControllerTest(unittest.TestCase):
                               body='11 PATH ' + path)
         channel.basic_publish(exchange='',
                               routing_key='front',
-                              body='COMPARE 4 1 2 3')
+                              body='22 COMPARE 4 1 2 3')
 
         connection.close()
 
