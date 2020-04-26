@@ -27,11 +27,13 @@ namespace Piceon.DatabaseAccess
 
         public static SqliteConnection Database;
 
+        public static string DatabaseFilePath { get; private set; }
+
         public async static Task InitializeDatabaseAsync()
         {
             await ApplicationData.Current.LocalFolder.CreateFileAsync("sqliteSample.db", CreationCollisionOption.OpenIfExists);
-            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
-            Database = new SqliteConnection($"Filename={dbpath}");
+            DatabaseFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            Database = new SqliteConnection($"Filename={DatabaseFilePath}");
             
             Database.Open();
 
