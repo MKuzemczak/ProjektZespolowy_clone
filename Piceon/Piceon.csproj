@@ -149,8 +149,12 @@
     <Compile Include="Controls\EditableTextBlock.xaml.cs">
       <DependentUpon>EditableTextBlock.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\GroupBorders.xaml.cs">
+      <DependentUpon>GroupBorders.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
     <Compile Include="Helpers\DragAndDropHelper.cs" />
+    <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
@@ -218,6 +222,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\EditableTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\GroupBorders.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
