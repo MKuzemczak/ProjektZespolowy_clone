@@ -35,6 +35,8 @@ namespace Piceon.Services
             "LACK OF FILE", "WRONG EXTENSION", "LACK OF PATH", "WRONG ID"
         };
 
+        public static readonly string DoneMessage = "DONE";
+
         private static int TaskIdCntr = 0;
 
         /// <summary>
@@ -114,10 +116,10 @@ namespace Piceon.Services
             Communicator.Send(OutgoingQueueName, message);
         }
 
-        public static int CompareImages(int imageIdToCompareTo, List<int> comparedImagesIds, Action<string> actionToCallAfterComplete)
+        public static int CompareImages(List<int> comparedImagesIds, Action<string> actionToCallAfterComplete)
         {
             int taskId = TaskIdCntr++;
-            string message = $"{taskId} COMPARE {imageIdToCompareTo}";
+            string message = $"{taskId} COMPARE";
             foreach (int id in comparedImagesIds)
             {
                 message += $" {id}";

@@ -372,7 +372,7 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
         }
 
-        public static async Task InsertImageAsync(string path, int parentId)
+        public static async Task<int> InsertImageAsync(string path, int parentId)
         {
             if (parentId < 1)
                 throw new ArgumentException("Error: Parent ID smaller than 1 - doesn't exist.");
@@ -394,6 +394,8 @@ namespace Piceon.DatabaseAccess
             using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_IMAGE (IMAGE_Id, VIRTUALFOLDER_Id) " +
                 $"VALUES ({rowid}, {parentId})", Database))
             { await command.ExecuteReaderAsync(); }
+
+            return (int)rowid;
         }
 
         public static async Task MoveImageToVirtualfolderAsync(int imageId, int virtualfolderId)

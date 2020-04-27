@@ -180,13 +180,26 @@ namespace Piceon.Models
             }
         }
 
-        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns>List of database IDs</returns>
+        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
+            var result = new List<int>();
             foreach (var file in files)
             {
-                await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId);
+                result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
             }
 
+            ContentsChanged?.Invoke(this, new EventArgs());
+            return result;
+        }
+
+        public override void InvokeContentsChanged()
+        {
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 
