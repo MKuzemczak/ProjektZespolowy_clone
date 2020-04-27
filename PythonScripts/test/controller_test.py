@@ -2,7 +2,7 @@ import unittest
 
 import pika
 
-from PythonScripts.rabitmq.controller import Executor
+from controller import Executor
 
 
 class ControllerTest(unittest.TestCase):

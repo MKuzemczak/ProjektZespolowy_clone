@@ -1,7 +1,7 @@
 import cv2
 
-from PythonScripts.db.db_service import DBService
-from PythonScripts.db.query_service import QueryService
+from db.db_service import DBService
+from db.query_service import QueryService
 
 
 class SimilarImageRecognizer:

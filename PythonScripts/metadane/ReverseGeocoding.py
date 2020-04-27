@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import ExifManipulation as em
+import metadane.ExifManipulation as em
 import geocoder
 
 
