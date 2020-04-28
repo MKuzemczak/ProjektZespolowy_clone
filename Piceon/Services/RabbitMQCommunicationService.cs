@@ -112,7 +112,7 @@ namespace Piceon.Services
         public async void Receiver(object model, BasicDeliverEventArgs ea)
         {
             var body = ea.Body.ToArray();
-            CurrentReceivedMessage = Encoding.UTF8.GetString(body);
+            CurrentReceivedMessage = Encoding.ASCII.GetString(body);
             CurrentReceivedQueue = ea.RoutingKey;
             await _uiThreadDispatcher.RunAsync(CoreDispatcherPriority.Normal, InvokeMessageReceivedEvent);
         }

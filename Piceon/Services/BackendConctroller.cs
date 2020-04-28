@@ -48,7 +48,7 @@ namespace Piceon.Services
         /// Throws BackendControllerInitializationException if the controller fails to
         /// set provided databaseFilePath
         /// </exception>
-        public static void Initialize(CoreDispatcher uiThreadDispatcher, string databaseFilePath)
+        public static async Task Initialize(CoreDispatcher uiThreadDispatcher, string databaseFilePath)
         {
             if (!databaseFilePath.Any())
                 throw new ArgumentException("Invalid parameter: databaseFilePath.");
@@ -67,15 +67,17 @@ namespace Piceon.Services
 
             Communicator.MessageReceived += MessageReceiver;
 
-            RunTask(TaskIdCntr++, $"PATH {databaseFilePath}",
-                (result) =>
-                {
-                    if (result == "DONE")
-                        Initialized = true;
-                });
-            Thread.Sleep(500);
+            RunTask(TaskIdCntr, $"{TaskIdCntr} PATH {databaseFilePath}", PathSendCompleteHandler);
+            TaskIdCntr++;
+            await Task.Delay(500);
             if (!Initialized)
                 throw new BackendControllerInitializationException();
+        }
+
+        private static void PathSendCompleteHandler(string result)
+        {
+            if (result == DoneMessage)
+                Initialized = true;
         }
 
         private static void MessageReceiver(object sender, MessageReceivedEventArgs e)

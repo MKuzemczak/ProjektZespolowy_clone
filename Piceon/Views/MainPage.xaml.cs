@@ -14,6 +14,7 @@ using Piceon.Services;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Core.Preview;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -39,7 +40,27 @@ namespace Piceon.Views
         {
             InitializeComponent();
 
+            InitializeThings();
             SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += App_CloseRequested;
+        }
+
+
+        private async void InitializeThings()
+        {
+            await DatabaseAccessService.InitializeDatabaseAsync();
+
+            try
+            {
+                await BackendConctroller.Initialize(Window.Current.Dispatcher, DatabaseAccessService.DatabaseFilePath);
+            }
+            catch (BackendControllerInitializationException exception)
+            {
+                var messageDialog = new MessageDialog("Error establishing connection with python: " + exception.Message);
+                messageDialog.Commands.Add(new UICommand("Close"));
+                messageDialog.DefaultCommandIndex = 0;
+                messageDialog.CancelCommandIndex = 0;
+                await messageDialog.ShowAsync();
+            }
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
