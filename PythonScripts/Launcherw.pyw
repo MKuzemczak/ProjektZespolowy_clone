@@ -3,7 +3,7 @@ import time
 import pika
 
 controller = subprocess.Popen('pythonw controller.pyw')
-rabbit = subprocess.Popen('Piceon.exe')
+piceon = subprocess.Popen('Piceon.exe')
 
 
 connection = pika.BlockingConnection(

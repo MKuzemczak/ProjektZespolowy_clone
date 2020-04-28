@@ -25,7 +25,7 @@ Sposoby uruchomienia:
   - Piceon i controller.pyw uruchomią się automatycznie i oba zamkną, kiedy zamknie się Piceona.
 - Kiedy chcemy debugować c#:
   - W skrypcie **Launcherw.pyw** komentujemY linię 
-    - <code>rabbit = subprocess.Popen('Piceon.exe')</code>
+    - <code>piceon = subprocess.Popen('Piceon.exe')</code>
   - Upewniamy się, że kolejki RabbitMQ są puste.
   - Klikamy dwukrotnie **Launcherw.pyw**. uruchomi on **controller.pyw**
   - Uruchamiamy Piceon w trybie debugowania.
