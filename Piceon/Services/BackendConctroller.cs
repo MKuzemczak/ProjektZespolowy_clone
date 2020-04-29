@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -29,13 +30,15 @@ namespace Piceon.Services
         /// with info about task result (DONE or some error)
         /// </summary>
         private static Dictionary<int, Action<string>> TaskCompleteActions { get; } = new Dictionary<int, Action<string>>();
+
+
+        public static readonly string DoneMessage = "DONE";
         private static HashSet<string> TaskCompleteMessages { get; } = new HashSet<string>()
         {
-            "DONE", "BAD PARAMS AND DATA", "NO DATA", "BAD REQUEST", "LACK OF METHOD",
+            DoneMessage, "BAD PARAMS AND DATA", "NO DATA", "BAD REQUEST", "LACK OF METHOD",
             "LACK OF FILE", "WRONG EXTENSION", "LACK OF PATH", "WRONG ID"
         };
 
-        public static readonly string DoneMessage = "DONE";
 
         private static int TaskIdCntr = 0;
 
@@ -50,15 +53,20 @@ namespace Piceon.Services
         /// </exception>
         public static async Task Initialize(CoreDispatcher uiThreadDispatcher, string databaseFilePath)
         {
-            if (!databaseFilePath.Any())
-                throw new ArgumentException("Invalid parameter: databaseFilePath.");
+            if (string.IsNullOrEmpty(databaseFilePath))
+            {
+                throw new ArgumentException("message", nameof(databaseFilePath));
+            }
+
+            if (!databaseFilePath.Any() || !Path.HasExtension(databaseFilePath))
+                throw new ArgumentException("Invalid parameter: databaseFilePath should contain a valid path.");
 
             OutgoingQueueName = "front";
             IncomingQueueName = "back";
             LauncherOutgoingQueueName = "launcher";
 
             Communicator = RabbitMQCommunicationService.Instance;
-            _uiThreadDispatcher = uiThreadDispatcher;
+            _uiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
             Communicator.Initialize(uiThreadDispatcher);
 
             Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
@@ -120,6 +128,21 @@ namespace Piceon.Services
 
         public static int CompareImages(List<int> comparedImagesIds, Action<string> actionToCallAfterComplete)
         {
+            if (comparedImagesIds is null)
+            {
+                throw new ArgumentNullException(nameof(comparedImagesIds));
+            }
+
+            if (actionToCallAfterComplete is null)
+            {
+                throw new ArgumentNullException(nameof(actionToCallAfterComplete));
+            }
+
+            if (comparedImagesIds.Count < 2)
+            {
+                throw new ArgumentOutOfRangeException("comparedImagesIds list count should be at least 2");
+            }
+
             int taskId = TaskIdCntr++;
             string message = $"{taskId} COMPARE";
             foreach (int id in comparedImagesIds)
@@ -136,17 +159,5 @@ namespace Piceon.Services
         {
             Communicator.Send(LauncherOutgoingQueueName, "closing");
         }
-    }
-
-
-    [Serializable]
-    public class BackendControllerInitializationException : Exception
-    {
-        public BackendControllerInitializationException() : base("Failed to initialize BackendController"){ }
-        public BackendControllerInitializationException(string message) : base(message) { }
-        public BackendControllerInitializationException(string message, Exception inner) : base(message, inner) { }
-        protected BackendControllerInitializationException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }
