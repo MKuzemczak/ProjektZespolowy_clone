@@ -3,7 +3,7 @@
 
 Sposoby uruchomienia apki:
 - Kiedy nie chcemy debugować c#:
-  - Upewniamy się, że wcześniej uruchomiliśmy przynajmniej raz najnowszą wersję kodu w trybie release. Jest to potrzebne, bo **Launcherw.pyw** uruchamia Piceona z cmd, czyli zainstalowaną w systemie wersję.
+  - Upewniamy się, że wcześniej uruchomiliśmy przynajmniej raz najnowszą wersję kodu w trybie release. W ten sposób Visual Studio instaluje program w systemie. Jest to potrzebne, bo **Launcherw.pyw** uruchamia Piceona z cmd, czyli właśnie zainstalowaną w systemie wersję.
   - Klikamy dwukronie skrypt **PythonScripts/Launcherw.pyw**.
   - Piceon i controller.pyw uruchomią się automatycznie i oba zamkną, kiedy zamknie się Piceona.
 - Kiedy chcemy debugować c#:
