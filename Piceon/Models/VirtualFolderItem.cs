@@ -18,6 +18,9 @@ namespace Piceon.Models
 
         public override event EventHandler ContentsChanged;
 
+        private List<DatabaseImage> AllImages { get; set; } = new List<DatabaseImage>();
+        private List<DatabaseImage> FilteredImages { get; set; } = new List<DatabaseImage>();
+
         public static async Task<VirtualFolderItem> FromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
         {
             VirtualFolderItem result = new VirtualFolderItem
@@ -26,6 +29,7 @@ namespace Piceon.Models
                 DatabaseId = virtualFolder.Id
             };
             result.Subfolders = await result.GetSubfoldersAsync();
+            await result.UpdateQueryAsync();
 
             return result;
         }
@@ -39,20 +43,13 @@ namespace Piceon.Models
 
         public override async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length)
         {
-            var allFilePaths = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
-
-            if (firstIndex + length > allFilePaths.Count)
-                throw new IndexOutOfRangeException();
-
-            var selectedRangeFilePaths = allFilePaths.GetRange(firstIndex, length);
-
             var result = new List<StorageFile>();
 
-            foreach (var item in selectedRangeFilePaths)
+            foreach (var item in FilteredImages)
             {
                 try
                 {
-                    result.Add(await StorageFile.GetFileFromPathAsync(item.Item2));
+                    result.Add(await StorageFile.GetFileFromPathAsync(item.Path));
                 }
                 catch (FileNotFoundException)
                 {
@@ -66,15 +63,8 @@ namespace Piceon.Models
         public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
         {
             ct.ThrowIfCancellationRequested();
-            var allFiles = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
-
-            if (firstIndex + length > allFiles.Count)
-                throw new IndexOutOfRangeException("Requested range (firstIndex + length) exceeds the number of files in the folder.");
-
-            var ordered = allFiles.OrderByDescending(i => i.Group.Id).ToList();
-
-            var selectedRangeFiles = ordered.GetRange(firstIndex, length);
-
+            
+            var selectedRangeFiles = FilteredImages.GetRange(firstIndex, length);
             var storageFiles = new List<Tuple<int, StorageFile>>();
             var result = new List<ImageItem>();
 
@@ -95,7 +85,7 @@ namespace Piceon.Models
 
             int prevGroupId = -1;
             if (firstIndex != 0)
-                prevGroupId = ordered[firstIndex - 1].Group.Id;
+                prevGroupId = FilteredImages[firstIndex - 1].Group.Id;
 
             for (int i = 0; i < storageFiles.Count(); i++)
             {
@@ -104,8 +94,8 @@ namespace Piceon.Models
                 var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
                 image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Id;
 
-                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == ordered.Count - 1 ||
-                    currentGroupId != ordered[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
+                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == FilteredImages.Count - 1 ||
+                    currentGroupId != FilteredImages[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
 
                 if (currentGroupId < 0)
                 {
@@ -139,9 +129,9 @@ namespace Piceon.Models
             return result;
         }
 
-        public override async Task<int> GetFilesCountAsync()
+        public override int GetFilesCount()
         {
-            return await DatabaseAccessService.GetImagesCountInFolderAsync(DatabaseId);
+            return FilteredImages.Count;
         }
 
         protected override async Task<List<FolderItem>> GetSubfoldersAsync()
@@ -216,6 +206,15 @@ namespace Piceon.Models
             }
         }
 
+        public override async Task UpdateQueryAsync()
+        {
+            var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
+            AllImages = raw.OrderByDescending(i => i.Group.Id).ToList();
+            FilteredImages = AllImages.
+                Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
+                    true : TagsToFilter.Intersect(i.Tags).Count() > 0; }).ToList();
+        }
+
 
         /// <summary>
         /// 
@@ -229,7 +228,7 @@ namespace Piceon.Models
             {
                 result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
             }
-
+            await UpdateQueryAsync();
             ContentsChanged?.Invoke(this, new EventArgs());
             return result;
         }

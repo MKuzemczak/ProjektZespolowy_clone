@@ -44,7 +44,7 @@ namespace Piceon.Views
             this.Visibility = Visibility.Visible;
             CurrentIndexInFolder = ImageNavigationHelper.SelectedImage.GalleryIndex;
             CurrentlyDisplayedImageItem = ImageNavigationHelper.SelectedImage;
-            await UpdateArrowsVisibilityAsync();
+            UpdateArrowsVisibility();
             await CurrentlyDisplayedImageItem.ToImage();
             displayedImage.Source = CurrentlyDisplayedImageItem.ImageData;
         }
@@ -101,7 +101,7 @@ namespace Piceon.Views
             }
         }
 
-        private async Task UpdateArrowsVisibilityAsync()
+        private void UpdateArrowsVisibility()
         {
             if (CurrentIndexInFolder == 0)
             {
@@ -112,7 +112,7 @@ namespace Piceon.Views
                 previousArrow.Visibility = Visibility.Visible;
             }
 
-            if (CurrentIndexInFolder == await ImageNavigationHelper.ContainingFolder?.GetFilesCountAsync() - 1)
+            if (CurrentIndexInFolder == ImageNavigationHelper.ContainingFolder?.GetFilesCount() - 1)
             {
                 nextArrow.Visibility = Visibility.Collapsed;
             }
@@ -135,13 +135,13 @@ namespace Piceon.Views
 
             FlipCancellationTokenSource = new CancellationTokenSource();
             FlipCancellationToken = FlipCancellationTokenSource.Token;
-            await UpdateArrowsVisibilityAsync();
+            UpdateArrowsVisibility();
             await UpdateImageToIndex(FlipCancellationToken);
         }
 
         private async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (CurrentIndexInFolder == await ImageNavigationHelper.ContainingFolder.GetFilesCountAsync() - 1)
+            if (CurrentIndexInFolder == ImageNavigationHelper.ContainingFolder.GetFilesCount() - 1)
             {
                 return;
             }
@@ -152,7 +152,7 @@ namespace Piceon.Views
 
             FlipCancellationTokenSource = new CancellationTokenSource();
             FlipCancellationToken = FlipCancellationTokenSource.Token;
-            await UpdateArrowsVisibilityAsync();
+            UpdateArrowsVisibility();
             await UpdateImageToIndex(FlipCancellationToken);
         }
 

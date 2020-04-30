@@ -28,6 +28,8 @@ namespace Piceon.Models
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
+        public List<string> TagsToFilter { get; } = new List<string>();
+
         private ImageDataSource()
         {
             //Setup the dispatcher for the UI thread
@@ -53,7 +55,9 @@ namespace Piceon.Models
         {
             // Initialize the query and register for changes
             _folder = folder;
-            await UpdateCount();
+            _folder.TagsToFilter = TagsToFilter;
+            await _folder.UpdateQueryAsync();
+            UpdateCount();
         }
 
         // Handler for when the filesystem notifies us of a change to the file list
@@ -85,9 +89,9 @@ namespace Piceon.Models
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        async Task UpdateCount()
+        void UpdateCount()
         {
-            _count = await _folder.GetFilesCountAsync();
+            _count = _folder.GetFilesCount();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -152,7 +156,7 @@ namespace Piceon.Models
         {
             IReadOnlyList<ImageItem> results = await _folder.GetImageItemsRangeAsync(
                 batch.FirstIndex,
-                Math.Min((int)batch.Length, await _folder.GetFilesCountAsync() - batch.FirstIndex),
+                Math.Min((int)batch.Length, _folder.GetFilesCount() - batch.FirstIndex), 
                 ct);
             return results.ToArray();
         }
