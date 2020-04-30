@@ -49,7 +49,7 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS VIRTUALFOLDER_IMAGE" +
-                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL, VIRTUALFOLDER_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL)", Database))
+                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL, VIRTUALFOLDER_Id REFERENCES VIRTUALFOLDER(Id) NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS SIMILAR_IMAGES" +
@@ -62,6 +62,22 @@ namespace Piceon.DatabaseAccess
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS ACCESSEDFOLDER" +
                         "(Id INTEGER PRIMARY KEY NOT NULL, token text NOT NULL)", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS SIMILARITYGROUP" +
+                        "(Id INTEGER PRIMARY KEY NOT NULL, name text NOT NULL)", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS SIMILARITYGROUP_IMAGE" +
+                        "(SIMILARITYGROUP_Id REFERENCES SIMILARITYGROUP(Id) NOT NULL, IMAGE_Id REFERENCES IMAGE(Id) NOT NULL)", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS TAG" +
+                        "(Id INTEGER PRIMARY KEY NOT NULL, tag text NOT NULL)", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS IMAGE_TAG" +
+                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL, TAG_Id REFERENCES TAG(Id) NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS path_validator " +
@@ -81,6 +97,22 @@ namespace Piceon.DatabaseAccess
                         "DELETE FROM VIRTUALFOLDER_IMAGE WHERE IMAGE_Id = OLD.Id; " +
                         "DELETE FROM SIMILAR_IMAGES WHERE FIRST_IMAGE_Id = OLD.Id; " +
                         "DELETE FROM SIMILAR_IMAGES WHERE SECOND_IMAGE_Id = OLD.Id; " +
+                        "DELETE FROM SIMILARITYGROUP_IMAGE WHERE IMAGE_Id = OLD.Id; " +
+                        "DELETE FROM IMAGE_TAG WHERE IMAGE_Id = OLD.Id; " +
+                    "END ; ", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS after_similaritygroup_image_delete " +
+                    "AFTER DELETE ON SIMILARITYGROUP_IMAGE " +
+                    "BEGIN " +
+                        "DELETE FROM SIMILARITYGROUP WHERE Id NOT IN (SELECT SIMILARITYGROUP_Id FROM SIMILARITYGROUP_IMAGE); " +
+                    "END ; ", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS after_image_tag_delete " +
+                    "AFTER DELETE ON IMAGE_TAG " +
+                    "BEGIN " +
+                        "DELETE FROM TAG WHERE Id NOT IN (SELECT TAG_Id FROM IMAGE_TAG); " +
                     "END ; ", Database))
             { await command.ExecuteReaderAsync(); }
 
@@ -502,6 +534,66 @@ namespace Piceon.DatabaseAccess
             while (query.Read())
             {
                 result.Add(new Triple<int, string, Helpers.GroupPosition>(query.GetInt32(0), query.GetString(1), Helpers.GroupPosition.None));
+            }
+
+            return result;
+        }
+
+        public static async Task<List<DatabaseImage>> GetVirtualfolderImagesWithGroupsAndTags(int virtualfolderId)
+        {
+            var result = new List<DatabaseImage>();
+
+            SqliteCommand selectCommand = new SqliteCommand
+                ($@"SELECT * FROM IMAGE WHERE Id IN
+                    (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id = {virtualfolderId})", Database);
+
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+
+            while (query.Read())
+            {
+                result.Add(new DatabaseImage() { Id = query.GetInt32(0), Path = query.GetString(1) });
+
+                selectCommand = new SqliteCommand
+                ($@"SELECT * FROM SIMILARITYGROUP WHERE Id IN
+                    (SELECT SIMILARITYGROUP_Id FROM SIMILARITYGROUP_IMAGE WHERE IMAGE_Id = {result.Last().Id})", Database);
+
+                query = await selectCommand.ExecuteReaderAsync();
+
+                while (query.Read())
+                {
+                    result.Last().Group.Id = query.GetInt32(0);
+                    result.Last().Group.Name = query.GetString(1);
+                }
+
+                selectCommand = new SqliteCommand
+                ($@"SELECT tag FROM TAG WHERE Id IN
+                    (SELECT TAG_Id FROM IMAGE_TAG WHERE IMAGE_Id = {result.Last().Id})", Database);
+
+                query = await selectCommand.ExecuteReaderAsync();
+
+                while (query.Read())
+                {
+                    result.Last().Tags.Add(query.GetString(0));
+                }
+            }
+
+            return result;
+        }
+
+        public static async Task<List<string>> GetVirtualfolderTags(int virtualfolderId)
+        {
+            var result = new List<string>();
+
+            SqliteCommand selectCommand = new SqliteCommand
+                ($@"SELECT tag FROM TAG WHERE Id IN
+                    (SELECT TAG_Id FROM IMAGE_TAG WHERE IMAGE_Id IN
+                        (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id = {virtualfolderId}))", Database);
+
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+
+            while (query.Read())
+            {
+                result.Add(query.GetString(0));
             }
 
             return result;

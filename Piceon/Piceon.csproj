@@ -152,6 +152,8 @@
     <Compile Include="Controls\GroupBorders.xaml.cs">
       <DependentUpon>GroupBorders.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DatabaseAccess\DatabaseImage.cs" />
+    <Compile Include="DatabaseAccess\DatabaseSimilaritygroup.cs" />
     <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
     <Compile Include="Helpers\DragAndDropHelper.cs" />
     <Compile Include="Helpers\Enums.cs" />
