@@ -553,27 +553,27 @@ namespace Piceon.DatabaseAccess
             {
                 result.Add(new DatabaseImage() { Id = query.GetInt32(0), Path = query.GetString(1) });
 
-                selectCommand = new SqliteCommand
+                var comm = new SqliteCommand
                 ($@"SELECT * FROM SIMILARITYGROUP WHERE Id IN
                     (SELECT SIMILARITYGROUP_Id FROM SIMILARITYGROUP_IMAGE WHERE IMAGE_Id = {result.Last().Id})", Database);
 
-                query = await selectCommand.ExecuteReaderAsync();
+                var q = await comm.ExecuteReaderAsync();
 
-                while (query.Read())
+                while (q.Read())
                 {
-                    result.Last().Group.Id = query.GetInt32(0);
-                    result.Last().Group.Name = query.GetString(1);
+                    result.Last().Group.Id = q.GetInt32(0);
+                    result.Last().Group.Name = q.GetString(1);
                 }
 
-                selectCommand = new SqliteCommand
+                var comm1 = new SqliteCommand
                 ($@"SELECT tag FROM TAG WHERE Id IN
                     (SELECT TAG_Id FROM IMAGE_TAG WHERE IMAGE_Id = {result.Last().Id})", Database);
 
-                query = await selectCommand.ExecuteReaderAsync();
+                var q1 = await comm1.ExecuteReaderAsync();
 
-                while (query.Read())
+                while (q1.Read())
                 {
-                    result.Last().Tags.Add(query.GetString(0));
+                    result.Last().Tags.Add(q1.GetString(0));
                 }
             }
 

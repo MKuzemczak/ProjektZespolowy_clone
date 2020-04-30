@@ -8,7 +8,7 @@ namespace Piceon.DatabaseAccess
 {
     public class DatabaseSimilaritygroup
     {
-        public int Id { get; set; }
+        public int Id { get; set; } = int.MinValue;
         public string Name { get; set; }
     }
 }

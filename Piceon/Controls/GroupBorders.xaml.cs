@@ -48,7 +48,8 @@ namespace Piceon.Controls
         private void UpdateRectsVisibility()
         {
             CollapseAllRects();
-            if (_positionInGroup == GroupPosition.Start)
+            if (_positionInGroup == GroupPosition.Start ||
+                _positionInGroup == GroupPosition.Only)
             {
                 leftRect.Visibility = Visibility.Visible;
             }
@@ -57,7 +58,8 @@ namespace Piceon.Controls
                 topRect.Visibility = Visibility.Visible;
                 bottomRect.Visibility = Visibility.Visible;
             }
-            if (_positionInGroup == GroupPosition.End)
+            if (_positionInGroup == GroupPosition.End ||
+                _positionInGroup == GroupPosition.Only)
             {
                 rightRect.Visibility = Visibility.Visible;
             }

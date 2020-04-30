@@ -66,12 +66,14 @@ namespace Piceon.Models
         public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
         {
             ct.ThrowIfCancellationRequested();
-            var allFiles = await DatabaseAccessService.GetImagesInVirtualfolderGroupedBySimilarityAsync(DatabaseId);
+            var allFiles = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
 
             if (firstIndex + length > allFiles.Count)
-                throw new IndexOutOfRangeException();
+                throw new IndexOutOfRangeException("Requested range (firstIndex + length) exceeds the number of files in the folder.");
 
-            var selectedRangeFiles = allFiles.GetRange(firstIndex, length);
+            var ordered = allFiles.OrderByDescending(i => i.Group.Id).ToList();
+
+            var selectedRangeFiles = ordered.GetRange(firstIndex, length);
 
             var storageFiles = new List<Tuple<int, StorageFile>>();
             var result = new List<ImageItem>();
@@ -82,7 +84,7 @@ namespace Piceon.Models
                 StorageFile storageFile = null;
                 try
                 {
-                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Item2);
+                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Path);
                 }
                 catch (FileNotFoundException)
                 {
@@ -91,12 +93,46 @@ namespace Piceon.Models
                 storageFiles.Add(new Tuple<int, StorageFile>(i, storageFile));
             }
 
+            int prevGroupId = -1;
+            if (firstIndex != 0)
+                prevGroupId = ordered[firstIndex - 1].Group.Id;
+
             for (int i = 0; i < storageFiles.Count(); i++)
             {
                 ct.ThrowIfCancellationRequested();
+                int currentGroupId = selectedRangeFiles[storageFiles[i].Item1].Group.Id;
                 var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
-                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Item1;
-                image.PotitionInGroup = selectedRangeFiles[storageFiles[i].Item1].Item3;
+                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Id;
+
+                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == ordered.Count - 1 ||
+                    currentGroupId != ordered[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
+
+                if (currentGroupId < 0)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.None;
+                }
+                else if (prevGroupId != currentGroupId)
+                {
+                    if (nextGroupDifferent)
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Only;
+                    }
+                    else
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Start;
+                    }
+                }
+                else if (nextGroupDifferent)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.End;
+                }
+                else
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.Middle;
+                }
+
+                prevGroupId = currentGroupId;
+
                 result.Add(image);
             }
 
