@@ -23,7 +23,12 @@ namespace Piceon.Views
     /// </summary>
     public sealed partial class ImageGalleryWithTagFilterPage : Page
     {
+        public bool IsPaneOpen = false;
+        public bool IsLoading = false;
+
         public event EventHandler ImageClicked;
+
+
 
         public ImageGalleryWithTagFilterPage()
         {
@@ -36,13 +41,51 @@ namespace Piceon.Views
         }
         public async Task AccessFolder(FolderItem folder)
         {
+            ShowLoadingIndicator();
             await imageGalleryPage.AccessFolder(folder);
             tagFilterPage.SetTagList(await folder.GetTagsOfImagesAsync());
+            HideLoadingIndicator();
         }
 
         private async void TagFilterPage_SelectedTagsChanged(object sender, SelectedTagsChangedEventArgs e)
         {
             await imageGalleryPage.SetTagsToFilter(e.SelectedTags);
+        }
+
+        private void OpenPaneButton_Click(object sender, RoutedEventArgs e)
+        {
+            splitView.OpenPaneLength = 300;
+            tagFilterPage.Visibility = Visibility.Visible;
+            openPaneButton.Visibility = Visibility.Collapsed;
+            closePaneButton.Visibility = Visibility.Visible;
+            IsPaneOpen = true;
+
+            if (IsLoading)
+                loadingTextBlock.Visibility = Visibility.Visible;
+        }
+
+        private void ClosePaneButton_Click(object sender, RoutedEventArgs e)
+        {
+            splitView.OpenPaneLength = 40;
+            tagFilterPage.Visibility = Visibility.Collapsed;
+            openPaneButton.Visibility = Visibility.Visible;
+            closePaneButton.Visibility = Visibility.Collapsed;
+            loadingTextBlock.Visibility = Visibility.Collapsed;
+            IsPaneOpen = false;
+        }
+
+        public void ShowLoadingIndicator()
+        {
+            IsLoading = true;
+            if (IsPaneOpen)
+                loadingTextBlock.Visibility = Visibility.Visible;
+        }
+
+        public void HideLoadingIndicator()
+        {
+            IsLoading = false;
+            if (IsPaneOpen)
+                loadingTextBlock.Visibility = Visibility.Collapsed;
         }
     }
 }
