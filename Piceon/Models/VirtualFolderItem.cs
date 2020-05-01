@@ -45,7 +45,9 @@ namespace Piceon.Models
         {
             var result = new List<StorageFile>();
 
-            foreach (var item in FilteredImages)
+            var range = FilteredImages.GetRange(firstIndex, length);
+
+            foreach (var item in range)
             {
                 try
                 {

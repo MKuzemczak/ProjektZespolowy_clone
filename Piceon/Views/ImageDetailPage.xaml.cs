@@ -93,7 +93,7 @@ namespace Piceon.Views
 
             try
             {
-                await CurrentlyDisplayedImageItem.ToImage();
+                await CurrentlyDisplayedImageItem.ToImage(ct);
             }
             catch(TaskCanceledException)
             {
