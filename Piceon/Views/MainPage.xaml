@@ -24,7 +24,7 @@
                 x:Name="treeViewPage"
                 ItemSelected="TreeViewPage_ItemSelected" />
 
-            <views:ImageGalleryPage
+            <views:ImageGalleryWithTagFilterPage
                 Grid.Column="1"
                 x:Name="imageGalleryPage"
                 ImageClicked="imageGalleryPage_ImageClicked"/>

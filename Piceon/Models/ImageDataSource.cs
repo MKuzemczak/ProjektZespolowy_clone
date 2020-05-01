@@ -28,8 +28,6 @@ namespace Piceon.Models
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        public List<string> TagsToFilter { get; } = new List<string>();
-
         private ImageDataSource()
         {
             //Setup the dispatcher for the UI thread
@@ -55,8 +53,6 @@ namespace Piceon.Models
         {
             // Initialize the query and register for changes
             _folder = folder;
-            _folder.TagsToFilter = TagsToFilter;
-            await _folder.UpdateQueryAsync();
             UpdateCount();
         }
 

@@ -139,6 +139,15 @@ namespace Piceon.Models
             throw new NotImplementedException();
         }
 
+        public override async Task<List<string>> GetTagsOfImagesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task SetTagsToFilter(List<string> tags)
+        {
+            throw new NotImplementedException();
+        }
 
         public static bool operator ==(StorageFolderItem f1, StorageFolderItem f2)
         {

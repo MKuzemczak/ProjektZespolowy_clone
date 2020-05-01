@@ -62,11 +62,11 @@ namespace Piceon.Models
 
         public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
         {
+            var result = new List<ImageItem>();
             ct.ThrowIfCancellationRequested();
-            
+
             var selectedRangeFiles = FilteredImages.GetRange(firstIndex, length);
             var storageFiles = new List<Tuple<int, StorageFile>>();
-            var result = new List<ImageItem>();
 
             for (int i = 0; i < selectedRangeFiles.Count(); i++)
             {
@@ -213,8 +213,15 @@ namespace Piceon.Models
             FilteredImages = AllImages.
                 Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
                     true : TagsToFilter.Intersect(i.Tags).Count() > 0; }).ToList();
+            ContentsChanged?.Invoke(this, new EventArgs());
         }
 
+
+        public override async Task SetTagsToFilter(List<string> tags)
+        {
+            TagsToFilter = tags;
+            await UpdateQueryAsync();
+        }
 
         /// <summary>
         /// 
@@ -231,6 +238,11 @@ namespace Piceon.Models
             await UpdateQueryAsync();
             ContentsChanged?.Invoke(this, new EventArgs());
             return result;
+        }
+
+        public override async Task<List<string>> GetTagsOfImagesAsync()
+        {
+            return await DatabaseAccessService.GetVirtualfolderTags(DatabaseId);
         }
 
         public override void InvokeContentsChanged()

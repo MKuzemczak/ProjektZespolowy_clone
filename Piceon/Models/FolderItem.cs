@@ -24,7 +24,7 @@ namespace Piceon.Models
 
         public string Name { get; set; }
 
-        public List<string> TagsToFilter { get; set; } = new List<string>();
+        public List<string> TagsToFilter { get; protected set; } = new List<string>();
 
         public abstract Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length);
 
@@ -45,6 +45,10 @@ namespace Piceon.Models
         public abstract void InvokeContentsChanged();
 
         public abstract Task UpdateQueryAsync();
+
+        public abstract Task SetTagsToFilter(List<string> tags);
+
+        public abstract Task<List<string>> GetTagsOfImagesAsync();
 
         protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
 

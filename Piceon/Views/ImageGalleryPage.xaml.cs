@@ -60,7 +60,7 @@ namespace Piceon.Views
         }
 
 
-        public async void AccessFolder(FolderItem folder)
+        public async Task AccessFolder(FolderItem folder)
         {
             if (folder is null)
                 return;
@@ -82,9 +82,14 @@ namespace Piceon.Views
             }
         }
 
-        public void ReloadFolder()
+        public async void ReloadFolder()
         {
-            AccessFolder(SelectedContentFolder);
+            await AccessFolder(SelectedContentFolder);
+        }
+
+        public async Task SetTagsToFilter(List<string> tags)
+        {
+            await SelectedContentFolder?.SetTagsToFilter(tags);
         }
 
         private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
