@@ -38,6 +38,8 @@ namespace Piceon.Models
         // Timer to optimize the the fetching of data so we throttle requests if the list is still changing
         private Windows.UI.Xaml.DispatcherTimer timer;
 
+        bool CancelAllWork = false;
+
 #if DEBUG
         // Name for trace messages, and when debugging so you know which instance of the cache manager you are dealing with
         string debugName = string.Empty;
@@ -318,11 +320,10 @@ namespace Piceon.Models
 #if TRACE_DATASOURCE
                     Debug.WriteLine(">" + debugName + " Fetching items " + nextRequest.FirstIndex + "->" + nextRequest.LastIndex);
 #endif
-                    // Use the callback to get the data, passing in a cancellation token
-                    data = await fetchDataCallback(nextRequest, ct);
-
                     if (!ct.IsCancellationRequested)
                     {
+                        // Use the callback to get the data, passing in a cancellation token
+                        data = await fetchDataCallback(nextRequest, ct);
 #if TRACE_DATASOURCE
                         Debug.WriteLine(">" + debugName + " Inserting items into cache at: " + nextRequest.FirstIndex + "->" + (nextRequest.FirstIndex + data.Length - 1));
 #endif
@@ -353,9 +354,19 @@ namespace Piceon.Models
                 {
                     requestInProgress = null;
                     // Start another request if required
-                    fetchData();
+                    if (!cancelTokenSource.IsCancellationRequested && !CancelAllWork)
+                        fetchData();
                 }
             }
+        }
+
+        public void StopTasks()
+        {
+            cancelTokenSource?.Cancel();
+            requests?.Clear();
+            requestInProgress = null;
+            CancelAllWork = true;
+            timer?.Stop();
         }
 
 

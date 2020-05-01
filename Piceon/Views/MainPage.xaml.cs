@@ -38,9 +38,9 @@ namespace Piceon.Views
 
         public MainPage()
         {
+            InitializeThings();
             InitializeComponent();
 
-            InitializeThings();
             SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += App_CloseRequested;
         }
 

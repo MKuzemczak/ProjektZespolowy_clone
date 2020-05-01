@@ -85,6 +85,11 @@ namespace Piceon.Models
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
+        public void StopTasks()
+        {
+            itemCache.StopTasks();
+        }
+
         void UpdateCount()
         {
             _count = _folder.GetFilesCount();

@@ -87,9 +87,18 @@ namespace Piceon.Views
             await AccessFolder(SelectedContentFolder);
         }
 
+        // simple protection from multiple SetTagsToFilter called
+        private int SetTagsToFilterRequestCntr = 0;
+
         public async Task SetTagsToFilter(List<string> tags)
         {
-            await SelectedContentFolder?.SetTagsToFilter(tags);
+            int cntrState = ++SetTagsToFilterRequestCntr;
+            Source.StopTasks();
+
+            // giving the data source time to cancel its work
+            await Task.Delay(500);
+            if (cntrState == SetTagsToFilterRequestCntr)
+                await SelectedContentFolder?.SetTagsToFilter(tags);
         }
 
         private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
