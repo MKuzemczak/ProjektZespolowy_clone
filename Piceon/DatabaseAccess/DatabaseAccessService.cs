@@ -234,6 +234,23 @@ namespace Piceon.DatabaseAccess
         {
             return await GetImagesInFolderAsync(folder.Id);
         }
+        public static async Task<Tuple<int, string>> GetImagePathAsync(string id)
+        {
+            Tuple<int, string> result = null;
+            SqliteCommand selectCommand = new SqliteCommand
+                ($"SELECT * FROM IMAGE WHERE Id={id}", Database);
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+            while (query.Read())
+            {
+                result = new Tuple<int, string>(query.GetInt32(0), query.GetString(1));
+            }
+            return result;
+        }
+
+        public static async Task<Tuple<int, string>> GetImagePathAsync(int id)
+        {
+            return await GetImagePathAsync(id.ToString());
+        }
 
         public static async Task<int> GetImagesCountInFolderAsync(string id)
         {
@@ -430,6 +447,73 @@ namespace Piceon.DatabaseAccess
             using (SqliteCommand command = new SqliteCommand($@"DELETE FROM IMAGE WHERE Id IN 
                 (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId})", Database))
             { await command.ExecuteReaderAsync(); }
+        }
+        public static async Task<Tuple<int, string>> GetTagAsync(string tag)
+        {
+            Tuple<int, string> result = null;
+            SqliteCommand selectCommand = new SqliteCommand
+                ($"SELECT * FROM TAG WHERE tag = {tag}", Database);
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+
+            while (query.Read())
+            {
+                result = new Tuple<int, string>(query.GetInt32(0), query.GetString(1));
+            }
+
+            return result;
+        }
+        public static async Task<bool> TagExistsAsync(string tag)
+        {
+            SqliteCommand selectCommand = new SqliteCommand
+                ($"SELECT * FROM TAG WHERE tag = {tag}", Database);
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+            while (query.Read())
+            {
+                return true;
+            }
+            return false;
+        }
+        public static async Task<bool> ImageTagExistsAsync(string ImageId, string TagId)
+        {
+            SqliteCommand selectCommand = new SqliteCommand
+                ($"SELECT * FROM IMAGE_TAG " +
+                $"WHERE IMAGE_Id = {ImageId} " +
+                $"AND TAG_Id = {TagId}", Database);
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+            while (query.Read())
+            {
+                return true;
+            }
+            return false;
+        }
+        public static async Task<Tuple<int, string>> InsertTagAsync(string tag)
+        {
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO TAG (tag) " +
+                        $"VALUES ('{tag}')", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            Int64 rowid = 0;
+            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+            { rowid = (Int64)await command.ExecuteScalarAsync(); }
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
+            return new Tuple<int, string>((int)rowid, tag);
+        }
+        public static async void InsertImageTagAsync(string ImageId, string TagId)
+        {
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE_TAG (IMAGE_Id, TAG_Id) " +
+                        $"VALUES ('{ImageId},{TagId}')", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            Int64 rowid = 0;
+            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+            { rowid = (Int64)await command.ExecuteScalarAsync(); }
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
         }
     }
 }
