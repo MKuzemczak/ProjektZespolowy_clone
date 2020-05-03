@@ -15,6 +15,9 @@ namespace Piceon.Services
 {
     public static class FolderManagerService
     {
+        private static FolderItem CurrentlyScannedFolder { get; set; }
+
+
         public static async Task<FolderItem> OpenFolderAsync()
         {
             var folderPicker = new FolderPicker
@@ -94,9 +97,23 @@ namespace Piceon.Services
             picker.FileTypeFilter.Add(".gif");
 
             var files = await picker.PickMultipleFilesAsync();
+            List<int> ids = null;
             if (files != null)
             {
-                await folder.AddFilesToFolder(files);
+                ids = await folder.AddFilesToFolder(files);
+            }
+
+            // TODO: compare new images
+            CurrentlyScannedFolder = folder;
+            BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
+
+        }
+
+        private static void FindSimilarFinishedHandler(string result)
+        {
+            if (result == BackendConctroller.DoneMessage)
+            {
+                CurrentlyScannedFolder.InvokeContentsChanged();
             }
         }
     }

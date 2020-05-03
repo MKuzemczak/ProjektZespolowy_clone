@@ -137,6 +137,9 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
+    <PackageReference Include="RabbitMQ.Client">
+      <Version>6.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\en-us\Resources.resw" />
@@ -146,8 +149,12 @@
     <Compile Include="Controls\EditableTextBlock.xaml.cs">
       <DependentUpon>EditableTextBlock.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\GroupBorders.xaml.cs">
+      <DependentUpon>GroupBorders.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
     <Compile Include="Helpers\DragAndDropHelper.cs" />
+    <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
     <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
@@ -165,9 +172,12 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
+    <Compile Include="Services\BackendConctroller.cs" />
+    <Compile Include="Services\Exceptions.cs" />
     <Compile Include="Services\FolderManagerService.cs" />
     <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
+    <Compile Include="Services\RabbitMQCommunicationService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ViewLifetimeControl.cs" />
     <Compile Include="Services\WindowManagerService.cs" />
@@ -214,6 +224,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Controls\EditableTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\GroupBorders.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -4,8 +4,9 @@
 
     <!--Image Gallery Styles-->
     <Style TargetType="Image" x:Key="ThumbnailImageStyle">
-        <Setter Property="Width" Value="100" />
-        <Setter Property="Height" Value="100" />
+        <Setter Property="Width" Value="96" />
+        <Setter Property="Height" Value="96" />
+        <Setter Property="Margin" Value="2,2,2,2" />
     </Style>
 
     <Style TargetType="Image" x:Key="DetailImageStyle">

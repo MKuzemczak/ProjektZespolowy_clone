@@ -38,7 +38,9 @@ namespace Piceon.Models
 
         public abstract Task CheckContentAsync();
 
-        public abstract Task AddFilesToFolder(IReadOnlyList<StorageFile> files);
+        public abstract Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files);
+
+        public abstract void InvokeContentsChanged();
 
         protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
 

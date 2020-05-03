@@ -50,7 +50,14 @@ namespace Piceon.Models
 
             foreach (var item in selectedRangeFilePaths)
             {
-                result.Add(await StorageFile.GetFileFromPathAsync(item.Item2));
+                try
+                {
+                    result.Add(await StorageFile.GetFileFromPathAsync(item.Item2));
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
             }
 
             return result;
@@ -59,21 +66,37 @@ namespace Piceon.Models
         public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
         {
             ct.ThrowIfCancellationRequested();
-            var allFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
+            var allFiles = await DatabaseAccessService.GetImagesInVirtualfolderGroupedBySimilarityAsync(DatabaseId);
 
             if (firstIndex + length > allFiles.Count)
                 throw new IndexOutOfRangeException();
 
             var selectedRangeFiles = allFiles.GetRange(firstIndex, length);
 
+            var storageFiles = new List<Tuple<int, StorageFile>>();
             var result = new List<ImageItem>();
 
             for (int i = 0; i < selectedRangeFiles.Count(); i++)
             {
                 ct.ThrowIfCancellationRequested();
-                var storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Item2);
-                var image = await ImageItem.FromStorageFile(storageFile, i + firstIndex, ct, ImageItem.Options.Thumbnail);
-                image.DatabaseId = selectedRangeFiles[i].Item1;
+                StorageFile storageFile = null;
+                try
+                {
+                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Item2);
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+                storageFiles.Add(new Tuple<int, StorageFile>(i, storageFile));
+            }
+
+            for (int i = 0; i < storageFiles.Count(); i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
+                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Item1;
+                image.PotitionInGroup = selectedRangeFiles[storageFiles[i].Item1].Item3;
                 result.Add(image);
             }
 
@@ -157,13 +180,26 @@ namespace Piceon.Models
             }
         }
 
-        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns>List of database IDs</returns>
+        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
+            var result = new List<int>();
             foreach (var file in files)
             {
-                await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId);
+                result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
             }
 
+            ContentsChanged?.Invoke(this, new EventArgs());
+            return result;
+        }
+
+        public override void InvokeContentsChanged()
+        {
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 

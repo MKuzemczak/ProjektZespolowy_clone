@@ -42,7 +42,7 @@ namespace Piceon.Models
         // Name for trace messages, and when debugging so you know which instance of the cache manager you are dealing with
         string debugName = string.Empty;
 #endif
-        public ItemCacheManager(fetchDataCallbackHandler callback, int batchsize = 50, string debugName = "ItemCacheManager")
+        public ItemCacheManager(fetchDataCallbackHandler callback, int batchsize = 1, string debugName = "ItemCacheManager")
         {
             cacheBlocks = new List<CacheEntryBlock<T>>();
             requests = new ItemIndexRangeList();
@@ -249,7 +249,7 @@ namespace Piceon.Models
             if (this.requests.Count > 0)
             {
                 ItemIndexRange range = this.requests[0];
-                if (range.Length > 50) range = new ItemIndexRange(range.FirstIndex, 50);
+                if (range.Length > (uint)maxsize) range = new ItemIndexRange(range.FirstIndex, (uint)maxsize);
                 return range;
             }
             return null;

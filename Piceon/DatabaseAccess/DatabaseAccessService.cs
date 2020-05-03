@@ -27,11 +27,13 @@ namespace Piceon.DatabaseAccess
 
         public static SqliteConnection Database;
 
+        public static string DatabaseFilePath { get; private set; }
+
         public async static Task InitializeDatabaseAsync()
         {
             await ApplicationData.Current.LocalFolder.CreateFileAsync("sqliteSample.db", CreationCollisionOption.OpenIfExists);
-            string dbpath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
-            Database = new SqliteConnection($"Filename={dbpath}");
+            DatabaseFilePath = Path.Combine(ApplicationData.Current.LocalFolder.Path, "sqliteSample.db");
+            Database = new SqliteConnection($"Filename={DatabaseFilePath}");
             
             Database.Open();
 
@@ -370,7 +372,7 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
         }
 
-        public static async Task InsertImageAsync(string path, int parentId)
+        public static async Task<int> InsertImageAsync(string path, int parentId)
         {
             if (parentId < 1)
                 throw new ArgumentException("Error: Parent ID smaller than 1 - doesn't exist.");
@@ -392,12 +394,16 @@ namespace Piceon.DatabaseAccess
             using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_IMAGE (IMAGE_Id, VIRTUALFOLDER_Id) " +
                 $"VALUES ({rowid}, {parentId})", Database))
             { await command.ExecuteReaderAsync(); }
+
+            return (int)rowid;
         }
 
-        public static async Task AddImageToVirtualfolderAsync(int imageId, int virtualfolderId)
+        public static async Task MoveImageToVirtualfolderAsync(int imageId, int virtualfolderId)
         {
-            using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_iMAGE (IMAGE_Id, VIRTUALFOLDER_Id) " +
-                    $"VALUES ({imageId}, {virtualfolderId})", Database))
+            using (SqliteCommand command = new SqliteCommand($@"DELETE FROM VIRTUALFOLDER_IMAGE
+                WHERE IMAGE_Id = {imageId}; 
+                INSERT INTO VIRTUALFOLDER_iMAGE (IMAGE_Id, VIRTUALFOLDER_Id)
+                VALUES ({imageId}, {virtualfolderId})", Database))
             { await command.ExecuteReaderAsync(); }
         }
 
@@ -413,12 +419,12 @@ namespace Piceon.DatabaseAccess
         /// <param name="imageId"></param>
         /// <param name="virtualfolderId"></param>
         /// <returns></returns>
-        public static async Task RemoveImageRelationsFromVritualfolderAsync(int imageId, int virtualfolderId)
-        {
-            using (SqliteCommand command = new SqliteCommand($@"DELETE FROM VIRTUALFOLDER_IMAGE
-                WHERE IMAGE_Id = {imageId} AND VIRTUALFOLDER_Id = {virtualfolderId}", Database))
-            { await command.ExecuteReaderAsync(); }
-        }
+        //public static async Task RemoveImageRelationsFromVritualfolderAsync(int imageId, int virtualfolderId)
+        //{
+        //    using (SqliteCommand command = new SqliteCommand($@"DELETE FROM VIRTUALFOLDER_IMAGE
+        //        WHERE IMAGE_Id = {imageId} AND VIRTUALFOLDER_Id = {virtualfolderId}", Database))
+        //    { await command.ExecuteReaderAsync(); }
+        //}
 
         /// <summary>
         /// Deletes those images from database, that have a relation with given virtual folder
@@ -430,6 +436,120 @@ namespace Piceon.DatabaseAccess
             using (SqliteCommand command = new SqliteCommand($@"DELETE FROM IMAGE WHERE Id IN 
                 (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId})", Database))
             { await command.ExecuteReaderAsync(); }
+        }
+
+        public static async Task<List<Triple<int, string, Helpers.GroupPosition>>> GetImagesInVirtualfolderGroupedBySimilarityAsync(int virtualfolderId)
+        {
+            var result = new List<Triple<int, string, Helpers.GroupPosition>>();
+
+            SqliteCommand selectCommand = new SqliteCommand
+                ($@"SELECT * FROM IMAGE WHERE Id IN
+                    (SELECT DISTINCT FIRST_IMAGE_Id FROM SIMILAR_IMAGES 
+                    WHERE 
+                    FIRST_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}) 
+                    AND
+                    SECOND_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}))", Database);
+
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+
+
+            while (query.Read())
+            {
+                result.Add(new Triple<int, string, Helpers.GroupPosition>(query.GetInt32(0), query.GetString(1), Helpers.GroupPosition.Start));
+            }
+
+            int count = result.Count;
+
+            for (int i = count - 1; i >= 0; i--)
+            {
+                SqliteCommand cmd = new SqliteCommand
+                ($@"SELECT * FROM IMAGE WHERE Id IN
+                    (SELECT SECOND_IMAGE_Id FROM SIMILAR_IMAGES 
+                    WHERE
+                    FIRST_IMAGE_Id = {result[i].Item1}
+                    AND
+                    SECOND_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}))", Database);
+
+                SqliteDataReader q = await cmd.ExecuteReaderAsync();
+
+                bool wasFirst = false;
+                while (q.Read())
+                {
+                    Helpers.GroupPosition option = Helpers.GroupPosition.None;
+                    if (!wasFirst)
+                    {
+                        option = Helpers.GroupPosition.End;
+                        wasFirst = true;
+                    }
+                    else
+                    {
+                        option = Helpers.GroupPosition.Middle;
+                    }
+                    result.Insert(i + 1, new Triple<int, string, Helpers.GroupPosition>(q.GetInt32(0), q.GetString(1), option));
+                }
+            }
+
+            selectCommand = new SqliteCommand
+                ($@"SELECT * FROM IMAGE WHERE
+                    Id NOT IN (SELECT FIRST_IMAGE_Id FROM SIMILAR_IMAGES)
+                    AND
+                    Id NOT IN (SELECT SECOND_IMAGE_Id FROM SIMILAR_IMAGES)
+                    AND
+                    Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId})", Database);
+
+            query = await selectCommand.ExecuteReaderAsync();
+
+            while (query.Read())
+            {
+                result.Add(new Triple<int, string, Helpers.GroupPosition>(query.GetInt32(0), query.GetString(1), Helpers.GroupPosition.None));
+            }
+
+            return result;
+        }
+    }
+
+    public class Triple<T1, T2, T3>
+    {
+        public T1 Item1 { get; }
+        public T2 Item2 { get; }
+        public T3 Item3 { get; }
+
+        public Triple(T1 item1, T2 item2, T3 item3)
+        {
+            Item1 = item1;
+            Item2 = item2;
+            Item3 = item3;
+        }
+
+        public static bool operator ==(Triple<T1, T2, T3> t1, Triple<T1, T2, T3> t2)
+        {
+            return EqualityComparer<T1>.Default.Equals(t1.Item1, t2.Item1) &&
+                   EqualityComparer<T2>.Default.Equals(t1.Item2, t2.Item2) &&
+                   EqualityComparer<T3>.Default.Equals(t1.Item3, t2.Item3);
+        }
+
+        public static bool operator !=(Triple<T1, T2, T3> t1, Triple<T1, T2, T3> t2)
+        {
+            return !(EqualityComparer<T1>.Default.Equals(t1.Item1, t2.Item1) &&
+                   EqualityComparer<T2>.Default.Equals(t1.Item2, t2.Item2) &&
+                   EqualityComparer<T3>.Default.Equals(t1.Item3, t2.Item3));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Triple<T1, T2, T3> triple &&
+                   EqualityComparer<T1>.Default.Equals(Item1, triple.Item1) &&
+                   EqualityComparer<T2>.Default.Equals(Item2, triple.Item2) &&
+                   EqualityComparer<T3>.Default.Equals(Item3, triple.Item3);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 341329424;
+            hashCode = hashCode * -1521134295 + EqualityComparer<T1>.Default.GetHashCode(Item1);
+            hashCode = hashCode * -1521134295 + EqualityComparer<T2>.Default.GetHashCode(Item2);
+            hashCode = hashCode * -1521134295 + EqualityComparer<T3>.Default.GetHashCode(Item3);
+            return hashCode;
         }
     }
 }

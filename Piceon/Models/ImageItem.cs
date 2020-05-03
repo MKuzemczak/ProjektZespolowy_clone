@@ -6,6 +6,8 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.Storage.FileProperties;
 
+using Piceon.Helpers;
+
 namespace Piceon.Models
 {
     
@@ -17,8 +19,8 @@ namespace Piceon.Models
             Thumbnail = 1
         }
 
+
         public string Filename { get; set; }
-        public int Size { get; set; }
         public BitmapImage ImageData { get; set; }
 
         public string Key { get; private set; }
@@ -31,6 +33,8 @@ namespace Piceon.Models
         public StorageFile File { get; set; }
 
         public Options ViewMode;
+
+        public GroupPosition PotitionInGroup { get; set; } = GroupPosition.None;
 
         public async Task ToImage()
         {
@@ -71,23 +75,8 @@ namespace Piceon.Models
                 File = f
             };
 
-            // Block to make sure we only have one request outstanding
-            await gettingFileProperties.WaitAsync();
-
-            BasicProperties bp = null;
-            try
-            {
-                bp = await f.GetBasicPropertiesAsync().AsTask(ct);
-            }
-            catch (Exception) { }
-            finally
-            {
-                gettingFileProperties.Release();
-            }
-
             ct.ThrowIfCancellationRequested();
 
-            item.Size = (int)bp.Size;
             item.Key = f.FolderRelativeId;
             item.GalleryIndex = index;
 

@@ -129,10 +129,16 @@ namespace Piceon.Models
             throw new NotImplementedException();
         }
 
-        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
             throw new NotImplementedException();
         }
+
+        public override void InvokeContentsChanged()
+        {
+            throw new NotImplementedException();
+        }
+
 
         public static bool operator ==(StorageFolderItem f1, StorageFolderItem f2)
         {

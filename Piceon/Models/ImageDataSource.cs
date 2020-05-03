@@ -35,7 +35,7 @@ namespace Piceon.Models
 
             // The ItemCacheManager does most of the heavy lifting.
             // We pass it a callback that it will use to actually fetch data, and the max size of a request
-            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback, 50);
+            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback);
             this.itemCache.CacheChanged += ItemCache_CacheChanged;
         }
 
@@ -80,7 +80,7 @@ namespace Piceon.Models
             }
 
             // Create a new instance of the cache manager
-            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback, 50);
+            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback);
             this.itemCache.CacheChanged += ItemCache_CacheChanged;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
@@ -152,7 +152,7 @@ namespace Piceon.Models
         {
             IReadOnlyList<ImageItem> results = await _folder.GetImageItemsRangeAsync(
                 batch.FirstIndex,
-                Math.Min(Math.Max((int)batch.Length, 20), await _folder.GetFilesCountAsync() - batch.FirstIndex),
+                Math.Min((int)batch.Length, await _folder.GetFilesCountAsync() - batch.FirstIndex),
                 ct);
             return results.ToArray();
         }
