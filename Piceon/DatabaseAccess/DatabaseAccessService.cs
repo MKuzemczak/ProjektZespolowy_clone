@@ -234,20 +234,20 @@ namespace Piceon.DatabaseAccess
         {
             return await GetImagesInFolderAsync(folder.Id);
         }
-        public static async Task<Tuple<int, string>> GetImagePathAsync(string id)
+        public static async Task<string> GetImagePathAsync(string id)
         {
-            Tuple<int, string> result = null;
+            string result = null;
             SqliteCommand selectCommand = new SqliteCommand
                 ($"SELECT * FROM IMAGE WHERE Id={id}", Database);
             SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
             while (query.Read())
             {
-                result = new Tuple<int, string>(query.GetInt32(0), query.GetString(1));
+                result = query.GetString(1);
             }
             return result;
         }
 
-        public static async Task<Tuple<int, string>> GetImagePathAsync(int id)
+        public static async Task<string> GetImagePathAsync(int id)
         {
             return await GetImagePathAsync(id.ToString());
         }
@@ -462,17 +462,6 @@ namespace Piceon.DatabaseAccess
 
             return result;
         }
-        public static async Task<bool> TagExistsAsync(string tag)
-        {
-            SqliteCommand selectCommand = new SqliteCommand
-                ($"SELECT * FROM TAG WHERE tag = {tag}", Database);
-            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
-            while (query.Read())
-            {
-                return true;
-            }
-            return false;
-        }
         public static async Task<bool> ImageTagExistsAsync(string ImageId, string TagId)
         {
             SqliteCommand selectCommand = new SqliteCommand
@@ -488,32 +477,44 @@ namespace Piceon.DatabaseAccess
         }
         public static async Task<Tuple<int, string>> InsertTagAsync(string tag)
         {
-            using (SqliteCommand command = new SqliteCommand("INSERT INTO TAG (tag) " +
+            Tuple<int, string> tagindb = await GetTagAsync(tag);
+            if (tagindb is null)
+            {
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO TAG (tag) " +
                         $"VALUES ('{tag}')", Database))
-            { await command.ExecuteReaderAsync(); }
+                { await command.ExecuteReaderAsync(); }
 
-            Int64 rowid = 0;
-            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
-            { rowid = (Int64)await command.ExecuteScalarAsync(); }
-            if (rowid == 0)
-            {
-                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+                Int64 rowid = 0;
+                using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+                { rowid = (Int64)await command.ExecuteScalarAsync(); }
+                if (rowid == 0)
+                {
+                    throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+                }
+                return new Tuple<int, string>((int)rowid, tag);
             }
-            return new Tuple<int, string>((int)rowid, tag);
+            else
+            {
+                return tagindb;
+            }
         }
-        public static async void InsertImageTagAsync(string ImageId, string TagId)
+        public static async Task<Tuple<int, int>> InsertImageTagAsync(string ImageId, string tag)
         {
-            using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE_TAG (IMAGE_Id, TAG_Id) " +
-                        $"VALUES ('{ImageId},{TagId}')", Database))
-            { await command.ExecuteReaderAsync(); }
-
-            Int64 rowid = 0;
-            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
-            { rowid = (Int64)await command.ExecuteScalarAsync(); }
-            if (rowid == 0)
+            Tuple<int, string> tagindb = await InsertTagAsync(tag);
+            if (!await ImageTagExistsAsync(ImageId, tagindb.Item1.ToString()))
             {
-                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE_TAG (IMAGE_Id, TAG_Id) " +
+                        $"VALUES ('{ImageId},{tagindb.Item1}')", Database))
+                { await command.ExecuteReaderAsync(); }
+                Int64 rowid = 0;
+                using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+                { rowid = (Int64)await command.ExecuteScalarAsync(); }
+                if (rowid == 0)
+                {
+                    throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+                }
             }
+            return new Tuple<int, int>(int.Parse(ImageId), tagindb.Item1);
         }
     }
 }

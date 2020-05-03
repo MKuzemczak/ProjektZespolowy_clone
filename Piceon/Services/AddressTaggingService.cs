@@ -15,26 +15,14 @@ namespace Piceon.Services
         private static HttpClient client = new HttpClient();
         public static async Task TagImageAddressAsync(string id)
         {
-            string path = DatabaseAccessService.GetImagePathAsync(id).Result.Item2;
+            string path = await DatabaseAccessService.GetImagePathAsync(id);
             var image = await StorageFile.GetFileFromPathAsync(path);
 
             await TagAddressAsync(image);
             var tags = await GetTagsAsync(image);
             foreach( string tag in tags)
             {
-                if(!await DatabaseAccessService.TagExistsAsync(tag))
-                {
-                    var tagindb = await DatabaseAccessService.InsertTagAsync(tag);
-                    DatabaseAccessService.InsertImageTagAsync(id, tagindb.Item1.ToString());
-                }
-                else
-                {
-                    var tagindb = await DatabaseAccessService.GetTagAsync(tag);
-                    if (!await DatabaseAccessService.ImageTagExistsAsync(id, tagindb.Item1.ToString()))
-                    {
-                        DatabaseAccessService.InsertImageTagAsync(id, tagindb.Item1.ToString());
-                    }
-                }
+                await DatabaseAccessService.InsertImageTagAsync(id, tag);
             }
         }
         public static async Task TagImageAddressAsync(int id)
@@ -47,10 +35,6 @@ namespace Piceon.Services
             var address = await GetAddressAsync(latlon);
             var prop = await image.Properties.GetImagePropertiesAsync();
 
-            if (address.PlaceName.Length > 0 && !prop.Keywords.Contains(address.PlaceName))
-            {
-                prop.Keywords.Add(address.PlaceName);
-            }
             if (address.City.Length > 0 && !prop.Keywords.Contains(address.City))
             {
                 prop.Keywords.Add(address.City);
@@ -116,7 +100,6 @@ namespace Piceon.Services
     }
     public class Address
     {
-        public string PlaceName { get; set; }
         public string Neighborhood { get; set; }
         public string City { get; set; }
         public string Subregion { get; set; }
