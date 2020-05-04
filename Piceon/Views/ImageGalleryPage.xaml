@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Piceon.Models"
+    xmlns:controls="using:Piceon.Controls"
     NavigationCacheMode="Required"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
@@ -35,7 +36,8 @@
             SelectionMode="Extended"
             IsMultiSelectCheckBoxEnabled="False"
             CanDragItems="True"
-            DragItemsStarting="ImagesGridView_DragItemsStarting" >
+            DragItemsStarting="ImagesGridView_DragItemsStarting"
+            DragItemsCompleted="ImagesGridView_DragItemsCompleted">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
                     <Grid>
@@ -57,6 +59,8 @@
                                 </MenuFlyout>
                             </Image.ContextFlyout>
                         </Image>
+                        <controls:GroupBorders PositionInGroup="{x:Bind PotitionInGroup}" />
+
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>

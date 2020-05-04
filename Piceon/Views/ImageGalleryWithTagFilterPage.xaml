@@ -1,0 +1,70 @@
+﻿<Page
+    x:Class="Piceon.Views.ImageGalleryWithTagFilterPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Piceon.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:views="using:Piceon.Views"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <SplitView x:Name="splitView"
+                   IsPaneOpen="True"
+                   DisplayMode="Inline"
+                   OpenPaneLength="40"
+                   PanePlacement="Right">
+            <SplitView.Pane>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button x:Name="openPaneButton"
+                            Grid.Row="0"
+                            Content="&#xE71C;"
+                            FontSize="14"
+                            Width="40"
+                            Height="40"
+                            Padding="{StaticResource SmallLeftRightMargin}"
+                            VerticalAlignment="Top"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Center"
+                            FontFamily="Segoe MDL2 Assets"
+                            Background="Transparent"
+                            Click="OpenPaneButton_Click" 
+                            ToolTipService.ToolTip="Filter by tag(s)"/>
+                    <Button x:Name="closePaneButton"
+                            Grid.Row="0"
+                            Content="&#xE894;"
+                            FontSize="14"
+                            Width="40"
+                            Height="40"
+                            Padding="{StaticResource SmallLeftRightMargin}"
+                            VerticalAlignment="Top"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Left"
+                            FontFamily="Segoe MDL2 Assets"
+                            Background="Transparent"
+                            Click="ClosePaneButton_Click" 
+                            ToolTipService.ToolTip="Close filter pane"
+                            Visibility="Collapsed"/>
+                    <TextBlock x:Name="loadingTextBlock"
+                                Text="Loading..."
+                                Visibility="Collapsed"
+                                Margin="0,9,20,0"
+                                HorizontalAlignment="Right"/>
+                    <views:TagFilterPage x:Name="tagFilterPage"
+                                        Grid.Row="1"
+                                        SelectedTagsChanged="TagFilterPage_SelectedTagsChanged"
+                                        Visibility="Collapsed"/>
+                </Grid>
+            </SplitView.Pane>
+            <Grid>
+                <views:ImageGalleryPage x:Name="imageGalleryPage"
+                                        ImageClicked="ImageGalleryPage_ImageClicked"/>
+            </Grid>
+        </SplitView>
+    </Grid>
+</Page>

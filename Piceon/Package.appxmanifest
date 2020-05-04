@@ -6,7 +6,8 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:genTemplate="http://schemas.microsoft.com/appx/developer/windowsTemplateStudio"
-  IgnorableNamespaces="uap mp genTemplate">
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap mp genTemplate rescap">
 
   <Identity
     Name="9B9E1BB9-899A-46F3-A233-45B2D7A87BBA"
@@ -59,6 +60,7 @@
   <Capabilities>
     <Capability Name="internetClient" />
     <uap:Capability Name="picturesLibrary"/>
+    <rescap:Capability Name="confirmAppClose" />
   </Capabilities>
 
   <genTemplate:Metadata>

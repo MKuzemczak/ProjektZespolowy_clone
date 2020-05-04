@@ -436,9 +436,10 @@ namespace Piceon.Views
             {
                 if (item is ImageItem imageItem)
                 {
-                    await DatabaseAccessService.AddImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
+                    await DatabaseAccessService.MoveImageToVirtualfolderAsync(imageItem.DatabaseId, ((sender as WinUI.TreeViewItem).DataContext as FolderItem).DatabaseId);
                 }
             }
+            DragAndDropHelper.DropSuccessful = true;
         }
 
         private void TreeViewItem_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)

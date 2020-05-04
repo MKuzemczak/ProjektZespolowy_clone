@@ -61,14 +61,9 @@ namespace Piceon.Models
         }
 
 
-        public override async Task<int> GetFilesCountAsync()
+        public override int GetFilesCount()
         {
-            if (SourceStorageFolder == null || SourceStorageFolderImageQuery == null)
-            {
-                throw new MemberAccessException();
-            }
-
-            return (int)await SourceStorageFolderImageQuery.GetItemCountAsync();
+            throw new NotImplementedException();
         }
 
         protected override async Task<List<FolderItem>> GetSubfoldersAsync()
@@ -129,7 +124,27 @@ namespace Piceon.Models
             throw new NotImplementedException();
         }
 
-        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void InvokeContentsChanged()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task UpdateQueryAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task<List<string>> GetTagsOfImagesAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override async Task SetTagsToFilter(List<string> tags)
         {
             throw new NotImplementedException();
         }

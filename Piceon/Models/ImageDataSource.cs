@@ -35,7 +35,7 @@ namespace Piceon.Models
 
             // The ItemCacheManager does most of the heavy lifting.
             // We pass it a callback that it will use to actually fetch data, and the max size of a request
-            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback, 50);
+            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback);
             this.itemCache.CacheChanged += ItemCache_CacheChanged;
         }
 
@@ -53,7 +53,7 @@ namespace Piceon.Models
         {
             // Initialize the query and register for changes
             _folder = folder;
-            await UpdateCount();
+            UpdateCount();
         }
 
         // Handler for when the filesystem notifies us of a change to the file list
@@ -80,14 +80,19 @@ namespace Piceon.Models
             }
 
             // Create a new instance of the cache manager
-            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback, 50);
+            this.itemCache = new ItemCacheManager<ImageItem>(fetchDataCallback);
             this.itemCache.CacheChanged += ItemCache_CacheChanged;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        async Task UpdateCount()
+        public void StopTasks()
         {
-            _count = await _folder.GetFilesCountAsync();
+            itemCache.StopTasks();
+        }
+
+        void UpdateCount()
+        {
+            _count = _folder.GetFilesCount();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -152,7 +157,7 @@ namespace Piceon.Models
         {
             IReadOnlyList<ImageItem> results = await _folder.GetImageItemsRangeAsync(
                 batch.FirstIndex,
-                Math.Min(Math.Max((int)batch.Length, 20), await _folder.GetFilesCountAsync() - batch.FirstIndex),
+                Math.Min((int)batch.Length, _folder.GetFilesCount() - batch.FirstIndex), 
                 ct);
             return results.ToArray();
         }

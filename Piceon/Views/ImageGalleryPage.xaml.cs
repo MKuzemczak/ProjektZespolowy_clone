@@ -14,6 +14,7 @@ using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+using Piceon.Controls;
 using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
@@ -59,7 +60,7 @@ namespace Piceon.Views
         }
 
 
-        public async void AccessFolder(FolderItem folder)
+        public async Task AccessFolder(FolderItem folder)
         {
             if (folder is null)
                 return;
@@ -72,18 +73,32 @@ namespace Piceon.Views
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
             }
 
-            await SelectedContentFolder.CheckContentAsync();
             Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
 
             if (Source != null)
             {
                 imagesGridView.ItemsSource = Source;
+                await SelectedContentFolder.CheckContentAsync();
             }
         }
 
-        public void ReloadFolder()
+        public async void ReloadFolder()
         {
-            AccessFolder(SelectedContentFolder);
+            await AccessFolder(SelectedContentFolder);
+        }
+
+        // simple protection from multiple SetTagsToFilter called
+        private int SetTagsToFilterRequestCntr = 0;
+
+        public async Task SetTagsToFilter(List<string> tags)
+        {
+            int cntrState = ++SetTagsToFilterRequestCntr;
+            Source.StopTasks();
+
+            // giving the data source time to cancel its work
+            await Task.Delay(500);
+            if (cntrState == SetTagsToFilterRequestCntr)
+                await SelectedContentFolder?.SetTagsToFilter(tags);
         }
 
         private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
@@ -224,7 +239,7 @@ namespace Piceon.Views
                     {
                         try
                         {
-                            await DatabaseAccessService.RemoveImageRelationsFromVritualfolderAsync(imageItem.DatabaseId, SelectedContentFolder.DatabaseId);
+                            await DatabaseAccessService.DeleteImageAsync(imageItem.DatabaseId);
                         }
                         catch (Exception)
                         {
@@ -282,5 +297,15 @@ namespace Piceon.Views
             }
         }
 
+        private void ImagesGridView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (DragAndDropHelper.DropSuccessful)
+            {
+                ReloadFolder();
+                DragAndDropHelper.DropSuccessful = false;
+            }
+
+            DragAndDropHelper.DraggedItems.Clear();
+        }
     }
 }

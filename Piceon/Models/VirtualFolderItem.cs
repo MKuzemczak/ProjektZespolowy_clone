@@ -18,6 +18,9 @@ namespace Piceon.Models
 
         public override event EventHandler ContentsChanged;
 
+        private List<DatabaseImage> AllImages { get; set; } = new List<DatabaseImage>();
+        private List<DatabaseImage> FilteredImages { get; set; } = new List<DatabaseImage>();
+
         public static async Task<VirtualFolderItem> FromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
         {
             VirtualFolderItem result = new VirtualFolderItem
@@ -26,6 +29,7 @@ namespace Piceon.Models
                 DatabaseId = virtualFolder.Id
             };
             result.Subfolders = await result.GetSubfoldersAsync();
+            await result.UpdateQueryAsync();
 
             return result;
         }
@@ -39,18 +43,20 @@ namespace Piceon.Models
 
         public override async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length)
         {
-            var allFilePaths = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
-
-            if (firstIndex + length > allFilePaths.Count)
-                throw new IndexOutOfRangeException();
-
-            var selectedRangeFilePaths = allFilePaths.GetRange(firstIndex, length);
-
             var result = new List<StorageFile>();
 
-            foreach (var item in selectedRangeFilePaths)
+            var range = FilteredImages.GetRange(firstIndex, length);
+
+            foreach (var item in range)
             {
-                result.Add(await StorageFile.GetFileFromPathAsync(item.Item2));
+                try
+                {
+                    result.Add(await StorageFile.GetFileFromPathAsync(item.Path));
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
             }
 
             return result;
@@ -58,31 +64,76 @@ namespace Piceon.Models
 
         public override async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
         {
-            ct.ThrowIfCancellationRequested();
-            var allFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
-
-            if (firstIndex + length > allFiles.Count)
-                throw new IndexOutOfRangeException();
-
-            var selectedRangeFiles = allFiles.GetRange(firstIndex, length);
-
             var result = new List<ImageItem>();
+            ct.ThrowIfCancellationRequested();
+
+            var selectedRangeFiles = FilteredImages.GetRange(firstIndex, length);
+            var storageFiles = new List<Tuple<int, StorageFile>>();
 
             for (int i = 0; i < selectedRangeFiles.Count(); i++)
             {
                 ct.ThrowIfCancellationRequested();
-                var storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Item2);
-                var image = await ImageItem.FromStorageFile(storageFile, i + firstIndex, ct, ImageItem.Options.Thumbnail);
-                image.DatabaseId = selectedRangeFiles[i].Item1;
+                StorageFile storageFile = null;
+                try
+                {
+                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Path);
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+                storageFiles.Add(new Tuple<int, StorageFile>(i, storageFile));
+            }
+
+            int prevGroupId = -1;
+            if (firstIndex != 0)
+                prevGroupId = FilteredImages[firstIndex - 1].Group.Id;
+
+            for (int i = 0; i < storageFiles.Count(); i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                int currentGroupId = selectedRangeFiles[storageFiles[i].Item1].Group.Id;
+                var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
+                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Id;
+
+                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == FilteredImages.Count - 1 ||
+                    currentGroupId != FilteredImages[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
+
+                if (currentGroupId < 0)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.None;
+                }
+                else if (prevGroupId != currentGroupId)
+                {
+                    if (nextGroupDifferent)
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Only;
+                    }
+                    else
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Start;
+                    }
+                }
+                else if (nextGroupDifferent)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.End;
+                }
+                else
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.Middle;
+                }
+
+                prevGroupId = currentGroupId;
+
                 result.Add(image);
             }
 
             return result;
         }
 
-        public override async Task<int> GetFilesCountAsync()
+        public override int GetFilesCount()
         {
-            return await DatabaseAccessService.GetImagesCountInFolderAsync(DatabaseId);
+            return FilteredImages.Count;
         }
 
         protected override async Task<List<FolderItem>> GetSubfoldersAsync()
@@ -157,13 +208,47 @@ namespace Piceon.Models
             }
         }
 
-        public override async Task AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public override async Task UpdateQueryAsync()
         {
+            var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
+            AllImages = raw.OrderByDescending(i => i.Group.Id).ToList();
+            FilteredImages = AllImages.
+                Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
+                    true : TagsToFilter.Intersect(i.Tags).Count() > 0; }).ToList();
+            ContentsChanged?.Invoke(this, new EventArgs());
+        }
+
+
+        public override async Task SetTagsToFilter(List<string> tags)
+        {
+            TagsToFilter = tags;
+            await UpdateQueryAsync();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns>List of database IDs</returns>
+        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        {
+            var result = new List<int>();
             foreach (var file in files)
             {
-                await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId);
+                result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
             }
+            await UpdateQueryAsync();
+            ContentsChanged?.Invoke(this, new EventArgs());
+            return result;
+        }
 
+        public override async Task<List<string>> GetTagsOfImagesAsync()
+        {
+            return await DatabaseAccessService.GetVirtualfolderTags(DatabaseId);
+        }
+
+        public override void InvokeContentsChanged()
+        {
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 

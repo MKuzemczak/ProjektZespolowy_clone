@@ -44,11 +44,6 @@
                     Margin="{StaticResource XXSmallTopRightBottomMargin}"
                     TextChanged="TreeViewItemEditableTextBlock_TextChanged"
                     Width="300">
-                    <!--<mycontrols:EditableTextBlock.ContextFlyout>
-                        <MenuFlyout Opened="TreeViewItemMenuFlyout_Opened">
-                            <MenuFlyoutItem Text="Rename" Click="TreeViewItemMenuFlyout_Rename"/>
-                        </MenuFlyout>
-                    </mycontrols:EditableTextBlock.ContextFlyout>-->
                 </mycontrols:EditableTextBlock>
             </winui:TreeViewItem>
         </DataTemplate>
