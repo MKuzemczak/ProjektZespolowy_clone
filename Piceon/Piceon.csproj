@@ -137,6 +137,9 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
+	<PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.2</Version>
+    </PackageReference>
     <PackageReference Include="RabbitMQ.Client">
       <Version>6.0.0</Version>
     </PackageReference>
@@ -174,6 +177,7 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
+	<Compile Include="Services\AddressTaggingService.cs" />
     <Compile Include="Services\BackendConctroller.cs" />
     <Compile Include="Services\Exceptions.cs" />
     <Compile Include="Services\FolderManagerService.cs" />
