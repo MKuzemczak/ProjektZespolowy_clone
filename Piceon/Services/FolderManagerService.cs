@@ -103,11 +103,13 @@ namespace Piceon.Services
                 ids = await folder.AddFilesToFolder(files);
 
                 CurrentlyScannedFolder = folder;
-                BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
+                await BackendConctroller.TagImages(ids);
+                CurrentlyScannedFolder.InvokeContentsChanged();
+                BackendConctroller.CompareImages(ids, InvokeFolderContentsChangedIfDone);
             }
         }
 
-        private static void FindSimilarFinishedHandler(string result)
+        private static void InvokeFolderContentsChangedIfDone(string result)
         {
             if (result == BackendConctroller.DoneMessage)
             {

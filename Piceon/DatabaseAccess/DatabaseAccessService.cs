@@ -49,15 +49,15 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS VIRTUALFOLDER_IMAGE" +
-                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL, VIRTUALFOLDER_Id REFERENCES VIRTUALFOLDER(Id) NOT NULL)", Database))
+                        "(IMAGE_Id INTEGER REFERENCES IMAGE(Id) NOT NULL, VIRTUALFOLDER_Id INTEGER REFERENCES VIRTUALFOLDER(Id) NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS SIMILAR_IMAGES" +
-                        "(FIRST_IMAGE_Id REFERENCES IMAGE(Id)NOT NULL, SECOND_IMAGE_Id REFERENCES IMAGE(Id)NOT NULL)", Database))
+                        "(FIRST_IMAGE_Id INTEGER REFERENCES IMAGE(Id)NOT NULL, SECOND_IMAGE_Id INTEGER REFERENCES IMAGE(Id)NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS VIRTUALFOLDER_RELATION" +
-                        "(PARENT_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL, CHILD_Id REFERENCES VIRTUALFOLDER(Id)NOT NULL)", Database))
+                        "(PARENT_Id INTEGER REFERENCES VIRTUALFOLDER(Id)NOT NULL, CHILD_Id INTEGER REFERENCES VIRTUALFOLDER(Id)NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS ACCESSEDFOLDER" +
@@ -69,15 +69,15 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS SIMILARITYGROUP_IMAGE" +
-                        "(SIMILARITYGROUP_Id REFERENCES SIMILARITYGROUP(Id) NOT NULL, IMAGE_Id REFERENCES IMAGE(Id) NOT NULL)", Database))
+                        "(SIMILARITYGROUP_Id INTEGER REFERENCES SIMILARITYGROUP(Id) NOT NULL, IMAGE_Id INTEGER REFERENCES IMAGE(Id) NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS TAG" +
-                        "(Id INTEGER PRIMARY KEY NOT NULL, tag text NOT NULL UNIQUE)", Database))
+                        "(Id INTEGER PRIMARY KEY NOT NULL, tag text NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS IMAGE_TAG" +
-                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL UNIQUE, TAG_Id REFERENCES TAG(Id) NOT NULL UNIQUE)", Database))
+                        "(IMAGE_Id INTEGER REFERENCES IMAGE(Id) NOT NULL, TAG_Id INTEGER REFERENCES TAG(Id) NOT NULL)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS path_validator " +
@@ -619,7 +619,7 @@ namespace Piceon.DatabaseAccess
         {
             Tuple<int, string> result = null;
             SqliteCommand selectCommand = new SqliteCommand
-                ($"SELECT * FROM TAG WHERE tag = {tag}", Database);
+                ($"SELECT * FROM TAG WHERE tag = '{tag}'", Database);
             SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
 
             while (query.Read())
@@ -671,7 +671,7 @@ namespace Piceon.DatabaseAccess
             if (!await ImageTagExistsAsync(ImageId, tagindb.Item1.ToString()))
             {
                 using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE_TAG (IMAGE_Id, TAG_Id) " +
-                        $"VALUES ('{ImageId},{tagindb.Item1}')", Database))
+                        $"VALUES ('{ImageId}','{tagindb.Item1}')", Database))
                 { await command.ExecuteReaderAsync(); }
                 Int64 rowid = 0;
                 using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))

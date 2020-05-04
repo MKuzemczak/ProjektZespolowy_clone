@@ -1,19 +1,10 @@
-﻿using System;
+﻿using Piceon.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
-using Windows.UI.Xaml;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -31,6 +22,8 @@ namespace Piceon.Views
 
         public event EventHandler<SelectedTagsChangedEventArgs> SelectedTagsChanged;
 
+        private FolderItem AccessedFolder { get; set; }
+
         public TagFilterPage()
         {
             this.InitializeComponent();
@@ -42,9 +35,29 @@ namespace Piceon.Views
             UpdateFiltered();
         }
 
-        public void SetTagList(List<string> list)
+        public async Task AccessFolder(FolderItem folder)
         {
-            AllTags = list;
+            if (folder is null)
+            {
+                throw new ArgumentNullException(nameof(folder));
+            }
+
+            if (AccessedFolder is object)
+                AccessedFolder.ContentsChanged -= AccessedFolderContentsChangedHandler;
+
+            AccessedFolder = folder;
+            AccessedFolder.ContentsChanged += AccessedFolderContentsChangedHandler;
+            await ScanAccessedFolderForTags();
+        }
+
+        private async void AccessedFolderContentsChangedHandler(object sender, EventArgs e)
+        {
+            await ScanAccessedFolderForTags();
+        }
+
+        private async Task ScanAccessedFolderForTags()
+        {
+            AllTags = await AccessedFolder.GetTagsOfImagesAsync();
             UpdateFiltered();
         }
 

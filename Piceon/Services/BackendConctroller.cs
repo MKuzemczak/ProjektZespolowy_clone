@@ -155,6 +155,19 @@ namespace Piceon.Services
             return taskId;
         }
 
+        public static async Task TagImages(List<int> taggedImagesIds)
+        {
+            if (taggedImagesIds is null)
+            {
+                throw new ArgumentNullException(nameof(taggedImagesIds));
+            }
+
+            foreach (var item in taggedImagesIds)
+            {
+                await AddressTaggingService.TagImageAddressAsync(item);
+            }
+        }
+
         public static void SendCloseApp()
         {
             Communicator.Send(LauncherOutgoingQueueName, "closing");

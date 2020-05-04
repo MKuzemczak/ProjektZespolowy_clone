@@ -42,7 +42,7 @@ namespace Piceon.Views
         public async Task AccessFolder(FolderItem folder)
         {
             ShowTagsLoadingIndicator();
-            tagFilterPage.SetTagList(await folder.GetTagsOfImagesAsync());
+            await tagFilterPage.AccessFolder(folder);
             HideTagsLoadingIndicator();
             await imageGalleryPage.AccessFolder(folder);
         }

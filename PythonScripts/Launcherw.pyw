@@ -13,7 +13,7 @@ channel.queue_purge(queue=launcher_queue_name)
 
 
 controller = subprocess.Popen('pythonw controller.pyw')
-piceon = subprocess.Popen('Piceon.exe')
+#piceon = subprocess.Popen('Piceon.exe')
 
 while 1:
     message = channel.basic_get(launcher_queue_name, True)

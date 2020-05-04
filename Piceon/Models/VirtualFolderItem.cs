@@ -214,7 +214,7 @@ namespace Piceon.Models
             AllImages = raw.OrderByDescending(i => i.Group.Id).ToList();
             FilteredImages = AllImages.
                 Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
-                    true : TagsToFilter.Intersect(i.Tags).Count() > 0; }).ToList();
+                    true : TagsToFilter.Intersect(i.Tags).Count() == TagsToFilter.Count; }).ToList();
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 
