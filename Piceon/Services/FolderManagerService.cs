@@ -98,15 +98,13 @@ namespace Piceon.Services
 
             var files = await picker.PickMultipleFilesAsync();
             List<int> ids = null;
-            if (files != null)
+            if (files != null && files.Count > 0)
             {
                 ids = await folder.AddFilesToFolder(files);
+
+                CurrentlyScannedFolder = folder;
+                BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
             }
-
-            // TODO: compare new images
-            CurrentlyScannedFolder = folder;
-            BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
-
         }
 
         private static void FindSimilarFinishedHandler(string result)

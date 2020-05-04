@@ -73,11 +73,11 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS TAG" +
-                        "(Id INTEGER PRIMARY KEY NOT NULL, tag text NOT NULL)", Database))
+                        "(Id INTEGER PRIMARY KEY NOT NULL, tag text NOT NULL UNIQUE)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS IMAGE_TAG" +
-                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL, TAG_Id REFERENCES TAG(Id) NOT NULL)", Database))
+                        "(IMAGE_Id REFERENCES IMAGE(Id) NOT NULL UNIQUE, TAG_Id REFERENCES TAG(Id) NOT NULL UNIQUE)", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TRIGGER IF NOT EXISTS path_validator " +
@@ -141,7 +141,6 @@ namespace Piceon.DatabaseAccess
                         "SELECT RAISE(ABORT, 'NIE ZMIENIAJ ID FOLDERU'); " +
                     "END; ", Database))
             { await command.ExecuteReaderAsync(); }
-            
 
             Initialized = true;
         }

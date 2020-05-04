@@ -325,6 +325,7 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Icons\check-mark.png" />
     <Content Include="Assets\LeftArrow.png" />
     <Content Include="Assets\PlaceholderImage.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
