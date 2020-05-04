@@ -38,9 +38,9 @@ namespace Piceon.Views
 
         public MainPage()
         {
+            InitializeThings();
             InitializeComponent();
 
-            InitializeThings();
             SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += App_CloseRequested;
         }
 
@@ -83,9 +83,9 @@ namespace Piceon.Views
 
         private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        private void TreeViewPage_ItemSelected(object sender, TreeViewItemSelectedEventArgs e)
+        private async void TreeViewPage_ItemSelected(object sender, TreeViewItemSelectedEventArgs e)
         {
-            imageGalleryPage.AccessFolder(e.Parameter);
+            await imageGalleryPage.AccessFolder(e.Parameter);
         }
 
         private async void imageGalleryPage_ImageClicked(object sender, EventArgs e)

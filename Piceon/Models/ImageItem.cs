@@ -36,7 +36,7 @@ namespace Piceon.Models
 
         public GroupPosition PotitionInGroup { get; set; } = GroupPosition.None;
 
-        public async Task ToImage()
+        public async Task ToImage(CancellationToken ct = new CancellationToken())
         {
             if (File == null)
                 return;
@@ -45,7 +45,7 @@ namespace Piceon.Models
             using (Windows.Storage.Streams.IRandomAccessStream fileStream =
                 await File.OpenAsync(Windows.Storage.FileAccessMode.Read))
             {
-                await ImageData.SetSourceAsync(fileStream);
+                await ImageData.SetSourceAsync(fileStream).AsTask(ct);
             }
 
             ViewMode = Options.Image;

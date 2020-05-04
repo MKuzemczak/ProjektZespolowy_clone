@@ -11,6 +11,7 @@ namespace Piceon.Helpers
         None = 0,
         Start = 1,
         Middle = 2,
-        End = 3
+        End = 3,
+        Only = 4
     }
 }

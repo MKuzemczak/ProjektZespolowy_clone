@@ -53,7 +53,7 @@ namespace Piceon.Models
         {
             // Initialize the query and register for changes
             _folder = folder;
-            await UpdateCount();
+            UpdateCount();
         }
 
         // Handler for when the filesystem notifies us of a change to the file list
@@ -85,9 +85,14 @@ namespace Piceon.Models
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
-        async Task UpdateCount()
+        public void StopTasks()
         {
-            _count = await _folder.GetFilesCountAsync();
+            itemCache.StopTasks();
+        }
+
+        void UpdateCount()
+        {
+            _count = _folder.GetFilesCount();
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -152,7 +157,7 @@ namespace Piceon.Models
         {
             IReadOnlyList<ImageItem> results = await _folder.GetImageItemsRangeAsync(
                 batch.FirstIndex,
-                Math.Min((int)batch.Length, await _folder.GetFilesCountAsync() - batch.FirstIndex),
+                Math.Min((int)batch.Length, _folder.GetFilesCount() - batch.FirstIndex), 
                 ct);
             return results.ToArray();
         }
