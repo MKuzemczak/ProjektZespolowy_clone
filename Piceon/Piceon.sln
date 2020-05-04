@@ -22,12 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{D6D1338F-F111-
 		..\PythonScripts\db\schemat_bazy.jpg = ..\PythonScripts\db\schemat_bazy.jpg
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "metadane", "metadane", "{8C75F16E-12EE-4923-8291-A539DE287001}"
-	ProjectSection(SolutionItems) = preProject
-		..\PythonScripts\metadane\ExifManipulation.py = ..\PythonScripts\metadane\ExifManipulation.py
-		..\PythonScripts\metadane\ReverseGeocoding.py = ..\PythonScripts\metadane\ReverseGeocoding.py
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,7 +110,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{D6D1338F-F111-4A25-946F-F538C2A3B480} = {1C53A053-2B24-4365-A5E5-39EE43985C98}
-		{8C75F16E-12EE-4923-8291-A539DE287001} = {1C53A053-2B24-4365-A5E5-39EE43985C98}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F950D7BA-548F-4E5C-85E0-C063444AADA8}
