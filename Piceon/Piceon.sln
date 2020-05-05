@@ -24,6 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{D6D1338F-F111-
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "..\Launcher\Launcher.csproj", "{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F981A90E-859D-491B-98C8-7E94182FE5F7}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
