@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Windows.Storage;
-using Windows.System;
 
 using Piceon.DatabaseAccess;
-using Windows.Storage.Search;
-using Windows.UI.Popups;
 using System.Threading;
+using System.IO;
 
 namespace Piceon.Models
 {
-    public abstract class FolderItem
+    public class FolderItem
     {
+        public const string NameInvalidCharacters = "\\/:*?\"<>|";
+
         public int DatabaseId;
 
         public List<FolderItem> Subfolders { get; protected set; } = new List<FolderItem>();
@@ -26,35 +26,282 @@ namespace Piceon.Models
 
         public List<string> TagsToFilter { get; protected set; } = new List<string>();
 
-        public abstract Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length);
+        public event EventHandler ContentsChanged;
 
-        public abstract Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct);
+        private List<DatabaseImage> AllImages { get; set; } = new List<DatabaseImage>();
+        private List<DatabaseImage> FilteredImages { get; set; } = new List<DatabaseImage>();
 
-        public abstract int GetFilesCount();
+        public static async Task<FolderItem> FromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
+        {
+            FolderItem result = new FolderItem
+            {
+                Name = virtualFolder.Name,
+                DatabaseId = virtualFolder.Id
+            };
+            result.Subfolders = await result.GetSubfoldersAsync();
+            await result.UpdateQueryAsync();
 
-        public abstract Task RenameAsync(string newName);
+            return result;
+        }
 
-        public  abstract Task SetParentAsync(FolderItem parent);
+        public static async Task<FolderItem> GetNew(string name)
+        {
+            var dbvf = await DatabaseAccessService.InsertVirtualFolderAsync(name);
 
-        public abstract Task DeleteAsync();
+            return await FromDatabaseVirtualFolder(dbvf);
+        }
 
-        public abstract Task CheckContentAsync();
+        public async Task<IReadOnlyList<StorageFile>> GetStorageFilesRangeAsync(int firstIndex, int length)
+        {
+            var result = new List<StorageFile>();
 
-        public abstract Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files);
+            var range = FilteredImages.GetRange(firstIndex, length);
 
-        public abstract void InvokeContentsChanged();
+            foreach (var item in range)
+            {
+                try
+                {
+                    result.Add(await StorageFile.GetFileFromPathAsync(item.Path));
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+            }
 
-        public abstract Task UpdateQueryAsync();
+            return result;
+        }
 
-        public abstract Task SetTagsToFilter(List<string> tags);
+        public async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
+        {
+            var result = new List<ImageItem>();
+            ct.ThrowIfCancellationRequested();
 
-        public abstract Task<List<string>> GetTagsOfImagesAsync();
+            var selectedRangeFiles = FilteredImages.GetRange(firstIndex, length);
+            var storageFiles = new List<Tuple<int, StorageFile>>();
 
-        protected abstract Task<List<FolderItem>> GetSubfoldersAsync();
+            for (int i = 0; i < selectedRangeFiles.Count(); i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                StorageFile storageFile = null;
+                try
+                {
+                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Path);
+                }
+                catch (FileNotFoundException)
+                {
+                    continue;
+                }
+                storageFiles.Add(new Tuple<int, StorageFile>(i, storageFile));
+            }
 
-        public abstract event EventHandler ContentsChanged;
+            int prevGroupId = -1;
+            if (firstIndex != 0)
+                prevGroupId = FilteredImages[firstIndex - 1].Group.Id;
 
-        protected FolderItem() { }
+            for (int i = 0; i < storageFiles.Count(); i++)
+            {
+                ct.ThrowIfCancellationRequested();
+                int currentGroupId = selectedRangeFiles[storageFiles[i].Item1].Group.Id;
+                var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
+                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Id;
 
+                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == FilteredImages.Count - 1 ||
+                    currentGroupId != FilteredImages[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
+
+                if (currentGroupId < 0)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.None;
+                }
+                else if (prevGroupId != currentGroupId)
+                {
+                    if (nextGroupDifferent)
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Only;
+                    }
+                    else
+                    {
+                        image.PotitionInGroup = Helpers.GroupPosition.Start;
+                    }
+                }
+                else if (nextGroupDifferent)
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.End;
+                }
+                else
+                {
+                    image.PotitionInGroup = Helpers.GroupPosition.Middle;
+                }
+
+                prevGroupId = currentGroupId;
+
+                result.Add(image);
+            }
+
+            return result;
+        }
+
+        public int GetFilesCount()
+        {
+            return FilteredImages.Count;
+        }
+
+        protected async Task<List<FolderItem>> GetSubfoldersAsync()
+        {
+            var virtualFolders = await DatabaseAccessService.GetChildrenOfFolderAsync(DatabaseId);
+
+            var result = new List<FolderItem>();
+
+            foreach (var item in virtualFolders)
+            {
+                var newFolder = await FromDatabaseVirtualFolder(item);
+                newFolder.ParentFolder = this;
+                result.Add(newFolder);
+            }
+
+            return result;
+        }
+
+        public async Task RenameAsync(string newName)
+        {
+            if (newName.IndexOfAny(NameInvalidCharacters.ToCharArray()) != -1)
+            {
+                throw new FormatException();
+            }
+            await DatabaseAccessService.RenameVirtualFolderAsync(DatabaseId, newName);
+            Name = newName;
+        }
+
+        public async Task SetParentAsync(FolderItem folder)
+        {
+            if (folder is FolderItem)
+            {
+                await DatabaseAccessService.SetParentOfFolderAsync(DatabaseId, (folder as FolderItem).DatabaseId);
+                ParentFolder?.Subfolders?.Remove(this);
+                ParentFolder = folder;
+                folder.Subfolders.Add(this);
+            }
+        }
+
+        public async Task DeleteAsync()
+        {
+            if (Subfolders is object)
+            {
+                int subCount = Subfolders.Count;
+                for (int i = subCount - 1; i >= 0; i--)
+                {
+                    await Subfolders[i].DeleteAsync();
+                }
+            }
+            await DatabaseAccessService.DeleteVirtualFolderAsync(DatabaseId);
+            ParentFolder?.Subfolders?.Remove(this);
+            DatabaseId = -1;
+            ParentFolder = null;
+            Subfolders = null;
+            Name = null;
+        }
+
+        public async Task CheckContentAsync()
+        {
+            var dbFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
+
+            foreach (var file in dbFiles)
+            {
+                try
+                {
+                    StorageFile f = await StorageFile.GetFileFromPathAsync(file.Item2);
+                }
+                catch (FileNotFoundException)
+                {
+                    await DatabaseAccessService.DeleteImageAsync(file.Item1);
+                }
+            }
+        }
+
+        public async Task UpdateQueryAsync()
+        {
+            var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
+            AllImages = raw.OrderByDescending(i => i.Group.Id).ToList();
+            FilteredImages = AllImages.
+                Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
+                    true : TagsToFilter.Intersect(i.Tags).Count() == TagsToFilter.Count; }).ToList();
+            ContentsChanged?.Invoke(this, new EventArgs());
+        }
+
+
+        public async Task SetTagsToFilter(List<string> tags)
+        {
+            TagsToFilter = tags;
+            await UpdateQueryAsync();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns>List of database IDs</returns>
+        public async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        {
+            var result = new List<int>();
+            foreach (var file in files)
+            {
+                result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
+            }
+            await UpdateQueryAsync();
+            ContentsChanged?.Invoke(this, new EventArgs());
+            return result;
+        }
+
+        public async Task<List<string>> GetTagsOfImagesAsync()
+        {
+            return await DatabaseAccessService.GetVirtualfolderTags(DatabaseId);
+        }
+
+
+        public void InvokeContentsChanged()
+        {
+            ContentsChanged?.Invoke(this, new EventArgs());
+        }
+
+        public static bool operator ==(FolderItem f1, FolderItem f2)
+        {
+            if ((f1 is object && f2 is null) ||
+                (f1 is null && f2 is object))
+                return false;
+
+            if (f1 is null && f2 is null)
+                return true;
+
+            return (f1.Name == f2.Name &&
+                f1.DatabaseId == f2.DatabaseId);
+        }
+
+        public static bool operator !=(FolderItem f1, FolderItem f2)
+        {
+            if ((f1 is object && f2 is null) ||
+                (f1 is null && f2 is object))
+                return true;
+
+            if (f1 is null && f2 is null)
+                return false;
+
+            return !(f1.Name == f2.Name &&
+                f1.DatabaseId == f2.DatabaseId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is FolderItem item &&
+                   Name == item.Name &&
+                   DatabaseId == item.DatabaseId;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 1010871291;
+            hashCode = hashCode * -1521134295 + base.GetHashCode();
+            hashCode = hashCode * -1521134295 + DatabaseId.GetHashCode();
+            return hashCode;
+        }
     }
 }
