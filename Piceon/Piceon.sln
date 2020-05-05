@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{D6D1338F-F111-
 		..\PythonScripts\db\schemat_bazy.jpg = ..\PythonScripts\db\schemat_bazy.jpg
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "..\Launcher\Launcher.csproj", "{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +106,26 @@ Global
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x64.Build.0 = Release|Any CPU
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x86.ActiveCfg = Release|Any CPU
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x86.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x64.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x86.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM64.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x64.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x64.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x86.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
