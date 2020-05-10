@@ -75,7 +75,7 @@ namespace Piceon.Services
 
             if (Queues.Contains(name))
             {
-                throw new QueueAlreadyExistsException();
+                throw new QueueAlreadyExistsException(name);
             }
 
             ConnectionModel.QueueDeclare(queue: name,
@@ -96,7 +96,7 @@ namespace Piceon.Services
 
             if (Queues.Contains(name))
             {
-                throw new QueueAlreadyExistsException();
+                throw new QueueAlreadyExistsException(name);
             }
 
             ConnectionModel.QueueDeclare(queue: name,
@@ -148,7 +148,7 @@ namespace Piceon.Services
             MessageReceived(this, new MessageReceivedEventArgs(CurrentReceivedQueue, CurrentReceivedMessage));
         }
 
-        private void CleanQueue(string queueName)
+        public void CleanQueue(string queueName)
         {
             ConnectionModel.QueuePurge(queueName);
         }
