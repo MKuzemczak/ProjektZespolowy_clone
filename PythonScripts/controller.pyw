@@ -3,6 +3,8 @@ from __future__ import annotations
 from PIL import Image
 import pika
 import json
+import subprocess
+
 from collections import namedtuple
 
 import images.similar_images as sm
@@ -15,9 +17,9 @@ class Executor:
         channel = connection.channel()
         channel.queue_declare(queue='front')
         channel.queue_declare(queue='back')
-
         channel.queue_purge(queue='front')
         channel.queue_purge(queue='back')
+
 
         def callback(ch, method, properties, body):
 
@@ -112,4 +114,6 @@ class Controller:
 
 
 if __name__ == '__main__':
+
+    subprocess.Popen([r"Piceon.exe"])
     Executor.start_messaging()
