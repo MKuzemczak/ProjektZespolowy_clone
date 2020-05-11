@@ -16,8 +16,8 @@ class Executor:
         channel.queue_declare(queue='front')
         channel.queue_declare(queue='back')
 
-        channel.queue_purge(queue='front')
-        channel.queue_purge(queue='back')
+        #channel.queue_purge(queue='front')
+        #channel.queue_purge(queue='back')
 
         def callback(ch, method, properties, body):
 
@@ -55,7 +55,6 @@ class Executor:
 
             }
             response = json.dumps(response)
-
             channel.basic_publish(exchange='',
                                   routing_key='back',
                                   body=str(response))
@@ -104,12 +103,12 @@ class Controller:
 
         return [[]]
 
-    def run_comparator(self, images_paths):
+    def run_comparator(self, images_ids_paths):
 
-        for path in images_paths:
-            if not path.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+        for path in images_ids_paths:
+            if not path[1].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 raise Exception("BAD PATH")
-        return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_paths)
+        return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_ids_paths)
 
 
 if __name__ == '__main__':
