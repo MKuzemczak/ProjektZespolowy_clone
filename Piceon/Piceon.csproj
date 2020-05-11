@@ -137,7 +137,7 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
-	<PackageReference Include="Newtonsoft.Json">
+    <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.2</Version>
     </PackageReference>
     <PackageReference Include="RabbitMQ.Client">
@@ -164,6 +164,7 @@
     <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Models\ControllerTaskRequestMessage.cs" />
     <Compile Include="Models\EditableTextBlockTextChangedEventArgs.cs" />
     <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
@@ -177,7 +178,7 @@
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
-	<Compile Include="Services\AddressTaggingService.cs" />
+    <Compile Include="Services\AddressTaggingService.cs" />
     <Compile Include="Services\BackendConctroller.cs" />
     <Compile Include="Services\Exceptions.cs" />
     <Compile Include="Services\FolderManagerService.cs" />
@@ -371,6 +372,9 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Enums\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

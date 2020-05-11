@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Piceon.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,12 @@ namespace Piceon.Services
 {
     public static class BackendConctroller
     {
+        public enum TaskType : int
+        {
+            Initialize = 0,
+            Compare = 1
+        };
+
         public static bool Initialized = false;
         private static RabbitMQCommunicationService Communicator { get; set; }
 
@@ -22,7 +29,7 @@ namespace Piceon.Services
 
         private static string LauncherOutgoingQueueName { get; set; }
 
-        private static Dictionary<int, string> Tasks { get; } = new Dictionary<int, string>();
+        private static Dictionary<int, ControllerTaskRequestMessage> Tasks { get; } = new Dictionary<int, ControllerTaskRequestMessage>();
 
         /// <summary>
         /// Dictionary of pairs (Task_id, Function_called_after_complete).
@@ -75,8 +82,13 @@ namespace Piceon.Services
 
             Communicator.MessageReceived += MessageReceiver;
 
-            RunTask(TaskIdCntr, $"{TaskIdCntr} PATH {databaseFilePath}", PathSendCompleteHandler);
-            TaskIdCntr++;
+            var helloMessage = new ControllerTaskRequestMessage()
+            {
+                taskid = TaskIdCntr++,
+                type = (int)TaskType.Initialize
+            };
+
+            RunTask(helloMessage, PathSendCompleteHandler);
             await Task.Delay(500);
             if (!Initialized)
                 throw new BackendControllerInitializationException();
@@ -119,18 +131,18 @@ namespace Piceon.Services
             action(split[1]);
         }
 
-        private static void RunTask(int taskId, string message, Action<string> actionToCallAfterComplete)
+        private static void RunTask(ControllerTaskRequestMessage message, Action<string> actionToCallAfterComplete)
         {
-            Tasks.Add(taskId, message);
-            TaskCompleteActions.Add(taskId, actionToCallAfterComplete);
-            Communicator.Send(OutgoingQueueName, message);
+            Tasks.Add(message.taskid, message);
+            TaskCompleteActions.Add(message.taskid, actionToCallAfterComplete);
+            Communicator.Send(OutgoingQueueName, message.ToJson());
         }
 
-        public static int CompareImages(List<int> comparedImagesIds, Action<string> actionToCallAfterComplete)
+        public static int CompareImages(List<string> comparedImagesPaths, Action<string> actionToCallAfterComplete)
         {
-            if (comparedImagesIds is null)
+            if (comparedImagesPaths is null)
             {
-                throw new ArgumentNullException(nameof(comparedImagesIds));
+                throw new ArgumentNullException(nameof(comparedImagesPaths));
             }
 
             if (actionToCallAfterComplete is null)
@@ -138,21 +150,21 @@ namespace Piceon.Services
                 throw new ArgumentNullException(nameof(actionToCallAfterComplete));
             }
 
-            if (comparedImagesIds.Count < 2)
+            if (comparedImagesPaths.Count < 2)
             {
                 throw new ArgumentOutOfRangeException("comparedImagesIds list count should be at least 2");
             }
 
-            int taskId = TaskIdCntr++;
-            string message = $"{taskId} COMPARE";
-            foreach (int id in comparedImagesIds)
+            var message = new ControllerTaskRequestMessage()
             {
-                message += $" {id}";
-            }
+                taskid = TaskIdCntr++,
+                type = (int)TaskType.Compare
+            };
+            message.images.AddRange(comparedImagesPaths);
 
-            RunTask(taskId, message, actionToCallAfterComplete);
+            RunTask(message, actionToCallAfterComplete);
 
-            return taskId;
+            return message.taskid;
         }
 
         public static void SendCloseApp()

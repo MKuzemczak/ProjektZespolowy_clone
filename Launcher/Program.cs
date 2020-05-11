@@ -48,7 +48,7 @@ namespace Launcher
 
             // Comment this line, if you want to launch piceon yourself
             // from Visual studio
-            piceonProcess.Start();
+            // piceonProcess.Start();
 
             while (!AppCloseRequested) ;
 

@@ -105,7 +105,7 @@ namespace Piceon.Services
 
             // TODO: compare new images
             CurrentlyScannedFolder = folder;
-            BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
+            BackendConctroller.CompareImages(files.Select(i => i.Path).ToList(), FindSimilarFinishedHandler);
 
         }
 
