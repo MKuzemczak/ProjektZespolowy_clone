@@ -105,7 +105,7 @@ class Controller:
         return [[]]
 
     def run_comparator(self, images_paths):
-        # TODO PATH VALIDATION
+
         for path in images_paths:
             if not path.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 raise Exception("BAD PATH")
