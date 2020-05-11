@@ -16,8 +16,8 @@ class Executor:
         channel.queue_declare(queue='front')
         channel.queue_declare(queue='back')
 
-        # channel.queue_purge(queue='front')
-        # channel.queue_purge(queue='back')
+        channel.queue_purge(queue='front')
+        channel.queue_purge(queue='back')
 
         def callback(ch, method, properties, body):
 
@@ -55,7 +55,7 @@ class Executor:
 
             }
             response = json.dumps(response)
-            print(response)
+
             channel.basic_publish(exchange='',
                                   routing_key='back',
                                   body=str(response))
@@ -82,7 +82,7 @@ class Controller:
         decode = message.decode('UTF-8')
 
         x = json.loads(message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-        print(x)
+
         # return arr[0], arr[1], arr[2:]
         return x.taskid, x.type, x.images
 
