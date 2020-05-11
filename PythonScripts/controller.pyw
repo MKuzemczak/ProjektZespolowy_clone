@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import os
-
+from PIL import Image
 import pika
+import json
+from collections import namedtuple
 
-#from PythonScripts.similar_images import SimilarImageRecognizer
 import images.similar_images as sm
 
 
@@ -15,32 +15,46 @@ class Executor:
         channel = connection.channel()
         channel.queue_declare(queue='front')
         channel.queue_declare(queue='back')
+
         channel.queue_purge(queue='front')
         channel.queue_purge(queue='back')
 
         def callback(ch, method, properties, body):
+
             c = Controller.get_instance()
             p = None
             b = None
+
             no, p, b = c.prepare_message(body)
-            response = no + '-'
+
+            err_msg = None
+            images = [[]]
             if p is not None or b is not None:
-                is_done = False
                 try:
-                    is_done = c.caller(p, b)
+                    images = c.caller(p, b)
                     # if is_done == "WORNG FUNC":
                     # raise Exception('WRONG FUNCTION')
                 except Exception as e:
-                    response += str(e)
-                if is_done:
-                    response += 'DONE'
-
+                    err_msg = str(e)
             elif p is None and b is None:
-                response += 'BAD PARAMS AND DATA'
+                err_msg = 'BAD PARAMS AND DATA'
             elif p is not None and b is None:
-                response += 'NO DATA'
+                err_msg = 'NO DATA'
             else:
-                response += 'BAD REQUEST'
+                err_msg = 'BAD REQUEST'
+
+            if err_msg is None:
+                result = 'DONE'
+            else:
+                result = 'ERR'
+            response = {
+                'taskid': no,
+                'result': result,
+                'error_massage': err_msg,
+                'images': images
+
+            }
+            response = json.dumps(response)
 
             channel.basic_publish(exchange='',
                                   routing_key='back',
@@ -62,18 +76,20 @@ class Controller:
     def __init__(self):
         if Controller.__instance is None:
             Controller.__instance = self
-            self.db_path = None
-            self.image_comparator: sm.SimilarImageRecognizer = None  # SimilarImageRecognizer(path)
+
 
     def prepare_message(self, message: bytes):
-        arr = message.decode('UTF-8').split(' ')
-        return arr[0], arr[1], arr[2:]
+        decode = message.decode('UTF-8')
+
+        x = json.loads(message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+
+        # return arr[0], arr[1], arr[2:]
+        return x.taskid, x.type, x.images
 
     def caller(self, param, body):
         switcher = {
-            'PATH': self.init_path,
-            'COMPARE': self.run_comparator,
-            'LOCALISATION': self.tag_localisation
+            0: self.initial_msg,
+            1: self.run_comparator
         }
         func = switcher.get(param, self.__bad_function)
         try:
@@ -84,30 +100,16 @@ class Controller:
     def __bad_function(self, name):
         raise Exception("LACK OF METHOD")
 
-    def init_path(self, db_path):
-        if not os.path.exists(db_path[0]):
-            raise Exception('LACK OF FILE')
-        if not db_path[0].endswith('.db'):
-            raise Exception('WRONG EXTENSION')
-        if self.db_path is None:
-            self.db_path = db_path[0]
-            self.image_comparator = sm.SimilarImageRecognizer(db_path[0])
-            return True
-        else:
-            return False
+    def initial_msg(self, empty_arg):
 
-    def run_comparator(self, images_id):
-        if self.db_path is None:
-            raise Exception("LACK OF PATH")
-        for i in images_id:
-            try:
-                int(i)
-            except ValueError:
-                raise Exception('WRONG ID')
-        return self.image_comparator.compare_images(images_id)
+        return [[]]
 
-    def tag_localisation(self, body):
-        pass
+    def run_comparator(self, images_paths):
+
+        for path in images_paths:
+            if not path.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+                raise Exception("BAD PATH")
+        return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_paths)
 
 
 if __name__ == '__main__':
