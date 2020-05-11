@@ -8,42 +8,35 @@ Kolejki:
 
 Dostpnę metody:
 -
-- PATH - ustawienie sciezki do bazy danych
-- COMPARE - porownanie zdjec i zapisanie w bazie
-- LOCALISATION 
+- "type":0 - wiadmosc testowa
+- "type":1 - porgrupowanie podobnych zdjec
+
 
 
 <h2>Korzystanie z metod:</h2>
 -
-<h3>Na początku jednorazowo należy ustawić sciezke, potem mozna 
-korzystać z pozostałych metod</h3>
-
-- KOD(spacja)PATH(spacja)sciezka\\do\\pliku.db<br>
-- KOD(spacja)COMPARE(spacja){glowne id}(spacja){kolejne id} np:
-    233 COMPARE  3 4 5 6 1 2
-    takie zapytanie wywoła poruwnanie zdjec 4 5 6 1 2 ze zdjeciem 3<br>
-*gdzie KOD to kod generowany przez apke po stronie UWP
-
+- JSON w formie:<br>
+<h4>{"taskid":int,"type":int,"images":[]}</h4><br>
+np: {"taskid": 5678, "type": 1, "images": ["C:\\Users\\mgole\\OneDrive\\Obrazy\\Z aparatu\\WIN_20200417_23_43_44_Pro.jpg","nestpath"]}<br>
 <h2>Zwrot</h2>
-<h3>zapytanie->odpowiedz</h3>
-Jeżeli operacja się uda:
-KOD-DONE<br>
-np 233->DONE<br>
+<h3>JSON w formie</h3>
+<h4>
+{"taskid": int, "result": string, "error_massage": string/null, "images": [[]]}
+</h4><br>
+<h2>Poprawne zapytanie</h2>
+"taskid":int<br>
+"result":"DONE"<br>
+"error_massage": null<br>
+"images":[[path1,path2],[pat3,path4]....]<br>
 <h2>Błędy</h2>
-<h3>OGÓLNE:</h3>
+<h3>
+pole "result" ma wartosc = "ERR"
+<h3>
+<h3>OGÓLNE, error_massage = :</h3>
 - -BAD PARAMS AND DATA oznacza puste zapytanie<br>
 - -NO DATA oznacza brak danych<br>
 - -BAD REQUEST oznacza probe trollowania<br>
 - -LACK OF METHOD oznacza brak metody o podanej nazwie<br>
-np 233-NO DATA
-<h3>Dla PATH:</h3>
-- -LACK OF FILE oznacza nie poprawna sciezke do bazy<br>
-- -WRONG EXTENSION oznacza ze to jest plik ale nie .db<br>
-np 233-LACK OF FILE
-<h3>Dla COMPARE:</h3>
-- -LACK OF PATH oznacza ze controller nie dostal poprawnej sciezki<br>
- wiec nie moze wywołac funkcji<br>
-- -WRONG ID oznacza ze wsrod id jest nie Integer<br>
-np 233-WRONG ID
+
  
 
