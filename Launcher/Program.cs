@@ -13,7 +13,7 @@ namespace Launcher
         private static string IncomingQueueName { get; } = "launcher";
         private static RabbitMQCommunicationService Communicator { get; set; }
 
-        private static bool AppCloseRequested = false;
+        private static AutoResetEvent AppClose = new AutoResetEvent(false);
         
         static void Initialize()
         {
@@ -50,7 +50,7 @@ namespace Launcher
             // from Visual studio
             // piceonProcess.Start();
 
-            while (!AppCloseRequested) ;
+            AppClose.WaitOne();
 
             pythonControllerProcess.Kill();
         }
@@ -62,7 +62,7 @@ namespace Launcher
 
             if (e.Message == "closing")
             {
-                AppCloseRequested = true;
+                AppClose.Set();
             }
 
             return;

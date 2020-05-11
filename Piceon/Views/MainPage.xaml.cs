@@ -47,19 +47,25 @@ namespace Piceon.Views
 
         private async void InitializeThings()
         {
-            await DatabaseAccessService.InitializeDatabaseAsync();
-
-            try
+            if (!DatabaseAccessService.Initialized)
             {
-                await BackendConctroller.Initialize(Window.Current.Dispatcher, DatabaseAccessService.DatabaseFilePath);
+                await DatabaseAccessService.InitializeDatabaseAsync();
             }
-            catch (BackendControllerInitializationException exception)
+
+            if (!BackendConctroller.Initialized)
             {
-                var messageDialog = new MessageDialog("Error establishing connection with python: " + exception.Message);
-                messageDialog.Commands.Add(new UICommand("Close"));
-                messageDialog.DefaultCommandIndex = 0;
-                messageDialog.CancelCommandIndex = 0;
-                await messageDialog.ShowAsync();
+                try
+                {
+                    await BackendConctroller.Initialize(Window.Current.Dispatcher, DatabaseAccessService.DatabaseFilePath);
+                }
+                catch (BackendControllerInitializationException exception)
+                {
+                    var messageDialog = new MessageDialog("Error establishing connection with python: " + exception.Message);
+                    messageDialog.Commands.Add(new UICommand("Close"));
+                    messageDialog.DefaultCommandIndex = 0;
+                    messageDialog.CancelCommandIndex = 0;
+                    await messageDialog.ShowAsync();
+                }
             }
         }
 

@@ -76,9 +76,21 @@ namespace Piceon.Services
             _uiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
             Communicator.Initialize(uiThreadDispatcher);
 
-            Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
-            Communicator.DeclareOutgoingQueue(OutgoingQueueName);
-            Communicator.DeclareIncomingQueue(IncomingQueueName);
+            try
+            {
+                Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
+            try
+            {
+                Communicator.DeclareOutgoingQueue(OutgoingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
+            try
+            {
+                Communicator.DeclareIncomingQueue(IncomingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
 
             Communicator.MessageReceived += MessageReceiver;
 
@@ -157,6 +169,19 @@ namespace Piceon.Services
             RunTask(message, actionToCallAfterComplete);
 
             return message.taskid;
+        }
+
+        public static async Task TagImages(List<int> taggedImagesIds)
+        {
+            if (taggedImagesIds is null)
+            {
+                throw new ArgumentNullException(nameof(taggedImagesIds));
+            }
+
+            foreach (var item in taggedImagesIds)
+            {
+                await AddressTaggingService.TagImageAddressAsync(item);
+            }
         }
 
         public static void SendCloseApp()

@@ -170,15 +170,13 @@
     <Compile Include="Models\ControllerTaskRequestMessage.cs" />
     <Compile Include="Models\ControllerTaskResultMessage.cs" />
     <Compile Include="Models\EditableTextBlockTextChangedEventArgs.cs" />
-    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
     <Compile Include="Models\ImageItem.cs" />
     <Compile Include="Models\ItemCacheManager.cs" />
     <Compile Include="Models\ItemIndexRangeExtensions.cs" />
     <Compile Include="Models\ItemIndexRangeList.cs" />
-    <Compile Include="Models\StorageFolderItem.cs" />
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
-    <Compile Include="Models\VirtualFolderItem.cs" />
+    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
@@ -334,6 +332,7 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Icons\check-mark.png" />
     <Content Include="Assets\LeftArrow.png" />
     <Content Include="Assets\PlaceholderImage.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

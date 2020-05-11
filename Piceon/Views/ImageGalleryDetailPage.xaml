@@ -17,7 +17,6 @@
             SelectedItem="{x:Bind SelectedImage, Mode=TwoWay}"
             SelectionChanged="FlipView_SelectionChanged"
             Tapped="FlipView_Tapped">
-            <!--ItemsSource="{x:Bind Source, Mode=OneWay}"-->
             <FlipView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
                     <Viewbox StretchDirection="Both" >

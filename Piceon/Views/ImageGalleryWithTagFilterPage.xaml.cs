@@ -41,10 +41,10 @@ namespace Piceon.Views
         }
         public async Task AccessFolder(FolderItem folder)
         {
-            ShowLoadingIndicator();
+            ShowTagsLoadingIndicator();
+            await tagFilterPage.AccessFolder(folder);
+            HideTagsLoadingIndicator();
             await imageGalleryPage.AccessFolder(folder);
-            tagFilterPage.SetTagList(await folder.GetTagsOfImagesAsync());
-            HideLoadingIndicator();
         }
 
         private async void TagFilterPage_SelectedTagsChanged(object sender, SelectedTagsChangedEventArgs e)
@@ -74,14 +74,14 @@ namespace Piceon.Views
             IsPaneOpen = false;
         }
 
-        public void ShowLoadingIndicator()
+        public void ShowTagsLoadingIndicator()
         {
             IsLoading = true;
             if (IsPaneOpen)
                 loadingTextBlock.Visibility = Visibility.Visible;
         }
 
-        public void HideLoadingIndicator()
+        public void HideTagsLoadingIndicator()
         {
             IsLoading = false;
             if (IsPaneOpen)
