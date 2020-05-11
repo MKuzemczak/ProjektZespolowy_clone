@@ -9,8 +9,10 @@ namespace Piceon.Services
     [Serializable]
     public class QueueAlreadyExistsException : Exception
     {
+        public string QueueName { get; }
+
         public QueueAlreadyExistsException() : base("A queue with such name already exists.") { }
-        public QueueAlreadyExistsException(string message) : base(message) { }
+        public QueueAlreadyExistsException(string queueName) : base($"Queue {queueName} already exists.") { QueueName = queueName; }
         public QueueAlreadyExistsException(string message, Exception inner) : base(message, inner) { }
         protected QueueAlreadyExistsException(
           System.Runtime.Serialization.SerializationInfo info,

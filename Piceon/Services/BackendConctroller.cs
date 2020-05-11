@@ -69,9 +69,21 @@ namespace Piceon.Services
             _uiThreadDispatcher = uiThreadDispatcher ?? throw new ArgumentNullException(nameof(uiThreadDispatcher));
             Communicator.Initialize(uiThreadDispatcher);
 
-            Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
-            Communicator.DeclareOutgoingQueue(OutgoingQueueName);
-            Communicator.DeclareIncomingQueue(IncomingQueueName);
+            try
+            {
+                Communicator.DeclareOutgoingQueue(LauncherOutgoingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
+            try
+            {
+                Communicator.DeclareOutgoingQueue(OutgoingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
+            try
+            {
+                Communicator.DeclareIncomingQueue(IncomingQueueName);
+            }
+            catch (QueueAlreadyExistsException) { }
 
             Communicator.MessageReceived += MessageReceiver;
 
