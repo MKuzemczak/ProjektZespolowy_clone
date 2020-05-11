@@ -16,8 +16,8 @@ class Executor:
         channel.queue_declare(queue='front')
         channel.queue_declare(queue='back')
 
-        #channel.queue_purge(queue='front')
-        #channel.queue_purge(queue='back')
+        channel.queue_purge(queue='front')
+        channel.queue_purge(queue='back')
 
         def callback(ch, method, properties, body):
 
