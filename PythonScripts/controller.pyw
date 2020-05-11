@@ -20,30 +20,36 @@ class Executor:
         channel.queue_purge(queue='front')
         channel.queue_purge(queue='back')
 
-
         def callback(ch, method, properties, body):
 
             c = Controller.get_instance()
             p = None
             b = None
-
-            no, p, b = c.prepare_message(body)
-
+            bad_json = False
             err_msg = None
             images = [[]]
-            if p is not None or b is not None:
-                try:
-                    images = c.caller(p, b)
-                    # if is_done == "WORNG FUNC":
-                    # raise Exception('WRONG FUNCTION')
-                except Exception as e:
-                    err_msg = str(e)
-            elif p is None and b is None:
-                err_msg = 'BAD PARAMS AND DATA'
-            elif p is not None and b is None:
-                err_msg = 'NO DATA'
-            else:
-                err_msg = 'BAD REQUEST'
+            no = None
+            try:
+                no, p, b = c.prepare_message(body)
+            except Exception as e:
+                err_msg = 'BAD JSON'
+                bad_json = True
+
+            if not bad_json:
+
+                if p is not None or b is not None:
+                    try:
+                        images = c.caller(p, b)
+                        # if is_done == "WORNG FUNC":
+                        # raise Exception('WRONG FUNCTION')
+                    except Exception as e:
+                        err_msg = str(e)
+                elif p is None and b is None:
+                    err_msg = 'BAD PARAMS AND DATA'
+                elif p is not None and b is None:
+                    err_msg = 'NO DATA'
+                else:
+                    err_msg = 'BAD REQUEST'
 
             if err_msg is None:
                 result = 'DONE'
@@ -78,12 +84,12 @@ class Controller:
         if Controller.__instance is None:
             Controller.__instance = self
 
-
     def prepare_message(self, message: bytes):
         decode = message.decode('UTF-8')
-
-        x = json.loads(message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-
+        try:
+            x = json.loads(message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+        except Exception as e:
+            raise Exception("BAD JSON")
         # return arr[0], arr[1], arr[2:]
         return x.taskid, x.type, x.images
 
@@ -114,6 +120,5 @@ class Controller:
 
 
 if __name__ == '__main__':
-
     subprocess.Popen([r"Piceon.exe"])
     Executor.start_messaging()
