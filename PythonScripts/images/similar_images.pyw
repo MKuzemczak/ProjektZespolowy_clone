@@ -9,7 +9,6 @@ class SimilarImageRecognizer:
         image = cv2.imread(filepath, 0)
         image2 = cv2.imread(filepath2, 0)
 
-
         # połaczenie alg fastkeypoints i brief deskryptor
         # number_of_featue => zeby nie trawalo to wiekow
         number_of_feature = 1000
@@ -57,7 +56,7 @@ class SimilarImageRecognizer:
         return False
 
     @staticmethod
-    def group_by_histogram_and_probability(filepaths, threshold: float = 0.4):
+    def group_by_histogram_and_probability(ids_filepaths, threshold: float = 0.4):
         def compare(hist, hist2) -> int:
             hist_diff = cv2.compareHist(hist, hist2, cv2.HISTCMP_BHATTACHARYYA)
             probability_match = cv2.matchTemplate(hist, hist2, cv2.TM_CCOEFF_NORMED)[0][0]
@@ -68,25 +67,24 @@ class SimilarImageRecognizer:
 
         histograms = []
         groups = []
-        for path in filepaths:
-            img = cv2.imread(path, 0)
+        for id_path in ids_filepaths:
+            img = cv2.imread(id_path[1], 0)
             hist = cv2.calcHist([img], [0], None, [256], [0, 256])
-            histograms.append((hist, path))
+            histograms.append((hist, id_path))
 
         while len(histograms) > 1:
             tmp_group = []
             for i in range(1, len(histograms)):
                 if compare(histograms[i][0], histograms[0][0]) < threshold:
                     if len(tmp_group) > 1:
-                        tmp_group.append(histograms[i][1])
+                        tmp_group.append(histograms[i][1][0])
                     else:
-                        tmp_group.append(histograms[i][1])
-                        tmp_group.append(histograms[0][1])
+                        tmp_group.append(histograms[i][1][0])
+                        tmp_group.append(histograms[0][1][0])
 
             if len(tmp_group) > 0:
-
-                for path in tmp_group:
-                    histograms = list(filter(lambda x: x[1] != path, histograms))
+                for id in tmp_group:
+                    histograms = list(filter(lambda x: x[1][0] != id, histograms))
                 groups.append(tmp_group)
             else:
                 del histograms[0]

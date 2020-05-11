@@ -35,7 +35,8 @@ class SimiliarImageTest(unittest.TestCase):
             sel = sel + str(images_id[index]) + ', '
         sel = sel + str(images_id[len(images_id) - 1]) + ')'
         images_path = db.create_select('IMAGE', 'Id', sel)
-        images_path = list(map(lambda x: x[1], images_path))
+        #images_path = list(map(lambda x: x[1], images_path))
+        images_path = list(map(lambda x: [x[0], x[1]], images_path))
         print(images_path)
         groups = SimilarImageRecognizer.group_by_histogram_and_probability(images_path)
         print(groups)
