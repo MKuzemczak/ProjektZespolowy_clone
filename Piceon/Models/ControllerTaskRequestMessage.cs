@@ -13,7 +13,7 @@ namespace Piceon.Models
     {
         public int taskid { get; set; }
         public int type { get; set; }
-        public List<string> images { get; } = new List<string>();
+        public List<string> images { get; set; } = new List<string>();
 
         public string ToJson()
         {

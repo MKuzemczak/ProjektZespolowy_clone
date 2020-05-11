@@ -229,13 +229,14 @@ namespace Piceon.Models
         /// 
         /// </summary>
         /// <param name="files"></param>
-        /// <returns>List of database IDs</returns>
-        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        /// <returns>List of tupleas (DatabaseID, StorageFile)</returns>
+        public override async Task<List<Tuple<int, StorageFile>>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
-            var result = new List<int>();
+            var result = new List<Tuple<int, StorageFile>>();
             foreach (var file in files)
             {
-                result.Add(await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId));
+                result.Add(new Tuple<int, StorageFile>(
+                    await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId), file));
             }
             await UpdateQueryAsync();
             ContentsChanged?.Invoke(this, new EventArgs());

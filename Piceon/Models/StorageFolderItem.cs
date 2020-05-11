@@ -124,7 +124,7 @@ namespace Piceon.Models
             throw new NotImplementedException();
         }
 
-        public override async Task<List<int>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public override async Task<List<Tuple<int, StorageFile>>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
             throw new NotImplementedException();
         }

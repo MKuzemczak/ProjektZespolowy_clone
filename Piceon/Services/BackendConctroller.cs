@@ -36,14 +36,14 @@ namespace Piceon.Services
         /// Function should receive a string parameter which contains a message
         /// with info about task result (DONE or some error)
         /// </summary>
-        private static Dictionary<int, Action<string>> TaskCompleteActions { get; } = new Dictionary<int, Action<string>>();
+        private static Dictionary<int, Action<ControllerTaskResultMessage>> TaskCompleteActions { get; } =
+            new Dictionary<int, Action<ControllerTaskResultMessage>>();
 
 
         public static readonly string DoneMessage = "DONE";
-        private static HashSet<string> TaskCompleteMessages { get; } = new HashSet<string>()
+        private static HashSet<string> TaskResultMessages { get; } = new HashSet<string>()
         {
-            DoneMessage, "BAD PARAMS AND DATA", "NO DATA", "BAD REQUEST", "LACK OF METHOD",
-            "LACK OF FILE", "WRONG EXTENSION", "LACK OF PATH", "WRONG ID"
+            DoneMessage, "ERR"
         };
 
 
@@ -94,9 +94,9 @@ namespace Piceon.Services
                 throw new BackendControllerInitializationException();
         }
 
-        private static void PathSendCompleteHandler(string result)
+        private static void PathSendCompleteHandler(ControllerTaskResultMessage result)
         {
-            if (result == DoneMessage)
+            if (result.result == DoneMessage)
                 Initialized = true;
         }
 
@@ -105,40 +105,32 @@ namespace Piceon.Services
             if (e.QueueName != IncomingQueueName)
                 return;
 
-            int key = 0;
-            var split = e.Message.Split('-');
-
-            if (split.Length != 2)
-                return;
-                //throw new FormatException($"Message is of bad format. Should contain only one dash. Message: {e.Message}");
-
-            bool isInteger = int.TryParse(split[0], out key);
-
-            if (!isInteger)
-                return;
-            //throw new FormatException($"Message is of bad format. No number at the beginning. Message: {e.Message}");
-
-            if (!Tasks.ContainsKey(key))
+            if (!ControllerTaskResultMessage.IsJsonValidMessage(e.Message))
                 return;
 
-            if (!TaskCompleteMessages.Contains(split[1]))
+            var message = ControllerTaskResultMessage.FromJson(e.Message);
+
+            if (!Tasks.ContainsKey(message.taskid))
+                return;
+
+            if (!TaskResultMessages.Contains(message.result))
                 return;
             //throw new FormatException($"Message is of bad format. Contains invalid result message. Message: {e.Message}");
 
-            Action<string> action = TaskCompleteActions[key];
-            TaskCompleteActions.Remove(key);
-            Tasks.Remove(key);
-            action(split[1]);
+            Action<ControllerTaskResultMessage> action = TaskCompleteActions[message.taskid];
+            TaskCompleteActions.Remove(message.taskid);
+            Tasks.Remove(message.taskid);
+            action(message);
         }
 
-        private static void RunTask(ControllerTaskRequestMessage message, Action<string> actionToCallAfterComplete)
+        private static void RunTask(ControllerTaskRequestMessage message, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
         {
             Tasks.Add(message.taskid, message);
             TaskCompleteActions.Add(message.taskid, actionToCallAfterComplete);
             Communicator.Send(OutgoingQueueName, message.ToJson());
         }
 
-        public static int CompareImages(List<string> comparedImagesPaths, Action<string> actionToCallAfterComplete)
+        public static int CompareImages(List<string> comparedImagesPaths, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
         {
             if (comparedImagesPaths is null)
             {

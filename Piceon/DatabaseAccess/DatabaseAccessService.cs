@@ -684,7 +684,36 @@ namespace Piceon.DatabaseAccess
             }
             return new Tuple<int, int>(int.Parse(ImageId), tagindb.Item1);
         }
+        public static async Task<int> InsertSimilarityGroup(List<int> similarImagesIds, string name)
+        {
+            if (similarImagesIds.Count == 0)
+                throw new ArgumentException($"Error: input list \"{nameof(similarImagesIds)}\" is empty.");
+
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO SIMILARITYGROUP (name) " +
+                        $"VALUES ('{name}')", Database))
+            { await command.ExecuteReaderAsync(); }
+
+            Int64 rowid = 0;
+
+            using (SqliteCommand command = new SqliteCommand("SELECT last_insert_rowid()", Database))
+            { rowid = (Int64)await command.ExecuteScalarAsync(); }
+
+            if (rowid == 0)
+            {
+                throw new SqliteException("SQLite access exception: Something went wrong!", 1);
+            }
+
+            foreach (int id in similarImagesIds)
+            {
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_IMAGE(SIMILARITYGROUP_Id, IMAGE_Id) " +
+                $"VALUES ({rowid}, {id})", Database))
+                { await command.ExecuteReaderAsync(); }
+            }
+
+            return (int)rowid;
+        }
     }
+
 
     public class Triple<T1, T2, T3>
     {
