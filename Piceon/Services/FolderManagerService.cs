@@ -31,7 +31,7 @@ namespace Piceon.Services
             {
                 var dbvf = await AddToDatabase(folder);
                 string token = StorageApplicationPermissions.FutureAccessList.Add(folder);
-                return await VirtualFolderItem.FromDatabaseVirtualFolder(dbvf);
+                return await FolderItem.FromDatabaseVirtualFolder(dbvf);
             }
 
             return null;
@@ -72,15 +72,7 @@ namespace Piceon.Services
 
             foreach (var item in virtualFoldersRootNodes)
             {
-                result.Add(await VirtualFolderItem.FromDatabaseVirtualFolder(item));
-            }
-
-            var tokenTupleList = await DatabaseAccessService.GetAccessedFoldersAsync();
-
-            foreach (var tokenTuple in tokenTupleList)
-            {
-                var storageFolder = await StorageApplicationPermissions.FutureAccessList.GetFolderAsync(tokenTuple.Item2);
-                result.Add(await StorageFolderItem.FromStorageFolderAsync(storageFolder, tokenTuple.Item1));
+                result.Add(await FolderItem.FromDatabaseVirtualFolder(item));
             }
 
             return result;
@@ -98,18 +90,18 @@ namespace Piceon.Services
 
             var files = await picker.PickMultipleFilesAsync();
             List<int> ids = null;
-            if (files != null)
+            if (files != null && files.Count > 0)
             {
                 ids = await folder.AddFilesToFolder(files);
+
+                CurrentlyScannedFolder = folder;
+                await BackendConctroller.TagImages(ids);
+                CurrentlyScannedFolder.InvokeContentsChanged();
+                BackendConctroller.CompareImages(ids, InvokeFolderContentsChangedIfDone);
             }
-
-            // TODO: compare new images
-            CurrentlyScannedFolder = folder;
-            BackendConctroller.CompareImages(ids, FindSimilarFinishedHandler);
-
         }
 
-        private static void FindSimilarFinishedHandler(string result)
+        private static void InvokeFolderContentsChangedIfDone(string result)
         {
             if (result == BackendConctroller.DoneMessage)
             {

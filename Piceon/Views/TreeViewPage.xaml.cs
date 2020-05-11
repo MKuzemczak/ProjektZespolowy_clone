@@ -161,7 +161,7 @@ namespace Piceon.Views
         {
             try
             {
-                var folderItem = await VirtualFolderItem.GetNew(name);
+                var folderItem = await FolderItem.GetNew(name);
 
                 if (GetSelectedFolder() != null)
                 {

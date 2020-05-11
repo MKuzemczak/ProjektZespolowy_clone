@@ -137,7 +137,7 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
-	<PackageReference Include="Newtonsoft.Json">
+    <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.2</Version>
     </PackageReference>
     <PackageReference Include="RabbitMQ.Client">
@@ -165,19 +165,17 @@
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
     <Compile Include="Models\EditableTextBlockTextChangedEventArgs.cs" />
-    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Models\ImageDataSource.cs" />
     <Compile Include="Models\ImageItem.cs" />
     <Compile Include="Models\ItemCacheManager.cs" />
     <Compile Include="Models\ItemIndexRangeExtensions.cs" />
     <Compile Include="Models\ItemIndexRangeList.cs" />
-    <Compile Include="Models\StorageFolderItem.cs" />
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
-    <Compile Include="Models\VirtualFolderItem.cs" />
+    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
     <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
-	<Compile Include="Services\AddressTaggingService.cs" />
+    <Compile Include="Services\AddressTaggingService.cs" />
     <Compile Include="Services\BackendConctroller.cs" />
     <Compile Include="Services\Exceptions.cs" />
     <Compile Include="Services\FolderManagerService.cs" />
@@ -329,6 +327,7 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Icons\check-mark.png" />
     <Content Include="Assets\LeftArrow.png" />
     <Content Include="Assets\PlaceholderImage.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

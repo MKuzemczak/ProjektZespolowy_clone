@@ -60,7 +60,12 @@
                             </Image.ContextFlyout>
                         </Image>
                         <controls:GroupBorders PositionInGroup="{x:Bind PotitionInGroup}" />
-
+                        <!--<Image x:Name="processedCheckMark"
+                               Source="ms-appx:///Assets/Icons/check-mark.png"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Bottom"
+                               Height="20"
+                               Width="20"/>-->
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>
