@@ -17,22 +17,22 @@ namespace Piceon.Models
         public List<List<int>> images { get; set; } = new List<List<int>>();
 
         private static JSchema MessageJsonSchema = JSchema.Parse(
-            @"{
-                'description': 'ControllerTaskResultMessage',
-                'type': 'object',
-                'properties': {
-                    'taskid': {'type': 'number'},
-                    'result': {'type': 'string'},
-                    'error_message': {'type': 'string'},
-                    'images': {
-                        'type': 'array',
-                        'items': {
-                            'type': 'array',
-                            'items': {'type': 'number'}
-                        }
-                    }
-                }
-            }");
+            "{" +
+                "\"description\": \"ControllerTaskResultMessage\"," +
+                "\"type\": \"object\"," +
+                "\"properties\": {" +
+                    "\"taskid\": {\"type\": \"number\"}," +
+                    "\"result\": {\"type\": \"string\"}," +
+                    "\"error_message\": {\"type\": [\"string\",\"null\"]}," +
+                    "\"images\": {" +
+                        "\"type\": \"array\"," +
+                        "\"items\": {" +
+                            "\"type\": \"array\"," +
+                            "\"items\": {\"type\": \"string\"}" +
+                        "}" +
+                    "}" +
+                "}" +
+            "}");
 
         public static ControllerTaskResultMessage FromJson(string json)
         {

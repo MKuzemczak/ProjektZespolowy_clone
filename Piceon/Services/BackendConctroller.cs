@@ -142,11 +142,11 @@ namespace Piceon.Services
             Communicator.Send(OutgoingQueueName, message.ToJson());
         }
 
-        public static int CompareImages(List<string> comparedImagesPaths, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
+        public static int CompareImages(List<List<string>> comparedImagesIdsAndPaths, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
         {
-            if (comparedImagesPaths is null)
+            if (comparedImagesIdsAndPaths is null)
             {
-                throw new ArgumentNullException(nameof(comparedImagesPaths));
+                throw new ArgumentNullException(nameof(comparedImagesIdsAndPaths));
             }
 
             if (actionToCallAfterComplete is null)
@@ -154,7 +154,7 @@ namespace Piceon.Services
                 throw new ArgumentNullException(nameof(actionToCallAfterComplete));
             }
 
-            if (comparedImagesPaths.Count < 2)
+            if (comparedImagesIdsAndPaths.Count < 2)
             {
                 throw new ArgumentOutOfRangeException("comparedImagesIds list count should be at least 2");
             }
@@ -164,7 +164,7 @@ namespace Piceon.Services
                 taskid = TaskIdCntr++,
                 type = (int)TaskType.Compare
             };
-            message.images.AddRange(comparedImagesPaths);
+            message.images.AddRange(comparedImagesIdsAndPaths);
 
             RunTask(message, actionToCallAfterComplete);
 

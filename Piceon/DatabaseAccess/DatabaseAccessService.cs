@@ -704,7 +704,7 @@ namespace Piceon.DatabaseAccess
 
             foreach (int id in similarImagesIds)
             {
-                using (SqliteCommand command = new SqliteCommand("INSERT INTO VIRTUALFOLDER_IMAGE(SIMILARITYGROUP_Id, IMAGE_Id) " +
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO SIMILARITYGROUP_IMAGE(SIMILARITYGROUP_Id, IMAGE_Id) " +
                 $"VALUES ({rowid}, {id})", Database))
                 { await command.ExecuteReaderAsync(); }
             }

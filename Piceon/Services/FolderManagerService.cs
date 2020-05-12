@@ -103,7 +103,9 @@ namespace Piceon.Services
                 }
                 await BackendConctroller.TagImages(idPathDictonary.Keys.ToList());
                 CurrentlyScannedFolder.InvokeContentsChanged();
-                int taskid = BackendConctroller.CompareImages(idPathDictonary.Values.ToList(), FindSimilarFinishedHandler);
+                int taskid = BackendConctroller.CompareImages(
+                    idPathDictonary.Select(i => { return new List<string>() { i.Key.ToString(), i.Value }; }).ToList(),
+                    FindSimilarFinishedHandler);
                 TaskImages.Add(taskid, idPathDictonary);
             }
         }
