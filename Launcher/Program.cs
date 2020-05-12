@@ -33,22 +33,22 @@ namespace Launcher
             // Here paste the absolute path to your PythonScripts/controller.pyw file.
             // In the final release, the Launcher.exe file will be placed in a folder
             // whose relative position to PythonScripts/controller.pyw will be always the same.
-            pythonControllerProcess.StartInfo.Arguments = "D:/Dane/MichalKuzemczak/Projects/ProjektZespołowy/PythonScripts/controller.pyw";
+            pythonControllerProcess.StartInfo.Arguments = "D:/Programming/pz/PythonScripts/controller.pyw";
             pythonControllerProcess.StartInfo.UseShellExecute = false;
             pythonControllerProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             pythonControllerProcess.Start();
 
             // Give the python controller some time to set up
-            Thread.Sleep(500);
+            //Thread.Sleep(500);
 
-            Process piceonProcess = new Process();
-            piceonProcess.StartInfo.FileName = "Piceon.exe";
-            piceonProcess.StartInfo.Arguments = "";
-            piceonProcess.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
+            //Process piceonProcess = new Process();
+            //piceonProcess.StartInfo.FileName = "Piceon.exe";
+            //piceonProcess.StartInfo.Arguments = "";
+            //piceonProcess.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
 
             // Comment this line, if you want to launch piceon yourself
             // from Visual studio
-            piceonProcess.Start();
+            //piceonProcess.Start();
 
             AppClose.WaitOne();
 
