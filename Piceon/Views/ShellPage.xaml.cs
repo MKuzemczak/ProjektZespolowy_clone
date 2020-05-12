@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 using Piceon.Helpers;
+using Piceon.Models;
 using Piceon.Services;
 
 using Windows.System;
@@ -21,11 +22,36 @@ namespace Piceon.Views
         private readonly KeyboardAccelerator _altLeftKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu);
         private readonly KeyboardAccelerator _backKeyboardAccelerator = BuildKeyboardAccelerator(VirtualKey.GoBack);
 
+        private StateMessagingService StateMessaging { get; }
+
         public ShellPage()
         {
+            StateMessaging = StateMessagingService.Instance;
+            StateMessaging.MostRecentStateMessageUpdatedEvent += StateMessaging_MostRecentStateMessageUpdatedEvent;
             InitializeComponent();
             NavigationService.Frame = shellFrame;
             MenuNavigationHelper.Initialize(splitView, rightFrame);
+        }
+
+        private void StateMessaging_MostRecentStateMessageUpdatedEvent(object sender, MostRecentStateMessageUpdatedEventArgs e)
+        {
+            if (e.Message == null)
+            {
+                statusBarGrid.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            statusBarGrid.Visibility = Visibility.Visible;
+            progressRing.Visibility = Visibility.Collapsed;
+            progressRing.IsActive = false;
+
+            if (e.Message.IsLoading)
+            {
+                progressRing.Visibility = Visibility.Visible;
+                progressRing.IsActive = true;
+            }
+
+            statusBarTextBlock.Text = e.Message.Text;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)

@@ -175,6 +175,7 @@
     <Compile Include="Models\ItemCacheManager.cs" />
     <Compile Include="Models\ItemIndexRangeExtensions.cs" />
     <Compile Include="Models\ItemIndexRangeList.cs" />
+    <Compile Include="Models\MostRecentStateMessageUpdatedEventArgs.cs" />
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
     <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />
@@ -187,6 +188,8 @@
     <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\RabbitMQCommunicationService.cs" />
+    <Compile Include="Models\StateMessage.cs" />
+    <Compile Include="Services\StateMessagingService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ViewLifetimeControl.cs" />
     <Compile Include="Services\WindowManagerService.cs" />
