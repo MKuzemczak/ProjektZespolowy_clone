@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Piceon.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,12 @@ namespace Piceon.Services
 {
     public static class BackendConctroller
     {
+        public enum TaskType : int
+        {
+            Initialize = 0,
+            Compare = 1
+        };
+
         public static bool Initialized = false;
         private static RabbitMQCommunicationService Communicator { get; set; }
 
@@ -22,21 +29,21 @@ namespace Piceon.Services
 
         private static string LauncherOutgoingQueueName { get; set; }
 
-        private static Dictionary<int, string> Tasks { get; } = new Dictionary<int, string>();
+        private static Dictionary<int, ControllerTaskRequestMessage> Tasks { get; } = new Dictionary<int, ControllerTaskRequestMessage>();
 
         /// <summary>
         /// Dictionary of pairs (Task_id, Function_called_after_complete).
         /// Function should receive a string parameter which contains a message
         /// with info about task result (DONE or some error)
         /// </summary>
-        private static Dictionary<int, Action<string>> TaskCompleteActions { get; } = new Dictionary<int, Action<string>>();
+        private static Dictionary<int, Action<ControllerTaskResultMessage>> TaskCompleteActions { get; } =
+            new Dictionary<int, Action<ControllerTaskResultMessage>>();
 
 
         public static readonly string DoneMessage = "DONE";
-        private static HashSet<string> TaskCompleteMessages { get; } = new HashSet<string>()
+        private static HashSet<string> TaskResultMessages { get; } = new HashSet<string>()
         {
-            DoneMessage, "BAD PARAMS AND DATA", "NO DATA", "BAD REQUEST", "LACK OF METHOD",
-            "LACK OF FILE", "WRONG EXTENSION", "LACK OF PATH", "WRONG ID"
+            DoneMessage, "ERR"
         };
 
 
@@ -87,16 +94,21 @@ namespace Piceon.Services
 
             Communicator.MessageReceived += MessageReceiver;
 
-            RunTask(TaskIdCntr, $"{TaskIdCntr} PATH {databaseFilePath}", PathSendCompleteHandler);
-            TaskIdCntr++;
+            var helloMessage = new ControllerTaskRequestMessage()
+            {
+                taskid = TaskIdCntr++,
+                type = (int)TaskType.Initialize
+            };
+
+            RunTask(helloMessage, PathSendCompleteHandler);
             await Task.Delay(500);
             if (!Initialized)
                 throw new BackendControllerInitializationException();
         }
 
-        private static void PathSendCompleteHandler(string result)
+        private static void PathSendCompleteHandler(ControllerTaskResultMessage result)
         {
-            if (result == DoneMessage)
+            if (result.result == DoneMessage)
                 Initialized = true;
         }
 
@@ -105,44 +117,36 @@ namespace Piceon.Services
             if (e.QueueName != IncomingQueueName)
                 return;
 
-            int key = 0;
-            var split = e.Message.Split('-');
-
-            if (split.Length != 2)
-                return;
-                //throw new FormatException($"Message is of bad format. Should contain only one dash. Message: {e.Message}");
-
-            bool isInteger = int.TryParse(split[0], out key);
-
-            if (!isInteger)
-                return;
-            //throw new FormatException($"Message is of bad format. No number at the beginning. Message: {e.Message}");
-
-            if (!Tasks.ContainsKey(key))
+            if (!ControllerTaskResultMessage.IsJsonValidMessage(e.Message))
                 return;
 
-            if (!TaskCompleteMessages.Contains(split[1]))
+            var message = ControllerTaskResultMessage.FromJson(e.Message);
+
+            if (!Tasks.ContainsKey(message.taskid))
+                return;
+
+            if (!TaskResultMessages.Contains(message.result))
                 return;
             //throw new FormatException($"Message is of bad format. Contains invalid result message. Message: {e.Message}");
 
-            Action<string> action = TaskCompleteActions[key];
-            TaskCompleteActions.Remove(key);
-            Tasks.Remove(key);
-            action(split[1]);
+            Action<ControllerTaskResultMessage> action = TaskCompleteActions[message.taskid];
+            TaskCompleteActions.Remove(message.taskid);
+            Tasks.Remove(message.taskid);
+            action(message);
         }
 
-        private static void RunTask(int taskId, string message, Action<string> actionToCallAfterComplete)
+        private static void RunTask(ControllerTaskRequestMessage message, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
         {
-            Tasks.Add(taskId, message);
-            TaskCompleteActions.Add(taskId, actionToCallAfterComplete);
-            Communicator.Send(OutgoingQueueName, message);
+            Tasks.Add(message.taskid, message);
+            TaskCompleteActions.Add(message.taskid, actionToCallAfterComplete);
+            Communicator.Send(OutgoingQueueName, message.ToJson());
         }
 
-        public static int CompareImages(List<int> comparedImagesIds, Action<string> actionToCallAfterComplete)
+        public static int CompareImages(List<List<string>> comparedImagesIdsAndPaths, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
         {
-            if (comparedImagesIds is null)
+            if (comparedImagesIdsAndPaths is null)
             {
-                throw new ArgumentNullException(nameof(comparedImagesIds));
+                throw new ArgumentNullException(nameof(comparedImagesIdsAndPaths));
             }
 
             if (actionToCallAfterComplete is null)
@@ -150,21 +154,21 @@ namespace Piceon.Services
                 throw new ArgumentNullException(nameof(actionToCallAfterComplete));
             }
 
-            if (comparedImagesIds.Count < 2)
+            if (comparedImagesIdsAndPaths.Count < 2)
             {
                 throw new ArgumentOutOfRangeException("comparedImagesIds list count should be at least 2");
             }
 
-            int taskId = TaskIdCntr++;
-            string message = $"{taskId} COMPARE";
-            foreach (int id in comparedImagesIds)
+            var message = new ControllerTaskRequestMessage()
             {
-                message += $" {id}";
-            }
+                taskid = TaskIdCntr++,
+                type = (int)TaskType.Compare
+            };
+            message.images.AddRange(comparedImagesIdsAndPaths);
 
-            RunTask(taskId, message, actionToCallAfterComplete);
+            RunTask(message, actionToCallAfterComplete);
 
-            return taskId;
+            return message.taskid;
         }
 
         public static async Task TagImages(List<int> taggedImagesIds)

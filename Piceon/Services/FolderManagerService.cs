@@ -17,6 +17,7 @@ namespace Piceon.Services
     {
         private static FolderItem CurrentlyScannedFolder { get; set; }
 
+        private static Dictionary<int, Dictionary<int, string>> TaskImages = new Dictionary<int, Dictionary<int, string>>();
 
         public static async Task<FolderItem> OpenFolderAsync()
         {
@@ -89,24 +90,43 @@ namespace Piceon.Services
             picker.FileTypeFilter.Add(".gif");
 
             var files = await picker.PickMultipleFilesAsync();
-            List<int> ids = null;
+            List<Tuple<int, StorageFile>> ids = null;
             if (files != null && files.Count > 0)
             {
                 ids = await folder.AddFilesToFolder(files);
 
                 CurrentlyScannedFolder = folder;
-                await BackendConctroller.TagImages(ids);
+                var idPathDictonary = new Dictionary<int, string>();
+                foreach (var tuple in ids)
+                {
+                    idPathDictonary.Add(tuple.Item1, tuple.Item2.Path);
+                }
+                await BackendConctroller.TagImages(idPathDictonary.Keys.ToList());
                 CurrentlyScannedFolder.InvokeContentsChanged();
-                BackendConctroller.CompareImages(ids, InvokeFolderContentsChangedIfDone);
+                int taskid = BackendConctroller.CompareImages(
+                    idPathDictonary.Select(i => { return new List<string>() { i.Key.ToString(), i.Value }; }).ToList(),
+                    FindSimilarFinishedHandler);
+                TaskImages.Add(taskid, idPathDictonary);
             }
         }
 
-        private static void InvokeFolderContentsChangedIfDone(string result)
+        private static async void FindSimilarFinishedHandler(ControllerTaskResultMessage result)
         {
-            if (result == BackendConctroller.DoneMessage)
+            if (result.result != BackendConctroller.DoneMessage)
+                return;
+
+            if (!TaskImages.ContainsKey(result.taskid))
+                return;
+
+            if (result.images.Count == 0)
+                return;
+
+            foreach (var group in result.images)
             {
-                CurrentlyScannedFolder.InvokeContentsChanged();
+                await DatabaseAccessService.InsertSimilarityGroup(group, result.taskid.ToString());
             }
+
+            await CurrentlyScannedFolder.UpdateQueryAsync();
         }
     }
 }
