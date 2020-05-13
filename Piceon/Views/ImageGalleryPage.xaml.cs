@@ -248,7 +248,7 @@ namespace Piceon.Views
                         }
                     }
                 }
-                ReloadFolder();
+                await SelectedContentFolder.UpdateQueryAsync();
             }
         }
 
