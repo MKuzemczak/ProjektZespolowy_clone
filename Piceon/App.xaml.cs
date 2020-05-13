@@ -20,10 +20,19 @@ namespace Piceon
 
         public App()
         {
+            InitializeThings();
             InitializeComponent();
 
             // Deferred execution until used. Check https://msdn.microsoft.com/library/dd642331(v=vs.110).aspx for further info on Lazy<T> class.
             _activationService = new Lazy<ActivationService>(CreateActivationService);
+        }
+
+        public async void InitializeThings()
+        {
+            if (!DatabaseAccessService.Initialized)
+            {
+                await DatabaseAccessService.InitializeDatabaseAsync();
+            }
         }
 
 

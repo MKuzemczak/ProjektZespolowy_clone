@@ -47,11 +47,6 @@ namespace Piceon.Views
 
         private async void InitializeThings()
         {
-            if (!DatabaseAccessService.Initialized)
-            {
-                await DatabaseAccessService.InitializeDatabaseAsync();
-            }
-
             if (!BackendConctroller.Initialized)
             {
                 try
