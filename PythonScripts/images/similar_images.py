@@ -56,13 +56,13 @@ class SimilarImageRecognizer:
         return False
 
     @staticmethod
-    def group_by_histogram_and_probability(ids_filepaths, threshold: float = 0.4):
+    def group_by_histogram_and_probability(ids_filepaths, threshold: float = 0.25):
         def compare(hist, hist2) -> int:
             hist_diff = cv2.compareHist(hist, hist2, cv2.HISTCMP_BHATTACHARYYA)
             probability_match = cv2.matchTemplate(hist, hist2, cv2.TM_CCOEFF_NORMED)[0][0]
             img_template_diff = 1 - probability_match
-            # commutative_image_diff = (hist_diff + 10 * img_template_diff) / 11
-            commutative_image_diff = (hist_diff + img_template_diff) / 2
+            commutative_image_diff = (hist_diff + 10 * img_template_diff) / 11
+            # commutative_image_diff = (hist_diff + img_template_diff) / 2
             return commutative_image_diff
 
         histograms = []
@@ -88,6 +88,37 @@ class SimilarImageRecognizer:
                 groups.append(tmp_group)
             else:
                 del histograms[0]
+        return groups
+
+    @staticmethod
+    def group_by_binary_desc(ids_filepaths):
+        def compare(flann, desc_1, desc_2):
+            matches = flann.knnMatch(desc_1, desc_2, k=2)
+            return matches
+
+        descriptors = []
+        sift = cv2.xfeatures2d.SIFT_create()
+        for id_path in ids_filepaths:
+            img = cv2.imread(id_path[1], 0)
+            _, desc = sift.detectAndCompute(img, None)
+            descriptors.append((desc, id_path[1]))
+            groups = []
+        while len(descriptors) > 1:
+            tmp_group = []
+            for i in range(1, len(descriptors)):
+                if len(compare(descriptors[i][0], descriptors[0][0])) > 5:
+                    if len(tmp_group) > 1:
+                        tmp_group.append(descriptors[i][1][0])
+                    else:
+                        tmp_group.append(descriptors[i][1][0])
+                        tmp_group.append(descriptors[0][1][0])
+
+            if len(tmp_group) > 0:
+                for id in tmp_group:
+                    descriptors = list(filter(lambda x: x[1][0] != id, descriptors))
+                groups.append(tmp_group)
+            else:
+                del descriptors[0]
         return groups
 
     # @staticmethod
