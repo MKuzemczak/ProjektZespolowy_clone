@@ -16,6 +16,9 @@ namespace Piceon.Services
     public static class FolderManagerService
     {
         private static FolderItem CurrentlyScannedFolder { get; set; }
+        private static StateMessage RecentStateMessage { get; set; }
+
+        private static StateMessagingService StateMessaging { get; } = StateMessagingService.Instance;
 
         private static Dictionary<int, Dictionary<int, string>> TaskImages = new Dictionary<int, Dictionary<int, string>>();
 
@@ -93,6 +96,7 @@ namespace Piceon.Services
             List<Tuple<int, StorageFile>> ids = null;
             if (files != null && files.Count > 0)
             {
+                RecentStateMessage = StateMessaging.SendLoadingMessage("Scanning imported images...");
                 ids = await folder.AddFilesToFolder(files);
 
                 CurrentlyScannedFolder = folder;
@@ -127,6 +131,8 @@ namespace Piceon.Services
             }
 
             await CurrentlyScannedFolder.UpdateQueryAsync();
+            StateMessaging.RemoveMessage(RecentStateMessage);
+            StateMessaging.SendInfoMessage("Images scanned successfully", 5000);
         }
     }
 }

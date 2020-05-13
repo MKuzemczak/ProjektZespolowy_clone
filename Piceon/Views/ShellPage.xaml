@@ -24,6 +24,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <winui:MenuBar VerticalAlignment="Top">
                 <!--
@@ -42,6 +43,24 @@
             </winui:MenuBar>
             <Grid Grid.Row="1">
                 <Frame x:Name="shellFrame" />
+            </Grid>
+            <Grid x:Name="statusBarGrid"
+                  Grid.Row="2"
+                  Background="{ThemeResource SystemChromeAltMediumHighColor}"
+                  Height="25"
+                  Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="5"
+                            Margin="10,0,0,0">
+                    <ProgressRing x:Name="progressRing"
+                                  IsActive="True"
+                                  VerticalAlignment="Center"
+                                  Foreground="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                    <TextBlock x:Name="statusBarTextBlock"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Margin="10,0,0,0"/>
+                </StackPanel>
             </Grid>
         </Grid>
     </SplitView>
