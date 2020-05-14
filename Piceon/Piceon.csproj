@@ -206,9 +206,6 @@
     <Compile Include="Views\ImageDetailPage.xaml.cs">
       <DependentUpon>ImageDetailPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ImageGalleryDetailPage.xaml.cs">
-      <DependentUpon>ImageGalleryDetailPage.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\ImageGalleryPage.xaml.cs">
       <DependentUpon>ImageGalleryPage.xaml</DependentUpon>
     </Compile>
@@ -288,10 +285,6 @@
     <Page Include="Views\ImageDetailPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ImageGalleryDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\ImageGalleryPage.xaml">
       <Generator>MSBuild:Compile</Generator>

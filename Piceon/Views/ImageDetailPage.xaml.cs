@@ -42,10 +42,11 @@ namespace Piceon.Views
         public async Task ShowAsync()
         {
             this.Visibility = Visibility.Visible;
-            CurrentIndexInFolder = ImageNavigationHelper.SelectedImage.GalleryIndex;
+            // TODO: improve this detailpage. Scroll through the folder.
+            CurrentIndexInFolder = 0/*ImageNavigationHelper.SelectedImage.GalleryIndex*/;
             CurrentlyDisplayedImageItem = ImageNavigationHelper.SelectedImage;
             UpdateArrowsVisibility();
-            await CurrentlyDisplayedImageItem.ToImage();
+            await CurrentlyDisplayedImageItem.ToImageAsync();
             displayedImage.Source = CurrentlyDisplayedImageItem.ImageData;
         }
 
@@ -69,19 +70,20 @@ namespace Piceon.Views
             if (ct.IsCancellationRequested)
                 return;
 
-            await CurrentlyDisplayedImageItem.ToThumbnail();
+            await CurrentlyDisplayedImageItem.ToThumbnailAsync();
 
             if (ct.IsCancellationRequested)
                 return;
 
-            try
-            {
-                CurrentlyDisplayedImageItem = await ImageItem.FromStorageFile(list[0], CurrentIndexInFolder, ct, ImageItem.Options.Thumbnail);
-            }
-            catch(TaskCanceledException)
-            {
-                return;
-            }
+            // TODO: ImageItem no longer stores index in folder, take care of this.
+            //try
+            //{
+            //    CurrentlyDisplayedImageItem = await ImageItem.FromStorageFile(list[0], CurrentIndexInFolder, ct, ImageItem.Options.Thumbnail);
+            //}
+            //catch(TaskCanceledException)
+            //{
+            //    return;
+            //}
 
             if (ct.IsCancellationRequested)
                 return;
@@ -93,7 +95,7 @@ namespace Piceon.Views
 
             try
             {
-                await CurrentlyDisplayedImageItem.ToImage(ct);
+                await CurrentlyDisplayedImageItem.ToImageAsync(ct);
             }
             catch(TaskCanceledException)
             {

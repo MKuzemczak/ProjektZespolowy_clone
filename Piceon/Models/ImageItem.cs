@@ -7,43 +7,58 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.Storage.FileProperties;
 
 using Piceon.Helpers;
+using Piceon.DatabaseAccess;
+using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarSymbols;
+using System.Collections.Generic;
+using Windows.UI.Xaml.Controls;
+using System.IO;
 
 namespace Piceon.Models
 {
-    
+
     public class ImageItem
     {
         public enum Options : int
         {
-            Image = 0,
-            Thumbnail = 1
+            None = 0,
+            Image = 1,
+            Thumbnail = 2
         }
 
 
         public string Filename { get; set; }
         public BitmapImage ImageData { get; set; }
 
-        public string Key { get; private set; }
-
-        public int GalleryIndex { get; set; }
-
         public int DatabaseId { get; set; }
+
+        public string FilePath { get; set; }
+
+        public DatabaseSimilaritygroup Group { get; set; }
+
+        public List<string> Tags { get; set; } = new List<string>();
 
         // Needed for displaying single image in the flip view
         public StorageFile File { get; set; }
 
-        public Options ViewMode;
+        public Options ViewMode { get; set; }
 
-        public GroupPosition PotitionInGroup { get; set; } = GroupPosition.None;
+        public GroupPosition PositionInGroup { get; set; } = GroupPosition.None;
 
-        public async Task ToImage(CancellationToken ct = new CancellationToken())
+        private async Task SetStorageFileFromPathAsync(string path)
         {
-            if (File == null)
+            File = await StorageFile.GetFileFromPathAsync(path);
+        }
+
+        public async Task ToImageAsync(CancellationToken ct = new CancellationToken())
+        {
+            if (ViewMode == Options.Image)
                 return;
             if (ImageData == null)
                 ImageData = new BitmapImage();
+            if (File == null)
+                await SetStorageFileFromPathAsync(FilePath);
             using (Windows.Storage.Streams.IRandomAccessStream fileStream =
-                await File.OpenAsync(Windows.Storage.FileAccessMode.Read))
+                await File.OpenAsync(FileAccessMode.Read))
             {
                 await ImageData.SetSourceAsync(fileStream).AsTask(ct);
             }
@@ -51,34 +66,74 @@ namespace Piceon.Models
             ViewMode = Options.Image;
         }
 
-        public async Task ToThumbnail()
+        public async Task ToThumbnailAsync(CancellationToken ct = new CancellationToken())
         {
-            if (File == null)
+            if (ViewMode == Options.Thumbnail)
                 return;
             if (ImageData == null)
                 ImageData = new BitmapImage();
+            if (File == null)
+                await SetStorageFileFromPathAsync(FilePath);
+            ct.ThrowIfCancellationRequested();
             StorageItemThumbnail thumb = await File.GetThumbnailAsync(ThumbnailMode.SingleItem);
-            await ImageData.SetSourceAsync(thumb);
-            ViewMode = Options.Thumbnail;
+            ct.ThrowIfCancellationRequested();
+            if (ImageData is object)
+            {
+                await ImageData.SetSourceAsync(thumb);
+                ViewMode = Options.Thumbnail;
+            }
+        }
+
+        public void ClearImageData()
+        {
+            ViewMode = Options.None;
+            ImageData = null;
         }
 
         // Needed to ensure only one request is in progress at once
         private static SemaphoreSlim gettingFileProperties = new SemaphoreSlim(1);
 
+        public static async Task<ImageItem> FromDatabaseImage(
+            DatabaseImage dbimage, CancellationToken ct = new CancellationToken(), Options viewMode = Options.Image)
+        {
+            ImageItem result = new ImageItem()
+            {
+                DatabaseId = dbimage.Id,
+                FilePath = dbimage.Path,
+                Filename = Path.GetFileName(dbimage.Path),
+                Group = dbimage.Group,
+                Tags = dbimage.Tags,
+                ViewMode = viewMode
+            };
+            ct.ThrowIfCancellationRequested();
+            switch (viewMode)
+            {
+                case Options.Image:
+                    await result.ToImageAsync(ct);
+                    break;
+                case Options.Thumbnail:
+                    await result.ToThumbnailAsync(ct);
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
+        }
+
+
         // Fetches all the data for the specified file
         public async static Task<ImageItem> FromStorageFile(
-            StorageFile f, int index, CancellationToken ct, Options options = Options.Image)
+            StorageFile f, CancellationToken ct, Options options = Options.Image)
         {
             ImageItem item = new ImageItem()
             {
                 Filename = f.Name,
-                File = f
+                File = f,
+                ViewMode = options
             };
 
             ct.ThrowIfCancellationRequested();
-
-            item.Key = f.FolderRelativeId;
-            item.GalleryIndex = index;
 
             BitmapImage img = new BitmapImage();
 
@@ -97,14 +152,13 @@ namespace Piceon.Models
                 await img.SetSourceAsync(thumb).AsTask(ct);
             }
 
-            item.ViewMode = options;
             item.ImageData = img;
             return item;
         }
 
-        public async static Task<ImageItem> FromStorageFile(StorageFile f, int index, Options options = Options.Image)
+        public async static Task<ImageItem> FromStorageFile(StorageFile f, Options options = Options.Image)
         {
-            return await FromStorageFile(f, index, new CancellationToken(), options);
+            return await FromStorageFile(f, new CancellationToken(), options);
         }
 
         public async Task DeleteFromDiskAsync()
