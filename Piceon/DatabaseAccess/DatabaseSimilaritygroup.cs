@@ -10,5 +10,11 @@ namespace Piceon.DatabaseAccess
     {
         public int Id { get; set; } = int.MinValue;
         public string Name { get; set; }
+
+        public DatabaseSimilaritygroup(int id = int.MinValue, string name = "")
+        {
+            Id = id;
+            Name = name;
+        }
     }
 }

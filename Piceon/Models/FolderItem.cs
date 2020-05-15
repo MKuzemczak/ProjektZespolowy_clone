@@ -227,20 +227,30 @@ namespace Piceon.Models
         public async Task UpdateQueryAsync()
         {
             var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
-            var rawGrouped = raw.OrderByDescending(i => i.Group.Id).ToList();
-
-            foreach (var item in AllImages)
+            var currentIds = AllImages.Select(i => i.DatabaseId).ToList();
+            var rawCount = raw.Count;
+            for (int i = rawCount - 1; i >= 0; i--)
             {
-                item.ClearImageData();
+                for (int j = currentIds.Count - 1; j >= 0; j--)
+                {
+                    if (raw[i].Id == currentIds[j])
+                    {
+                        raw.RemoveAt(i);
+                        currentIds.RemoveAt(j);
+                        break;
+                    }
+                }
             }
 
-            AllImages.Clear();
+            AllImages.RemoveAll(i => currentIds.Contains(i.DatabaseId));
 
-            foreach (var item in rawGrouped)
+            foreach (var item in raw)
             {
                 AllImages.Add(await ImageItem.FromDatabaseImage(item, viewMode: ImageItem.Options.None));
             }
 
+            var tmp = AllImages.OrderByDescending(i => i.Group.Id).ToList();
+            AllImages = tmp;
             FilteredImages.Clear();
 
             if (TagsToFilter is null || TagsToFilter.Count == 0)
@@ -251,40 +261,40 @@ namespace Piceon.Models
             {
                 FilteredImages = AllImages.
                 Where(i => TagsToFilter.Intersect(i.Tags).Count() == TagsToFilter.Count).ToList();
-                int prevGroupId = -1;
-                int nextGroupId = -1;
-                for (int i = 0; i < AllImages.Count; i++)
-                {
-                    if (TagsToFilter.Intersect(AllImages[i].Tags).Count() == TagsToFilter.Count)
-                    {
-                        FilteredImages.Add(AllImages[i]);
-
-                        if (FilteredImages.Last().Group is null ||
-                            FilteredImages.Last().Group.Id < 0)
-                        {
-                            FilteredImages.Last().PositionInGroup = Helpers.GroupPosition.None;
-                            continue;
-                        }
-
-                        int currentGroupId = FilteredImages.Last().Group.Id;
-
-                        if (i + 1 == AllImages.Count)
-                            nextGroupId = -1;
-                        else
-                            nextGroupId = AllImages[i + 1].Group.Id;
-
-                        if (prevGroupId != currentGroupId &&
-                            nextGroupId != currentGroupId)
-                            FilteredImages.Last().PositionInGroup = Helpers.GroupPosition.Only;
-                        else if (prevGroupId != currentGroupId)
-                            FilteredImages.Last().PositionInGroup = Helpers.GroupPosition.Start;
-                        else if (nextGroupId != currentGroupId)
-                            FilteredImages.Last().PositionInGroup = Helpers.GroupPosition.End;
-                        else
-                            FilteredImages.Last().PositionInGroup = Helpers.GroupPosition.Middle;
-                    }
-                }
             }
+
+            int prevGroupId = -1;
+            int nextGroupId = -1;
+            for (int i = 0; i < FilteredImages.Count; i++)
+            {
+                if (FilteredImages[i].Group is null ||
+                    FilteredImages[i].Group.Id < 0)
+                {
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.None;
+                    prevGroupId = -1;
+                    continue;
+                }
+
+                int currentGroupId = FilteredImages[i].Group.Id;
+
+                if (i + 1 == FilteredImages.Count)
+                    nextGroupId = -1;
+                else
+                    nextGroupId = FilteredImages[i + 1].Group.Id;
+
+                if (prevGroupId != currentGroupId &&
+                    nextGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Only;
+                else if (prevGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Start;
+                else if (nextGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.End;
+                else
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Middle;
+
+                prevGroupId = currentGroupId;
+            }
+            
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 
@@ -300,15 +310,15 @@ namespace Piceon.Models
         /// </summary>
         /// <param name="files"></param>
         /// <returns>List of database IDs</returns>
-        public async Task<List<Tuple<int, StorageFile>>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public async Task<List<ImageItem>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
-            var result = new List<Tuple<int, StorageFile>>();
+            var ids = new List<int>();
             foreach (var file in files)
             {
-                result.Add(new Tuple<int, StorageFile>(
-                    await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId), file));
+                ids.Add(await DatabaseAccessService.InsertImageAsync(file.Path, false, DatabaseId));
             }
             await UpdateQueryAsync();
+            var result = AllImages.Where(i => ids.Contains(i.DatabaseId)).ToList();
             ContentsChanged?.Invoke(this, new EventArgs());
             return result;
         }
@@ -321,6 +331,17 @@ namespace Piceon.Models
         public void InvokeContentsChanged()
         {
             ContentsChanged?.Invoke(this, new EventArgs());
+        }
+
+        public async Task GroupImages(List<int> imageIds)
+        {
+            var group = await DatabaseAccessService.InsertSimilarityGroup(imageIds, "noname");
+            AllImages.
+                ForEach(i =>
+                {
+                    if (imageIds.Remove(i.DatabaseId))
+                        i.Group = group;
+                });
         }
 
         public static bool operator ==(FolderItem f1, FolderItem f2)

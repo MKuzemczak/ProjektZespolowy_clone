@@ -41,7 +41,7 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS IMAGE" +
-                        "(Id INTEGER PRIMARY KEY NOT NULL, path text NOT NULL)", Database))
+                        "(Id INTEGER PRIMARY KEY NOT NULL, path text NOT NULL, scanned BOOLEAN NOT NULL CHECK (scanned IN (0,1)))", Database))
             { await command.ExecuteReaderAsync(); }
 
             using (SqliteCommand command = new SqliteCommand("CREATE TABLE IF NOT EXISTS VIRTUALFOLDER" +
@@ -403,13 +403,13 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
         }
 
-        public static async Task<int> InsertImageAsync(string path, int parentId)
+        public static async Task<int> InsertImageAsync(string path, bool scanned, int parentId)
         {
             if (parentId < 1)
                 throw new ArgumentException("Error: Parent ID smaller than 1 - doesn't exist.");
 
-            using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE (path) " +
-                        $"VALUES ('{path}')", Database))
+            using (SqliteCommand command = new SqliteCommand("INSERT INTO IMAGE (path, scanned) " +
+                        $"VALUES ('{path}', {(scanned ? 1 : 0)})", Database))
             { await command.ExecuteReaderAsync(); }
 
             Int64 rowid = 0;
@@ -427,6 +427,14 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
 
             return (int)rowid;
+        }
+
+        public static async Task SetImageScanned(int imageId, bool scanned)
+        {
+            using (SqliteCommand command = new SqliteCommand("UPDATE IMAGE " +
+                $"SET scanned = '{(scanned ? 1 : 0)}' " +
+                $"WHERE Id = {imageId}", Database))
+            { await command.ExecuteReaderAsync(); }
         }
 
         public static async Task MoveImageToVirtualfolderAsync(int imageId, int virtualfolderId)
@@ -550,7 +558,7 @@ namespace Piceon.DatabaseAccess
 
             while (query.Read())
             {
-                result.Add(new DatabaseImage() { Id = query.GetInt32(0), Path = query.GetString(1) });
+                result.Add(new DatabaseImage() { Id = query.GetInt32(0), Path = query.GetString(1), Scanned = query.GetBoolean(2) });
 
                 var comm = new SqliteCommand
                 ($@"SELECT * FROM SIMILARITYGROUP WHERE Id IN
@@ -683,7 +691,7 @@ namespace Piceon.DatabaseAccess
             }
             return new Tuple<int, int>(int.Parse(ImageId), tagindb.Item1);
         }
-        public static async Task<int> InsertSimilarityGroup(List<int> similarImagesIds, string name)
+        public static async Task<DatabaseSimilaritygroup> InsertSimilarityGroup(List<int> similarImagesIds, string name)
         {
             if (similarImagesIds.Count == 0)
                 throw new ArgumentException($"Error: input list \"{nameof(similarImagesIds)}\" is empty.");
@@ -709,7 +717,7 @@ namespace Piceon.DatabaseAccess
                 { await command.ExecuteReaderAsync(); }
             }
 
-            return (int)rowid;
+            return new DatabaseSimilaritygroup((int)rowid, name);
         }
     }
 

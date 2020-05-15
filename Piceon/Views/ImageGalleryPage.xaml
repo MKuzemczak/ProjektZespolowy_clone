@@ -59,13 +59,8 @@
                                 </MenuFlyout>
                             </Image.ContextFlyout>
                         </Image>
-                        <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup}" />
-                        <!--<Image x:Name="processedCheckMark"
-                               Source="ms-appx:///Assets/Icons/check-mark.png"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Bottom"
-                               Height="20"
-                               Width="20"/>-->
+                        <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup, Mode=OneWay}" />
+                        <controls:CheckMark IsVisible="{x:Bind Scanned, Mode=OneWay}"/>
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>

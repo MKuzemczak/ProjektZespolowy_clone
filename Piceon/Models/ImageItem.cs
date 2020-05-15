@@ -12,11 +12,13 @@ using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarSymbols;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Controls;
 using System.IO;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Piceon.Models
 {
 
-    public class ImageItem
+    public class ImageItem : INotifyPropertyChanged
     {
         public enum Options : int
         {
@@ -42,7 +44,21 @@ namespace Piceon.Models
 
         public Options ViewMode { get; set; }
 
-        public GroupPosition PositionInGroup { get; set; } = GroupPosition.None;
+        private GroupPosition _positionInGroup = GroupPosition.None;
+        public GroupPosition PositionInGroup
+        {
+            get { return _positionInGroup; }
+            set { Set(ref _positionInGroup, value); }
+        }
+
+        private bool _scanned = false;
+        public bool Scanned
+        {
+            get { return _scanned; }
+            set { Set(ref _scanned, value); }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         private async Task SetStorageFileFromPathAsync(string path)
         {
@@ -103,7 +119,8 @@ namespace Piceon.Models
                 Filename = Path.GetFileName(dbimage.Path),
                 Group = dbimage.Group,
                 Tags = dbimage.Tags,
-                ViewMode = viewMode
+                ViewMode = viewMode,
+                Scanned = dbimage.Scanned
             };
             ct.ThrowIfCancellationRequested();
             switch (viewMode)
@@ -165,5 +182,24 @@ namespace Piceon.Models
         {
             await File?.DeleteAsync();
         }
+
+        public async Task MarkScannedAsync()
+        {
+            Scanned = true;
+            await DatabaseAccessService.SetImageScanned(DatabaseId, true);
+        }
+
+        private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
+        {
+            if (Equals(storage, value))
+            {
+                return;
+            }
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+        }
+
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
