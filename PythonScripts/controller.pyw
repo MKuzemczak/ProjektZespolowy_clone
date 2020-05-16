@@ -8,6 +8,7 @@ import subprocess
 from collections import namedtuple
 
 import images.similar_images as sm
+from images.test_method import check_similar
 
 
 class Executor:
@@ -115,8 +116,10 @@ class Controller:
         for path in images_ids_paths:
             if not path[1].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 raise Exception("BAD PATH")
-        #return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_ids_paths)
-        return sm.SimilarImageRecognizer.group_by_binary_desc(images_ids_paths)
+        # return sm.SimilarImageRecognizer.grpup_by_segment_hist(images_ids_paths)
+        return sm.SimilarImageRecognizer.group_by_local_binary_patters(images_ids_paths)
+        # return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_ids_paths)
+
 
 if __name__ == '__main__':
     subprocess.Popen([r"Piceon.exe"])
