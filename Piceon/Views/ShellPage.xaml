@@ -46,7 +46,7 @@
             </Grid>
             <Grid x:Name="statusBarGrid"
                   Grid.Row="2"
-                  Background="{ThemeResource SystemChromeAltMediumHighColor}"
+                  Background="{ThemeResource SystemAccentColor}"
                   Height="25"
                   Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal"

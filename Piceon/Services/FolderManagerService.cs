@@ -25,6 +25,7 @@ namespace Piceon.Services
 
         private static Dictionary<int, List<int>> FolderPickTasks = new Dictionary<int, List<int>>();
         private static Dictionary<int, FolderItem> FolderPickFolder = new Dictionary<int, FolderItem>();
+        private static Dictionary<int, StateMessage> FolderPickStateMessage = new Dictionary<int, StateMessage>();
 
         public static async Task<FolderItem> OpenFolderAsync()
         {
@@ -99,7 +100,7 @@ namespace Piceon.Services
             var files = await picker.PickMultipleFilesAsync();
             if (files != null && files.Count > 0)
             {
-                RecentStateMessage = StateMessaging.SendLoadingMessage("Scanning imported images...");
+                var recentStateMessage = StateMessaging.SendLoadingMessage("Scanning imported images...");
                 var imageItems = await folder.AddFilesToFolder(files);
 
                 CurrentlyScannedFolder = folder;
@@ -121,6 +122,7 @@ namespace Piceon.Services
                 FolderPickImages.Add(FolderPickCntr, imageItems);
                 FolderPickTasks.Add(FolderPickCntr, pickTaskIds);
                 FolderPickFolder.Add(FolderPickCntr, folder);
+                FolderPickStateMessage.Add(FolderPickCntr, recentStateMessage);
             }
             FolderPickCntr++;
         }
@@ -153,8 +155,6 @@ namespace Piceon.Services
 
             await CheckAllTasksInFolderPickDone(folderPick);
             await CurrentlyScannedFolder.UpdateQueryAsync();
-            StateMessaging.RemoveMessage(RecentStateMessage);
-            StateMessaging.SendInfoMessage("Images scanned successfully", 5000);
         }
 
         private static async Task CheckAllTasksInFolderPickDone(int folderPick)
@@ -166,6 +166,9 @@ namespace Piceon.Services
             FolderPickTasks.Remove(folderPick);
             FolderPickImages.Remove(folderPick);
             FolderPickFolder.Remove(folderPick);
+            StateMessaging.RemoveMessage(FolderPickStateMessage[folderPick]);
+            FolderPickStateMessage.Remove(folderPick);
+            StateMessaging.SendInfoMessage("Images scanned successfully", 5000);
         }
 
         private static async Task MarkImagesScanned(List<ImageItem> imageItems)

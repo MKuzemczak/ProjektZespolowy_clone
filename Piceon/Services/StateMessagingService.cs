@@ -81,7 +81,9 @@ namespace Piceon.Services
             Messages.Remove(message);
 
             if (invokeRecentChange)
-                MostRecentStateMessageUpdatedEvent(this, new MostRecentStateMessageUpdatedEventArgs(null));
+            {
+                MostRecentStateMessageUpdatedEvent(this, new MostRecentStateMessageUpdatedEventArgs(Messages.LastOrDefault()));
+            }
         }
 
         private async void MessageTimeoutEventHandler(object sender, MessageTimeoutRequestedEventArgs e)
