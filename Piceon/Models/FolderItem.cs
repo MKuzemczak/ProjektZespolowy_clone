@@ -344,6 +344,11 @@ namespace Piceon.Models
                 });
         }
 
+        public List<ImageItem> GetGroupOfImageItems(int groupId)
+        {
+            return AllImages.Where(i => (i.Group is object && i.Group.Id == groupId)).ToList();
+        }
+
         public static bool operator ==(FolderItem f1, FolderItem f2)
         {
             if ((f1 is object && f2 is null) ||

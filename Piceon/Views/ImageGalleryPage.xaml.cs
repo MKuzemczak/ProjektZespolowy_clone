@@ -33,7 +33,8 @@ namespace Piceon.Views
         private CoreDispatcher _uiThreadDispatcher;
 
         private bool IsItemClickedWithThisClick = false;
-        private ImageItem ClickedItem { get; set; }
+        private ImageItem ClickedItemItem { get; set; }
+        private ImageItem RightTappedImageItem { get; set; }
 
         public ImageGalleryPage()
         {
@@ -116,7 +117,7 @@ namespace Piceon.Views
 
         private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ClickedItem = e.ClickedItem as ImageItem;
+            ClickedItemItem = e.ClickedItem as ImageItem;
             IsItemClickedWithThisClick = true;
         }
 
@@ -261,11 +262,11 @@ namespace Piceon.Views
 
         private void ImagesGridView_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
-            if (ClickedItem != null)
+            if (ClickedItemItem != null)
             {
                 ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
                 ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
-                ImageNavigationHelper.SelectedImage = ClickedItem;
+                ImageNavigationHelper.SelectedImage = ClickedItemItem;
                 ImageClicked?.Invoke(this, new EventArgs());
             }
         }
@@ -289,7 +290,7 @@ namespace Piceon.Views
         private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
         {
             var imageItem = (sender as Image).DataContext as ImageItem;
-
+            RightTappedImageItem = imageItem;
             if (!imagesGridView.SelectedItems.Contains(imageItem))
             {
                 imagesGridView.SelectedItems.Clear();
@@ -306,6 +307,20 @@ namespace Piceon.Views
             }
 
             DragAndDropHelper.DraggedItems.Clear();
+        }
+
+        private void SelectGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (RightTappedImageItem?.Group is null)
+                return;
+
+            var group = SelectedContentFolder.GetGroupOfImageItems(RightTappedImageItem.Group.Id);
+            imagesGridView.SelectedItems.Clear();
+
+            foreach (var item in group)
+            {
+                imagesGridView.SelectedItems.Add(item);
+            }
         }
     }
 }
