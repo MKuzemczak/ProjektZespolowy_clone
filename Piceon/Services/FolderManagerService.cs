@@ -135,9 +135,6 @@ namespace Piceon.Services
             if (!FolderPickTasks.Any(i => i.Value.Contains(result.taskid)))
                 return;
 
-            if (result.images.Count == 0)
-                return;
-
             int folderPick = -1;
             foreach (var item in FolderPickTasks)
             {
