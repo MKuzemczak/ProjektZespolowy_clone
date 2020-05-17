@@ -20,13 +20,24 @@ using Windows.UI.Xaml.Media;
 using Piceon.Models;
 using Piceon.Services;
 using Piceon.Helpers;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Piceon.Views
 {
-    public sealed partial class ImageDetailPage : Page
+    public sealed partial class ImageDetailPage : Page, INotifyPropertyChanged
     {
-        private int CurrentIndexInFolder = -1;
-        private ImageItem CurrentlyDisplayedImageItem { get; set; }
+        private int CurrentIndexInImageData { get; set; } = -1;
+
+        private ImageItem _currentlyDisplayedImageItem;
+        private ImageItem CurrentlyDisplayedImageItem
+        {
+            get { return _currentlyDisplayedImageItem; }
+            set { Set(ref _currentlyDisplayedImageItem, value); }
+        }
+
+        private FolderItem CurrentlyAccessedFolder { get; set; }
+        private List<ImageItem> ImageData { get; set; } = new List<ImageItem>();
         private CancellationTokenSource FlipCancellationTokenSource;
         private CancellationToken FlipCancellationToken;
 
@@ -42,12 +53,12 @@ namespace Piceon.Views
         public async Task ShowAsync()
         {
             this.Visibility = Visibility.Visible;
-            // TODO: improve this detailpage. Scroll through the folder.
-            CurrentIndexInFolder = 0/*ImageNavigationHelper.SelectedImage.GalleryIndex*/;
+            CurrentlyAccessedFolder = ImageNavigationHelper.ContainingFolder;
             CurrentlyDisplayedImageItem = ImageNavigationHelper.SelectedImage;
+            ImageData = CurrentlyAccessedFolder.GetRawImageItems();
+            CurrentIndexInImageData = ImageData.IndexOf(CurrentlyDisplayedImageItem);
             UpdateArrowsVisibility();
             await CurrentlyDisplayedImageItem.ToImageAsync();
-            displayedImage.Source = CurrentlyDisplayedImageItem.ImageData;
         }
 
         private void OnGoBack(object sender, RoutedEventArgs e)
@@ -55,57 +66,21 @@ namespace Piceon.Views
             this.Visibility = Visibility.Collapsed;
         }
 
-        private async Task UpdateImageToIndex(CancellationToken ct)
+        private async Task UpdateImageToIndex(int index, CancellationToken ct = new CancellationToken())
         {
             if (ct.IsCancellationRequested)
                 return;
-
-            var list = await ImageNavigationHelper.ContainingFolder.GetStorageFilesRangeAsync(CurrentIndexInFolder, 1);
-
-            if (list.Count == 0)
-            {
-                return;
-            }
-
+            var oldImage = CurrentlyDisplayedImageItem;
+            CurrentlyDisplayedImageItem = ImageData[CurrentIndexInImageData];
             if (ct.IsCancellationRequested)
                 return;
-
-            await CurrentlyDisplayedImageItem.ToThumbnailAsync();
-
-            if (ct.IsCancellationRequested)
-                return;
-
-            // TODO: ImageItem no longer stores index in folder, take care of this.
-            //try
-            //{
-            //    CurrentlyDisplayedImageItem = await ImageItem.FromStorageFile(list[0], CurrentIndexInFolder, ct, ImageItem.Options.Thumbnail);
-            //}
-            //catch(TaskCanceledException)
-            //{
-            //    return;
-            //}
-
-            if (ct.IsCancellationRequested)
-                return;
-
-            displayedImage.Source = CurrentlyDisplayedImageItem.ImageData;
-
-            if (ct.IsCancellationRequested)
-                return;
-
-            try
-            {
-                await CurrentlyDisplayedImageItem.ToImageAsync(ct);
-            }
-            catch(TaskCanceledException)
-            {
-                return;
-            }
+            await CurrentlyDisplayedImageItem?.ToImageAsync(ct);
+            await oldImage?.ToThumbnailAsync();
         }
 
         private void UpdateArrowsVisibility()
         {
-            if (CurrentIndexInFolder == 0)
+            if (CurrentIndexInImageData == 0)
             {
                 previousArrow.Visibility = Visibility.Collapsed;
             }
@@ -114,7 +89,7 @@ namespace Piceon.Views
                 previousArrow.Visibility = Visibility.Visible;
             }
 
-            if (CurrentIndexInFolder == ImageNavigationHelper.ContainingFolder?.GetFilesCount() - 1)
+            if (CurrentIndexInImageData  == ImageData.Count - 1)
             {
                 nextArrow.Visibility = Visibility.Collapsed;
             }
@@ -126,37 +101,62 @@ namespace Piceon.Views
 
         private async void Previous_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (CurrentIndexInFolder == 0)
+            if (CurrentIndexInImageData == 0)
             {
                 return;
             }
 
-            CurrentIndexInFolder--;
-
+            CurrentIndexInImageData--;
             FlipCancellationTokenSource?.Cancel();
-
             FlipCancellationTokenSource = new CancellationTokenSource();
             FlipCancellationToken = FlipCancellationTokenSource.Token;
             UpdateArrowsVisibility();
-            await UpdateImageToIndex(FlipCancellationToken);
-        }
+            try
+            {
+                await UpdateImageToIndex(CurrentIndexInImageData, FlipCancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+
+            }
+}
 
         private async void Next_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (CurrentIndexInFolder == ImageNavigationHelper.ContainingFolder.GetFilesCount() - 1)
+            if (CurrentIndexInImageData == ImageData.Count - 1)
             {
                 return;
             }
 
-            CurrentIndexInFolder++;
-
+            CurrentIndexInImageData++;
             FlipCancellationTokenSource?.Cancel();
-
             FlipCancellationTokenSource = new CancellationTokenSource();
             FlipCancellationToken = FlipCancellationTokenSource.Token;
             UpdateArrowsVisibility();
-            await UpdateImageToIndex(FlipCancellationToken);
+            try
+            {
+                await UpdateImageToIndex(CurrentIndexInImageData, FlipCancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+
+            }
         }
 
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
+        {
+            if (Equals(storage, value))
+            {
+                return;
+            }
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+        }
+
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
