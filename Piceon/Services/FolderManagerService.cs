@@ -20,7 +20,12 @@ namespace Piceon.Services
 
         private static StateMessagingService StateMessaging { get; } = StateMessagingService.Instance;
 
-        private static Dictionary<int, Dictionary<int, string>> TaskImages = new Dictionary<int, Dictionary<int, string>>();
+        private static Dictionary<int, List<ImageItem>> FolderPickImages = new Dictionary<int, List<ImageItem>>();
+        private static int FolderPickCntr = 0;
+
+        private static Dictionary<int, List<int>> FolderPickTasks = new Dictionary<int, List<int>>();
+        private static Dictionary<int, FolderItem> FolderPickFolder = new Dictionary<int, FolderItem>();
+        private static Dictionary<int, StateMessage> FolderPickStateMessage = new Dictionary<int, StateMessage>();
 
         public static async Task<FolderItem> OpenFolderAsync()
         {
@@ -62,7 +67,7 @@ namespace Piceon.Services
 
             foreach (var file in files)
             {
-                await DatabaseAccessService.InsertImageAsync(file.Path, dbvf.Id);
+                await DatabaseAccessService.InsertImageAsync(file.Path, false, dbvf.Id);
             }
 
             return dbvf;
@@ -93,25 +98,33 @@ namespace Piceon.Services
             picker.FileTypeFilter.Add(".gif");
 
             var files = await picker.PickMultipleFilesAsync();
-            List<Tuple<int, StorageFile>> ids = null;
             if (files != null && files.Count > 0)
             {
-                RecentStateMessage = StateMessaging.SendLoadingMessage("Scanning imported images...");
-                ids = await folder.AddFilesToFolder(files);
+                var recentStateMessage = StateMessaging.SendLoadingMessage("Scanning imported images...");
+                var imageItems = await folder.AddFilesToFolder(files);
 
                 CurrentlyScannedFolder = folder;
-                var idPathDictonary = new Dictionary<int, string>();
-                foreach (var tuple in ids)
+                try
                 {
-                    idPathDictonary.Add(tuple.Item1, tuple.Item2.Path);
+                    await BackendConctroller.TagImages(imageItems.Select(i => i.DatabaseId).ToList());
                 }
-                await BackendConctroller.TagImages(idPathDictonary.Keys.ToList());
-                CurrentlyScannedFolder.InvokeContentsChanged();
-                int taskid = BackendConctroller.CompareImages(
-                    idPathDictonary.Select(i => { return new List<string>() { i.Key.ToString(), i.Value }; }).ToList(),
+                catch (Exception)
+                {
+
+                }
+
+                var pickTaskIds = new List<int>();
+                int compareTaskId = BackendConctroller.CompareImages(
+                    imageItems,
                     FindSimilarFinishedHandler);
-                TaskImages.Add(taskid, idPathDictonary);
+
+                pickTaskIds.Add(compareTaskId);
+                FolderPickImages.Add(FolderPickCntr, imageItems);
+                FolderPickTasks.Add(FolderPickCntr, pickTaskIds);
+                FolderPickFolder.Add(FolderPickCntr, folder);
+                FolderPickStateMessage.Add(FolderPickCntr, recentStateMessage);
             }
+            FolderPickCntr++;
         }
 
         private static async void FindSimilarFinishedHandler(ControllerTaskResultMessage result)
@@ -119,20 +132,48 @@ namespace Piceon.Services
             if (result.result != BackendConctroller.DoneMessage)
                 return;
 
-            if (!TaskImages.ContainsKey(result.taskid))
+            if (!FolderPickTasks.Any(i => i.Value.Contains(result.taskid)))
                 return;
 
-            if (result.images.Count == 0)
-                return;
+            int folderPick = -1;
+            foreach (var item in FolderPickTasks)
+            {
+                if (item.Value.Remove(result.taskid))
+                {
+                    folderPick = item.Key;
+                    break;
+                }
+            }
 
             foreach (var group in result.images)
             {
-                await DatabaseAccessService.InsertSimilarityGroup(group, result.taskid.ToString());
+                await FolderPickFolder[folderPick].GroupImages(group);
             }
 
+            await CheckAllTasksInFolderPickDone(folderPick);
             await CurrentlyScannedFolder.UpdateQueryAsync();
-            StateMessaging.RemoveMessage(RecentStateMessage);
+        }
+
+        private static async Task CheckAllTasksInFolderPickDone(int folderPick)
+        {
+            if (FolderPickTasks[folderPick].Count > 0)
+                return;
+
+            await MarkImagesScanned(FolderPickImages[folderPick]);
+            FolderPickTasks.Remove(folderPick);
+            FolderPickImages.Remove(folderPick);
+            FolderPickFolder.Remove(folderPick);
+            StateMessaging.RemoveMessage(FolderPickStateMessage[folderPick]);
+            FolderPickStateMessage.Remove(folderPick);
             StateMessaging.SendInfoMessage("Images scanned successfully", 5000);
+        }
+
+        private static async Task MarkImagesScanned(List<ImageItem> imageItems)
+        {
+            foreach (var item in imageItems)
+            {
+                await item.MarkScannedAsync();
+            }
         }
     }
 }

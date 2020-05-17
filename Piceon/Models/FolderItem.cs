@@ -28,8 +28,8 @@ namespace Piceon.Models
 
         public event EventHandler ContentsChanged;
 
-        private List<DatabaseImage> AllImages { get; set; } = new List<DatabaseImage>();
-        private List<DatabaseImage> FilteredImages { get; set; } = new List<DatabaseImage>();
+        private List<ImageItem> AllImages { get; set; } = new List<ImageItem>();
+        private List<ImageItem> FilteredImages { get; set; } = new List<ImageItem>();
 
         public static async Task<FolderItem> FromDatabaseVirtualFolder(DatabaseVirtualFolder virtualFolder)
         {
@@ -61,7 +61,7 @@ namespace Piceon.Models
             {
                 try
                 {
-                    result.Add(await StorageFile.GetFileFromPathAsync(item.Path));
+                    result.Add(await StorageFile.GetFileFromPathAsync(item.FilePath));
                 }
                 catch (FileNotFoundException)
                 {
@@ -72,72 +72,10 @@ namespace Piceon.Models
             return result;
         }
 
-        public async Task<IReadOnlyList<ImageItem>> GetImageItemsRangeAsync(int firstIndex, int length, CancellationToken ct = new CancellationToken())
+        public List<ImageItem> GetRawImageItems()
         {
             var result = new List<ImageItem>();
-            ct.ThrowIfCancellationRequested();
-
-            var selectedRangeFiles = FilteredImages.GetRange(firstIndex, length);
-            var storageFiles = new List<Tuple<int, StorageFile>>();
-
-            for (int i = 0; i < selectedRangeFiles.Count(); i++)
-            {
-                ct.ThrowIfCancellationRequested();
-                StorageFile storageFile = null;
-                try
-                {
-                    storageFile = await StorageFile.GetFileFromPathAsync(selectedRangeFiles[i].Path);
-                }
-                catch (FileNotFoundException)
-                {
-                    continue;
-                }
-                storageFiles.Add(new Tuple<int, StorageFile>(i, storageFile));
-            }
-
-            int prevGroupId = -1;
-            if (firstIndex != 0)
-                prevGroupId = FilteredImages[firstIndex - 1].Group.Id;
-
-            for (int i = 0; i < storageFiles.Count(); i++)
-            {
-                ct.ThrowIfCancellationRequested();
-                int currentGroupId = selectedRangeFiles[storageFiles[i].Item1].Group.Id;
-                var image = await ImageItem.FromStorageFile(storageFiles[i].Item2, storageFiles[i].Item1 + firstIndex, ct, ImageItem.Options.Thumbnail);
-                image.DatabaseId = selectedRangeFiles[storageFiles[i].Item1].Id;
-
-                bool nextGroupDifferent = ((firstIndex + storageFiles[i].Item1) == FilteredImages.Count - 1 ||
-                    currentGroupId != FilteredImages[firstIndex + storageFiles[i].Item1 + 1].Group.Id);
-
-                if (currentGroupId < 0)
-                {
-                    image.PotitionInGroup = Helpers.GroupPosition.None;
-                }
-                else if (prevGroupId != currentGroupId)
-                {
-                    if (nextGroupDifferent)
-                    {
-                        image.PotitionInGroup = Helpers.GroupPosition.Only;
-                    }
-                    else
-                    {
-                        image.PotitionInGroup = Helpers.GroupPosition.Start;
-                    }
-                }
-                else if (nextGroupDifferent)
-                {
-                    image.PotitionInGroup = Helpers.GroupPosition.End;
-                }
-                else
-                {
-                    image.PotitionInGroup = Helpers.GroupPosition.Middle;
-                }
-
-                prevGroupId = currentGroupId;
-
-                result.Add(image);
-            }
-
+            result.AddRange(FilteredImages);
             return result;
         }
 
@@ -221,10 +159,74 @@ namespace Piceon.Models
         public async Task UpdateQueryAsync()
         {
             var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
-            AllImages = raw.OrderByDescending(i => i.Group.Id).ToList();
-            FilteredImages = AllImages.
-                Where(i => { return (TagsToFilter is null || TagsToFilter.Count == 0) ?
-                    true : TagsToFilter.Intersect(i.Tags).Count() == TagsToFilter.Count; }).ToList();
+            var currentIds = AllImages.Select(i => i.DatabaseId).ToList();
+            var rawCount = raw.Count;
+            for (int i = rawCount - 1; i >= 0; i--)
+            {
+                for (int j = currentIds.Count - 1; j >= 0; j--)
+                {
+                    if (raw[i].Id == currentIds[j])
+                    {
+                        raw.RemoveAt(i);
+                        currentIds.RemoveAt(j);
+                        break;
+                    }
+                }
+            }
+
+            AllImages.RemoveAll(i => currentIds.Contains(i.DatabaseId));
+
+            foreach (var item in raw)
+            {
+                AllImages.Add(await ImageItem.FromDatabaseImage(item, viewMode: ImageItem.Options.None));
+            }
+
+            var tmp = AllImages.OrderByDescending(i => i.Group.Id).ToList();
+            AllImages = tmp;
+            FilteredImages.Clear();
+
+            if (TagsToFilter is null || TagsToFilter.Count == 0)
+            {
+                FilteredImages.AddRange(AllImages);
+            }
+            else
+            {
+                FilteredImages = AllImages.
+                Where(i => TagsToFilter.Intersect(i.Tags).Count() == TagsToFilter.Count).ToList();
+            }
+
+            int prevGroupId = -1;
+            int nextGroupId = -1;
+            for (int i = 0; i < FilteredImages.Count; i++)
+            {
+                if (FilteredImages[i].Group is null ||
+                    FilteredImages[i].Group.Id < 0)
+                {
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.None;
+                    prevGroupId = -1;
+                    continue;
+                }
+
+                int currentGroupId = FilteredImages[i].Group.Id;
+
+                if (i + 1 == FilteredImages.Count)
+                    nextGroupId = -1;
+                else
+                    nextGroupId = FilteredImages[i + 1].Group.Id;
+
+                if (prevGroupId != currentGroupId &&
+                    nextGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Only;
+                else if (prevGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Start;
+                else if (nextGroupId != currentGroupId)
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.End;
+                else
+                    FilteredImages[i].PositionInGroup = Helpers.GroupPosition.Middle;
+
+                prevGroupId = currentGroupId;
+            }
+            
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 
@@ -240,15 +242,15 @@ namespace Piceon.Models
         /// </summary>
         /// <param name="files"></param>
         /// <returns>List of database IDs</returns>
-        public async Task<List<Tuple<int, StorageFile>>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
+        public async Task<List<ImageItem>> AddFilesToFolder(IReadOnlyList<StorageFile> files)
         {
-            var result = new List<Tuple<int, StorageFile>>();
+            var ids = new List<int>();
             foreach (var file in files)
             {
-                result.Add(new Tuple<int, StorageFile>(
-                    await DatabaseAccessService.InsertImageAsync(file.Path, DatabaseId), file));
+                ids.Add(await DatabaseAccessService.InsertImageAsync(file.Path, false, DatabaseId));
             }
             await UpdateQueryAsync();
+            var result = AllImages.Where(i => ids.Contains(i.DatabaseId)).ToList();
             ContentsChanged?.Invoke(this, new EventArgs());
             return result;
         }
@@ -261,6 +263,17 @@ namespace Piceon.Models
         public void InvokeContentsChanged()
         {
             ContentsChanged?.Invoke(this, new EventArgs());
+        }
+
+        public async Task GroupImages(List<int> imageIds)
+        {
+            var group = await DatabaseAccessService.InsertSimilarityGroup(imageIds, "noname");
+            AllImages.
+                ForEach(i =>
+                {
+                    if (imageIds.Remove(i.DatabaseId))
+                        i.Group = group;
+                });
         }
 
         public static bool operator ==(FolderItem f1, FolderItem f2)

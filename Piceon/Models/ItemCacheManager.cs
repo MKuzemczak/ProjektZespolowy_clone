@@ -142,9 +142,6 @@ namespace Piceon.Models
         /// <param name="ranges">New set of ranges the cache should hold</param>
         public void UpdateRanges(ItemIndexRange[] ranges)
         {
-            //Normalize ranges to get a unique set of discontinuous ranges
-            ranges = NormalizeRanges(ranges);
-
             // Fail fast if the ranges haven't changed
             if (!HasRangesChanged(ranges)) { return; }
 
@@ -370,37 +367,7 @@ namespace Piceon.Models
         }
 
 
-        /// <summary>
-        /// Merges a set of ranges to form a new set of non-contiguous ranges
-        /// </summary>
-        /// <param name="ranges">The list of ranges to merge</param>
-        /// <returns>A smaller set of merged ranges</returns>
-        private ItemIndexRange[] NormalizeRanges(ItemIndexRange[] ranges)
-        {
-            List<ItemIndexRange> results = new List<ItemIndexRange>();
-            foreach (ItemIndexRange range in ranges)
-            {
-                bool handled = false;
-                for (int i = 0; i < results.Count; i++)
-                {
-                    ItemIndexRange existing = results[i];
-                    if (range.ContiguousOrOverlaps(existing))
-                    {
-                        results[i] = existing.Combine(range);
-                        handled = true;
-                        break;
-                    }
-                    else if (range.FirstIndex < existing.FirstIndex)
-                    {
-                        results.Insert(i, range);
-                        handled = true;
-                        break;
-                    }
-                }
-                if (!handled) { results.Add(range); }
-            }
-            return results.ToArray();
-        }
+        
 
 
         // Sees if the value is in our cache if so it returns the index
