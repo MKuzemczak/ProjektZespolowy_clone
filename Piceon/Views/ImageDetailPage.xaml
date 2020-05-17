@@ -12,7 +12,7 @@
         <Image
             x:Name="displayedImage"
             Stretch="Uniform"
-            Source="/Assets/PlaceholderImage.png">
+            Source="{x:Bind CurrentlyDisplayedImageItem.ImageData, Mode=OneWay}">
         </Image>
 
         

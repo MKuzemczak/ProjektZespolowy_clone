@@ -71,8 +71,12 @@ namespace Piceon.Models
                 return;
             if (ImageData == null)
                 ImageData = new BitmapImage();
+            if (ct.IsCancellationRequested)
+                return;
             if (File == null)
                 await SetStorageFileFromPathAsync(FilePath);
+            if (ct.IsCancellationRequested)
+                return;
             using (Windows.Storage.Streams.IRandomAccessStream fileStream =
                 await File.OpenAsync(FileAccessMode.Read))
             {
@@ -90,9 +94,11 @@ namespace Piceon.Models
                 ImageData = new BitmapImage();
             if (File == null)
                 await SetStorageFileFromPathAsync(FilePath);
-            ct.ThrowIfCancellationRequested();
+            if (ct.IsCancellationRequested)
+                return;
             StorageItemThumbnail thumb = await File.GetThumbnailAsync(ThumbnailMode.SingleItem);
-            ct.ThrowIfCancellationRequested();
+            if (ct.IsCancellationRequested)
+                return;
             if (ImageData is object)
             {
                 await ImageData.SetSourceAsync(thumb);
