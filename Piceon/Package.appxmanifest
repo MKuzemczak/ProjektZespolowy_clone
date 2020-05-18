@@ -58,6 +58,7 @@
   </Applications>
 
   <Capabilities>
+    <rescap:Capability Name="broadFileSystemAccess" />
     <Capability Name="internetClient" />
     <uap:Capability Name="picturesLibrary"/>
     <rescap:Capability Name="confirmAppClose" />
