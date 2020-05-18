@@ -74,7 +74,7 @@ namespace Piceon.Models
             File = await StorageFile.GetFileFromPathAsync(path);
         }
 
-        private void MarkAsNoSuchFile()
+        private void MarkAsFileNotFound()
         {
             FileNotFound = true;
             ImageData = BrokenFileIcon;
@@ -96,7 +96,7 @@ namespace Piceon.Models
                 }
                 catch (FileNotFoundException e)
                 {
-                    MarkAsNoSuchFile();
+                    MarkAsFileNotFound();
                     return;
                 }
 
@@ -126,7 +126,7 @@ namespace Piceon.Models
                 }
                 catch (FileNotFoundException e)
                 {
-                    MarkAsNoSuchFile();
+                    MarkAsFileNotFound();
                     return;
                 }
                 
