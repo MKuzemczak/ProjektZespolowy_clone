@@ -139,23 +139,6 @@ namespace Piceon.Models
             Name = null;
         }
 
-        public async Task CheckContentAsync()
-        {
-            var dbFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
-
-            foreach (var file in dbFiles)
-            {
-                try
-                {
-                    StorageFile f = await StorageFile.GetFileFromPathAsync(file.Item2);
-                }
-                catch (FileNotFoundException)
-                {
-                    await DatabaseAccessService.DeleteImageAsync(file.Item1);
-                }
-            }
-        }
-
         public async Task UpdateQueryAsync()
         {
             var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
