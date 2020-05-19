@@ -117,8 +117,13 @@ namespace Piceon.Services
                 int compareTaskId = BackendConctroller.CompareImages(
                     imageItems,
                     FindSimilarFinishedHandler);
-
                 pickTaskIds.Add(compareTaskId);
+
+                // TODO: uncomment when backend provides quality check
+                //int qualityTaskId = BackendConctroller.CheckImagesQuality(
+                //    imageItems,
+                //    CheckQualityFinishedHandler);
+                //pickTaskIds.Add(qualityTaskId);
                 FolderPickImages.Add(FolderPickCntr, imageItems);
                 FolderPickTasks.Add(FolderPickCntr, pickTaskIds);
                 FolderPickFolder.Add(FolderPickCntr, folder);
@@ -151,7 +156,39 @@ namespace Piceon.Services
             }
 
             await CheckAllTasksInFolderPickDone(folderPick);
-            await CurrentlyScannedFolder.UpdateQueryAsync();
+        }
+
+        private static async void CheckQualityFinishedHandler(ControllerTaskResultMessage result)
+        {
+            if (result.result != BackendConctroller.DoneMessage)
+                return;
+
+            if (!FolderPickTasks.Any(i => i.Value.Contains(result.taskid)))
+                return;
+
+            int folderPick = -1;
+            foreach (var item in FolderPickTasks)
+            {
+                if (item.Value.Remove(result.taskid))
+                {
+                    folderPick = item.Key;
+                    break;
+                }
+            }
+
+            foreach (var item in result.images)
+            {
+                foreach (var image in FolderPickImages[folderPick])
+                {
+                    if (item[0] == image.DatabaseId)
+                    {
+                        image.Quality = item[1];
+                        break;
+                    }
+                }
+            }
+
+            await CheckAllTasksInFolderPickDone(folderPick);
         }
 
         private static async Task CheckAllTasksInFolderPickDone(int folderPick)
@@ -162,6 +199,7 @@ namespace Piceon.Services
             await MarkImagesScanned(FolderPickImages[folderPick]);
             FolderPickTasks.Remove(folderPick);
             FolderPickImages.Remove(folderPick);
+            await FolderPickFolder[folderPick].UpdateQueryAsync();
             FolderPickFolder.Remove(folderPick);
             StateMessaging.RemoveMessage(FolderPickStateMessage[folderPick]);
             FolderPickStateMessage.Remove(folderPick);

@@ -152,23 +152,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
-    <Compile Include="Controls\CheckMark.xaml.cs">
-      <DependentUpon>CheckMark.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\EditableTextBlock.xaml.cs">
       <DependentUpon>EditableTextBlock.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\GroupBorders.xaml.cs">
       <DependentUpon>GroupBorders.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ImageQualityDisplay.xaml.cs">
-      <DependentUpon>ImageQualityDisplay.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\ThumbnailProperties.xaml.cs">
       <DependentUpon>ThumbnailProperties.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\ThumbnailPropertiesBackground.xaml.cs">
-      <DependentUpon>ThumbnailPropertiesBackground.xaml</DependentUpon>
     </Compile>
     <Compile Include="DatabaseAccess\DatabaseImage.cs" />
     <Compile Include="DatabaseAccess\DatabaseSimilaritygroup.cs" />
@@ -250,10 +241,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\CheckMark.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\EditableTextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -262,15 +249,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\ImageQualityDisplay.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\ThumbnailProperties.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\ThumbnailPropertiesBackground.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
