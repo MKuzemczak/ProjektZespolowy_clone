@@ -41,6 +41,16 @@
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
                     <Grid>
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
+                                <MenuFlyoutItem Text="Delete from disk" Icon="Delete" Click="DeleteImageFromDisk_Click"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
                         <Image
                             x:Name="thumbnailImage"
                             AutomationProperties.Name="{x:Bind Filename}"
@@ -48,19 +58,10 @@
                             Style="{StaticResource ThumbnailImageStyle}"
                             ToolTipService.ToolTip="{x:Bind Filename}"
                             RightTapped="ThumbnailImage_RightTapped">
-                            <Image.ContextFlyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
-                                    <MenuFlyoutSeparator/>
-                                    <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
-                                    <MenuFlyoutItem Text="Delete from disk" Icon="Delete" Click="DeleteImageFromDisk_Click"/>
-                                    <MenuFlyoutSeparator/>
-                                    <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
-                                </MenuFlyout>
-                            </Image.ContextFlyout>
                         </Image>
+                        <controls:ThumbnailProperties IsCheckMarkVisible="{x:Bind Scanned}"
+                                                      QualityValue="{x:Bind Quality}"/>
                         <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup, Mode=OneWay}" />
-                        <controls:CheckMark IsVisible="{x:Bind Scanned, Mode=OneWay}"/>
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>

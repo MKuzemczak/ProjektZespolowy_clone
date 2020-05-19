@@ -58,6 +58,13 @@ namespace Piceon.Models
             set { Set(ref _scanned, value); }
         }
 
+        private int _quality;
+        public int Quality
+        {
+            get { return _quality; }
+            set { Set(ref _quality, value); }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private async Task SetStorageFileFromPathAsync(string path)

@@ -16,21 +16,17 @@
     <Grid>
         <Rectangle x:Name="leftRect" Fill="{StaticResource GroupBorderColor}"
                     Width="1"
-                    Height="100"
                     HorizontalAlignment="Left"
                    Visibility="Collapsed"/>
         <Rectangle x:Name="rightRect" Fill="{StaticResource GroupBorderColor}"
                     Width="1"
-                    Height="100"
                     HorizontalAlignment="Right"
                    Visibility="Collapsed"/>
         <Rectangle x:Name="topRect" Fill="{StaticResource GroupBorderColor}"
-                    Width="100"
                     Height="1"
                     VerticalAlignment="Top"
                    Visibility="Collapsed" />
         <Rectangle x:Name="bottomRect" Fill="{StaticResource GroupBorderColor}"
-                    Width="100"
                     Height="1"
                     VerticalAlignment="Bottom"
                    Visibility="Collapsed"/>
