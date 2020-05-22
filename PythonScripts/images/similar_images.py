@@ -1,7 +1,9 @@
+import difflib
 import statistics
 
 import cv2
 import numpy as np
+from PIL import Image
 from skimage import io, color
 from skimage.feature import local_binary_pattern as lbp
 from scipy.spatial.distance import euclidean
@@ -161,37 +163,66 @@ class SimilarImageRecognizer:
         return groups
 
     @staticmethod
-    def group_by_local_binary_patters(ids_pahts,thr:float=0.015):
+    def group_by_local_binary_patters(ids_pahts: [], thr: float = 0.015):
+
         def lbp_histogram(color_image):
             img = color.rgb2gray(color_image)
+            w, h = img.shape[:2]
+            if w * h > 10000000:
+                img = cv2.resize(img, (w // 4, h // 4))
+            elif w * h > 4750000:
+                img = cv2.resize(img, (w // 2, h // 2))
+
             patterns = lbp(img, 8, 1)
             hist, _ = np.histogram(patterns, bins=np.arange(2 ** 8 + 1), density=True)
             return hist
 
-        histograms = []
-        for path in ids_pahts:
-            img = io.imread(path[1])
-            hist = [path[0], lbp_histogram(img)]
-            histograms.append(hist)
+        def get_date_taken(path):
+            return Image.open(path)._getexif()[36867]
+
+        def compare_date(path_1, path_2) -> bool:
+            pass
+
+        def compare_filename(path_1: str, path_2: str) -> bool:
+            name_1: str = path_1.rsplit('\\', 1)[1]
+            name_2: str = path_2.rsplit('\\', 1)[1]
+            length = min(len(name_2), len(name_1), 3)
+            for i in range(length):
+                if name_1[i] != name_2[i]:
+                    return False
+            return True
+            # diff = len([li for li in difflib.ndiff(name_1, name_2) if li[0] != ' '])
+            # return diff <= 5
+
+        def compare_his(his_1, his_2) -> bool:
+            return euclidean(his_1, his_2) < thr
+
         groups = []
-        while len(histograms) > 1:
+        while len(ids_pahts) > 1:
             tmp_group = []
-            for i in range(1, len(histograms)):
-                dist = euclidean(histograms[0][1], histograms[i][1])
-                if dist < thr:
-                    print(dist)
-                    print(histograms[0][0], histograms[i][0])
-                    if len(tmp_group) > 1:
-                        tmp_group.append(histograms[i][0])
-                    else:
-                        tmp_group.append(histograms[i][0])
-                        tmp_group.append(histograms[0][0])
+            pivot = lbp_histogram(io.imread(ids_pahts[0][1]))
+            pivot_id_path = ids_pahts[0]
+            for i in range(1, len(ids_pahts)):
+
+                if compare_filename(pivot_id_path[1], ids_pahts[i][1]):
+                    tmp = lbp_histogram(io.imread(ids_pahts[i][1]))
+
+                    if compare_his(pivot, tmp):
+                        print(pivot_id_path[1], ids_pahts[i][1])
+                        if len(tmp_group) > 1:
+                            tmp_group.append(ids_pahts[i][0])
+                        else:
+                            tmp_group.append(ids_pahts[i][0])
+                            tmp_group.append(pivot_id_path[0])
+                        # pivot = tmp
+                        # pivot_id_path = ids_pahts[i]
+
             if len(tmp_group) > 0:
                 for id in tmp_group:
-                    histograms = list(filter(lambda x: x[0] != id, histograms))
+                    ids_pahts = list(filter(lambda x: x[0] != id, ids_pahts))
                 groups.append(tmp_group)
             else:
-                del histograms[0]
+                del ids_pahts[0]
         return groups
 
     @staticmethod

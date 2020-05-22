@@ -12,7 +12,7 @@ class QueryService:
 
     def prepare_args_to_two_selct(self, images_id) -> (str, str):
         """"
-            SQLite nie zwraca w zadanej obiektów, więc similar_images.pyw potrzebuje wysłać dwa selecty
+            SQLite nie zwraca w zadanej obiektów, więc similar_images.py potrzebuje wysłać dwa selecty
             zeby otrzymac glowny obrazek oraz porownywane
         """
         if len(images_id) < 3:

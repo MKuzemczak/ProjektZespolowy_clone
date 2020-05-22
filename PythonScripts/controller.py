@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from PIL import Image
 import pika
 import json
 import subprocess
@@ -8,7 +7,6 @@ import subprocess
 from collections import namedtuple
 
 import images.similar_images as sm
-from images.test_method import check_similar
 
 
 class Executor:
@@ -37,12 +35,9 @@ class Executor:
                 bad_json = True
 
             if not bad_json:
-
                 if p is not None or b is not None:
                     try:
                         images = c.caller(p, b)
-                        # if is_done == "WORNG FUNC":
-                        # raise Exception('WRONG FUNCTION')
                     except Exception as e:
                         err_msg = str(e)
                 elif p is None and b is None:
@@ -63,7 +58,9 @@ class Executor:
                 'images': images
 
             }
+            print(response)
             response = json.dumps(response)
+
             channel.basic_publish(exchange='',
                                   routing_key='back',
                                   body=str(response))
@@ -84,14 +81,13 @@ class Controller:
     def __init__(self):
         if Controller.__instance is None:
             Controller.__instance = self
+            self.queue = []
 
     def prepare_message(self, message: bytes):
-        decode = message.decode('UTF-8')
         try:
             x = json.loads(message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
         except Exception as e:
             raise Exception("BAD JSON")
-        # return arr[0], arr[1], arr[2:]
         return x.taskid, x.type, x.images
 
     def caller(self, param, body):
@@ -112,13 +108,14 @@ class Controller:
         return [[]]
 
     def run_comparator(self, images_ids_paths):
-
         for path in images_ids_paths:
             if not path[1].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
                 raise Exception("BAD PATH")
-        # return sm.SimilarImageRecognizer.grpup_by_segment_hist(images_ids_paths)
         return sm.SimilarImageRecognizer.group_by_local_binary_patters(images_ids_paths)
-        # return sm.SimilarImageRecognizer.group_by_histogram_and_probability(images_ids_paths)
+
+    def manager(self):
+        pass
+
 
 
 if __name__ == '__main__':
