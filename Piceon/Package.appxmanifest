@@ -7,11 +7,7 @@
   xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:genTemplate="http://schemas.microsoft.com/appx/developer/windowsTemplateStudio"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
-  xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
-  xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
-  IgnorableNamespaces="uap mp genTemplate rescap uap3 uap2 uap6 iot">
+  IgnorableNamespaces="uap mp genTemplate rescap">
 
   <Identity
     Name="9B9E1BB9-899A-46F3-A233-45B2D7A87BBA"
@@ -65,36 +61,6 @@
     <Capability Name="internetClient" />
     <uap:Capability Name="picturesLibrary"/>
     <rescap:Capability Name="confirmAppClose" />
-    <rescap:Capability Name="broadFileSystemAccess" />
-    <Capability Name="allJoyn"/>
-    <uap:Capability Name="musicLibrary"/>
-    <uap:Capability Name="videosLibrary"/>
-    <uap:Capability Name="chat"/>
-    <Capability Name="codeGeneration"/>
-    <uap:Capability Name="userAccountInformation"/>
-    <uap:Capability Name="contacts"/>
-    <uap:Capability Name="removableStorage"/>
-    <uap:Capability Name="objects3D"/>
-    <uap3:Capability Name="userNotificationListener"/>
-    <uap3:Capability Name="backgroundMediaPlayback"/>
-    <uap2:Capability Name="spatialPerception"/>
-    <uap:Capability Name="voipCall"/>
-    <uap:Capability Name="phoneCall"/>
-    <uap6:Capability Name="graphicsCapture"/>
-    <uap2:Capability Name="phoneCallHistoryPublic"/>
-    <Capability Name="privateNetworkClientServer"/>
-    <uap3:Capability Name="remoteSystem"/>
-    <uap:Capability Name="appointments"/>
-    <uap:Capability Name="sharedUserCertificates"/>
-    <iot:Capability Name="lowLevelDevices"/>
-    <uap:Capability Name="enterpriseAuthentication"/>
-    <DeviceCapability Name="bluetooth"/>
-    <DeviceCapability Name="gazeInput"/>
-    <DeviceCapability Name="webcam"/>
-    <DeviceCapability Name="location"/>
-    <DeviceCapability Name="lowLevel"/>
-    <DeviceCapability Name="microphone"/>
-    <DeviceCapability Name="pointOfService"/>
   </Capabilities>
 
   <genTemplate:Metadata>

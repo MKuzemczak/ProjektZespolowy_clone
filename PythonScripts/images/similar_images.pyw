@@ -1,9 +1,8 @@
-import difflib
+
 import statistics
 import gc
 import cv2
 import numpy as np
-from PIL import Image
 from skimage import io, color
 from skimage.feature import local_binary_pattern as lbp
 from scipy.spatial.distance import euclidean
