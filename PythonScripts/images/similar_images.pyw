@@ -1,5 +1,6 @@
-import statistics
 
+import statistics
+import gc
 import cv2
 import numpy as np
 from skimage import io, color
@@ -69,10 +70,8 @@ class SimilarImageRecognizer:
             img_template_diff = 1 - img_template_probability_match
             [qual] = max(cv2.matchTemplate(hist, hist2, cv2.TM_CCOEFF_NORMED))
             qual = 1 - qual
-            # taking only 10% of histogram diff, since it's less accurate than template method
             commutative_image_diff = (img_hist_diff + img_hist_diff * 10) / 11
-            # commutative_image_diff = img_hist_diff
-            # commutative_image_diff = qual + img_hist_diff
+
 
             return commutative_image_diff
 
@@ -161,73 +160,92 @@ class SimilarImageRecognizer:
         return groups
 
     @staticmethod
-    def group_by_local_binary_patters(ids_pahts,thr:float=0.015):
+    def group_by_local_binary_patters(ids_pahts: [], thr: float = 0.015):
         def lbp_histogram(color_image):
             img = color.rgb2gray(color_image)
+            w, h = img.shape[:2]
+            if w * h > 10000000:
+                img = cv2.resize(img, (w // 4, h // 4))
+            elif w * h > 4750000:
+                img = cv2.resize(img, (w // 2, h // 2))
+
             patterns = lbp(img, 8, 1)
             hist, _ = np.histogram(patterns, bins=np.arange(2 ** 8 + 1), density=True)
             return hist
 
-        histograms = []
-        for path in ids_pahts:
-            img = io.imread(path[1])
-            hist = [path[0], lbp_histogram(img)]
-            histograms.append(hist)
+        def compare_filename(path_1: str, path_2: str) -> bool:
+            name_1: str = path_1.rsplit('\\', 1)[1]
+            name_2: str = path_2.rsplit('\\', 1)[1]
+            length = min(len(name_2), len(name_1), 3)
+            for i in range(length):
+                if name_1[i] != name_2[i]:
+                    return False
+            return True
+            # diff = len([li for li in difflib.ndiff(name_1, name_2) if li[0] != ' '])
+            # return diff <= 5
+
+        def compare_his(his_1, his_2) -> bool:
+            return euclidean(his_1, his_2) < thr
+
         groups = []
-        while len(histograms) > 1:
+        while len(ids_pahts) > 1:
             tmp_group = []
-            for i in range(1, len(histograms)):
-                dist = euclidean(histograms[0][1], histograms[i][1])
-                if dist < thr:
-                    print(dist)
-                    print(histograms[0][0], histograms[i][0])
-                    if len(tmp_group) > 1:
-                        tmp_group.append(histograms[i][0])
-                    else:
-                        tmp_group.append(histograms[i][0])
-                        tmp_group.append(histograms[0][0])
-            if len(tmp_group) > 0:
-                for id in tmp_group:
-                    histograms = list(filter(lambda x: x[0] != id, histograms))
-                groups.append(tmp_group)
-            else:
-                del histograms[0]
-        return groups
-
-    @staticmethod
-    def group_by_binary_desc(ids_filepaths):
-        # print('group f')
-
-        def compare(flann, desc_1, desc_2):
-            matches = flann.knnMatch(desc_1, desc_2, k=2)
-            # print(len(matches))
-            return matches
-
-        descriptors = []
-        sift = cv2.xfeatures2d.SIFT_create()
-        for id_path in ids_filepaths:
-            img = cv2.imread(id_path[1], 0)
-            _, desc = sift.detectAndCompute(img, None)
-            descriptors.append((desc, id_path))
-            groups = []
-
-        while len(descriptors) > 1:
-            tmp_group = []
-            for i in range(1, len(descriptors)):
-                if len(compare(descriptors[i][0], descriptors[0][0])) > 5:
-                    if len(tmp_group) > 1:
-                        tmp_group.append(descriptors[i][1][0])
-                    else:
-                        tmp_group.append(descriptors[i][1][0])
-                        tmp_group.append(descriptors[0][1][0])
+            pivot = lbp_histogram(io.imread(ids_pahts[0][1]))
+            pivot_id_path = ids_pahts[0]
+            for i in range(1, len(ids_pahts)):
+                if compare_filename(pivot_id_path[1], ids_pahts[i][1]):
+                    tmp = lbp_histogram(io.imread(ids_pahts[i][1]))
+                    if compare_his(pivot, tmp):
+                        print(pivot_id_path[1], ids_pahts[i][1])
+                        if len(tmp_group) > 1:
+                            tmp_group.append(ids_pahts[i][0])
+                        else:
+                            tmp_group.append(ids_pahts[i][0])
+                            tmp_group.append(pivot_id_path[0])
+                    del tmp
+                    gc.collect()
 
             if len(tmp_group) > 0:
                 for id in tmp_group:
-                    descriptors = list(filter(lambda x: x[1][0] != id, descriptors))
+                    ids_pahts = list(filter(lambda x: x[0] != id, ids_pahts))
                 groups.append(tmp_group)
             else:
-                del descriptors[0]
+                del ids_pahts[0]
         return groups
+
+    # @staticmethod
+    # def group_by_binary_desc(ids_filepaths):
+    #     # print('group f')
+    #
+    #     def compare(flann, desc_1, desc_2):
+    #         matches = flann.knnMatch(desc_1, desc_2, k=2)
+    #         return matches
+    #
+    #     descriptors = []
+    #     sift = cv2.xfeatures2d.SIFT_create()
+    #     for id_path in ids_filepaths:
+    #         img = cv2.imread(id_path[1], 0)
+    #         _, desc = sift.detectAndCompute(img, None)
+    #         descriptors.append((desc, id_path))
+    #         groups = []
+    #
+    #     while len(descriptors) > 1:
+    #         tmp_group = []
+    #         for i in range(1, len(descriptors)):
+    #             if len(compare(descriptors[i][0], descriptors[0][0])) > 5:
+    #                 if len(tmp_group) > 1:
+    #                     tmp_group.append(descriptors[i][1][0])
+    #                 else:
+    #                     tmp_group.append(descriptors[i][1][0])
+    #                     tmp_group.append(descriptors[0][1][0])
+    #
+    #         if len(tmp_group) > 0:
+    #             for id in tmp_group:
+    #                 descriptors = list(filter(lambda x: x[1][0] != id, descriptors))
+    #             groups.append(tmp_group)
+    #         else:
+    #             del descriptors[0]
+    #     return groups
 
     # @staticmethod
     # def __find_similar_in_list(list_of_db_image):
