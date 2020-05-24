@@ -31,6 +31,8 @@ namespace Piceon.Models
         public string Filename { get; set; }
         public BitmapImage ImageData { get; set; }
 
+        public static BitmapImage BrokenFileIcon = new BitmapImage(new Uri("ms-appx:///Assets/Icons/broken-image.png"));
+
         public int DatabaseId { get; set; }
 
         public string FilePath { get; set; }
@@ -65,11 +67,24 @@ namespace Piceon.Models
             set { Set(ref _quality, value); }
         }
 
+        private bool _fileNotFound = false;
+        public bool FileNotFound
+        {
+            get { return _fileNotFound; }
+            set { Set(ref _fileNotFound, value); }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private async Task SetStorageFileFromPathAsync(string path)
         {
             File = await StorageFile.GetFileFromPathAsync(path);
+        }
+
+        private void MarkAsFileNotFound()
+        {
+            FileNotFound = true;
+            ImageData = BrokenFileIcon;
         }
 
         public async Task ToImageAsync(CancellationToken ct = new CancellationToken())
@@ -81,7 +96,18 @@ namespace Piceon.Models
             if (ct.IsCancellationRequested)
                 return;
             if (File == null)
-                await SetStorageFileFromPathAsync(FilePath);
+            {
+                try
+                {
+                    await SetStorageFileFromPathAsync(FilePath);
+                }
+                catch (FileNotFoundException e)
+                {
+                    MarkAsFileNotFound();
+                    return;
+                }
+
+            }
             if (ct.IsCancellationRequested)
                 return;
             using (Windows.Storage.Streams.IRandomAccessStream fileStream =
@@ -100,7 +126,18 @@ namespace Piceon.Models
             if (ImageData == null)
                 ImageData = new BitmapImage();
             if (File == null)
-                await SetStorageFileFromPathAsync(FilePath);
+            {
+                try
+                {
+                    await SetStorageFileFromPathAsync(FilePath);
+                }
+                catch (FileNotFoundException e)
+                {
+                    MarkAsFileNotFound();
+                    return;
+                }
+                
+            }
             if (ct.IsCancellationRequested)
                 return;
             StorageItemThumbnail thumb = await File.GetThumbnailAsync(ThumbnailMode.SingleItem);

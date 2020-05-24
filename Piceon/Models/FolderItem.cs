@@ -139,23 +139,6 @@ namespace Piceon.Models
             Name = null;
         }
 
-        public async Task CheckContentAsync()
-        {
-            var dbFiles = await DatabaseAccessService.GetImagesInFolderAsync(DatabaseId);
-
-            foreach (var file in dbFiles)
-            {
-                try
-                {
-                    StorageFile f = await StorageFile.GetFileFromPathAsync(file.Item2);
-                }
-                catch (FileNotFoundException)
-                {
-                    await DatabaseAccessService.DeleteImageAsync(file.Item1);
-                }
-            }
-        }
-
         public async Task UpdateQueryAsync()
         {
             var raw = await DatabaseAccessService.GetVirtualfolderImagesWithGroupsAndTags(DatabaseId);
@@ -274,6 +257,11 @@ namespace Piceon.Models
                     if (imageIds.Remove(i.DatabaseId))
                         i.Group = group;
                 });
+        }
+
+        public List<ImageItem> GetGroupOfImageItems(int groupId)
+        {
+            return AllImages.Where(i => (i.Group is object && i.Group.Id == groupId)).ToList();
         }
 
         public static bool operator ==(FolderItem f1, FolderItem f2)

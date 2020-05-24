@@ -40,9 +40,11 @@
             DragItemsCompleted="ImagesGridView_DragItemsCompleted">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
-                    <Grid>
+                    <Grid RightTapped="ThumbnailImage_RightTapped">
                         <Grid.ContextFlyout>
                             <MenuFlyout>
+                                <MenuFlyoutItem Text="Select group" Click="SelectGroup_Click" />
+                                <MenuFlyoutSeparator/>
                                 <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
                                 <MenuFlyoutSeparator/>
                                 <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
@@ -56,12 +58,13 @@
                             AutomationProperties.Name="{x:Bind Filename}"
                             Source="{x:Bind ImageData}"
                             Style="{StaticResource ThumbnailImageStyle}"
-                            ToolTipService.ToolTip="{x:Bind Filename}"
-                            RightTapped="ThumbnailImage_RightTapped">
+                            ToolTipService.ToolTip="{x:Bind Filename}">
                         </Image>
                         <controls:ThumbnailProperties IsCheckMarkVisible="{x:Bind Scanned}"
                                                       QualityValue="{x:Bind Quality}"/>
                         <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup, Mode=OneWay}" />
+                        <controls:WarningMark IsVisible="{x:Bind FileNotFound, Mode=OneWay}"
+                                              ToolTipService.ToolTip="File not found"/>
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>
