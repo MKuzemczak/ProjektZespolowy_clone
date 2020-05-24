@@ -26,6 +26,7 @@ namespace Piceon.Views
     {
         public const string ImageGallerySelectedIdKey = "ImageGallerySelectedIdKey";
 
+        #region PROPERTIES
         public ImageDataSource Source { get; set; }
         public FolderItem SelectedContentFolder { get; set; } = null;
 
@@ -33,7 +34,18 @@ namespace Piceon.Views
         private CoreDispatcher _uiThreadDispatcher;
 
         private bool IsItemClickedWithThisClick = false;
-        private ImageItem ClickedItem { get; set; }
+        private ImageItem ClickedItemItem { get; set; }
+        private ImageItem RightTappedImageItem { get; set; }
+
+        #endregion
+
+        #region EVENTS
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler ImageClicked;
+
+        #endregion
 
         public ImageGalleryPage()
         {
@@ -43,23 +55,7 @@ namespace Piceon.Views
             _uiThreadDispatcher = Window.Current.Dispatcher;
         }
 
-        private async void ImageGalleryPage_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            if (SelectedContentFolder != null)
-            {
-                await SelectedContentFolder.CheckContentAsync();
-                SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
-
-                Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
-
-                if (Source != null)
-                {
-                    imagesGridView.ItemsSource = Source;
-                }
-            }
-        }
-
-
+        #region METHODS
         public async Task AccessFolder(FolderItem folder)
         {
             if (folder is null)
@@ -101,6 +97,36 @@ namespace Piceon.Views
                 await SelectedContentFolder?.SetTagsToFilter(tags);
         }
 
+        private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
+        {
+            if (Equals(storage, value))
+            {
+                return;
+            }
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+        }
+
+        #endregion
+
+        #region EVENT_HANDLERS
+        private async void ImageGalleryPage_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (SelectedContentFolder != null)
+            {
+                await SelectedContentFolder.CheckContentAsync();
+                SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
+
+                Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);
+
+                if (Source != null)
+                {
+                    imagesGridView.ItemsSource = Source;
+                }
+            }
+        }
+
         private void SelectedContentFolder_ContentsChanged(object sender, EventArgs e)
         {
             // This callback can occur on a different thread so we need to marshal it back to the UI thread
@@ -114,32 +140,83 @@ namespace Piceon.Views
             }
         }
 
-        private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ClickedItem = e.ClickedItem as ImageItem;
-            IsItemClickedWithThisClick = true;
-        }
+        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        #region EVENTS
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public event EventHandler ImageClicked;
 
         #endregion
 
-        private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
+        #region GALLERY_EVENT_HANDLERS
+        private void ImagesGridView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (Equals(storage, value))
-            {
-                return;
-            }
-
-            storage = value;
-            OnPropertyChanged(propertyName);
+            ClickedItemItem = e.ClickedItem as ImageItem;
+            IsItemClickedWithThisClick = true;
         }
 
-        private void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        private void ImagesGridView_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            if (ClickedItemItem != null)
+            {
+                ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
+                ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
+                ImageNavigationHelper.SelectedImage = ClickedItemItem;
+                ImageClicked?.Invoke(this, new EventArgs());
+            }
+        }
+
+        private void ImagesGridView_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            if (!IsItemClickedWithThisClick)
+            {
+                imagesGridView.SelectedItems.Clear();
+            }
+
+            IsItemClickedWithThisClick = false;
+        }
+
+        private void ImagesGridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            DragAndDropHelper.DraggedItems.Clear();
+            DragAndDropHelper.DraggedItems.AddRange(imagesGridView.SelectedItems);
+        }
+
+        private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
+        {
+            var imageItem = (sender as Image).DataContext as ImageItem;
+            RightTappedImageItem = imageItem;
+            if (!imagesGridView.SelectedItems.Contains(imageItem))
+            {
+                imagesGridView.SelectedItems.Clear();
+                imagesGridView.SelectedItems.Add(imageItem);
+            }
+        }
+
+        private void ImagesGridView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (DragAndDropHelper.DropSuccessful)
+            {
+                ReloadFolder();
+                DragAndDropHelper.DropSuccessful = false;
+            }
+
+            DragAndDropHelper.DraggedItems.Clear();
+        }
+        #endregion
+
+        #region RIGHT_CLICK_EVENT_HANDLERS
+
+        private void SelectGroup_Click(object sender, RoutedEventArgs e)
+        {
+            if (RightTappedImageItem?.Group is null)
+                return;
+
+            var group = SelectedContentFolder.GetGroupOfImageItems(RightTappedImageItem.Group.Id);
+            imagesGridView.SelectedItems.Clear();
+
+            foreach (var item in group)
+            {
+                imagesGridView.SelectedItems.Add(item);
+            }
+        }
 
         private async void CopyImage_Click(object sender, RoutedEventArgs e)
         {
@@ -258,54 +335,6 @@ namespace Piceon.Views
             //TODO: change name of an image
         }
 
-
-        private void ImagesGridView_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
-        {
-            if (ClickedItem != null)
-            {
-                ImageNavigationHelper.ContainingDataSource = imagesGridView.ItemsSource as ImageDataSource;
-                ImageNavigationHelper.ContainingFolder = SelectedContentFolder;
-                ImageNavigationHelper.SelectedImage = ClickedItem;
-                ImageClicked?.Invoke(this, new EventArgs());
-            }
-        }
-
-        private void ImagesGridView_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
-        {
-            if (!IsItemClickedWithThisClick)
-            {
-                imagesGridView.SelectedItems.Clear();
-            }
-
-            IsItemClickedWithThisClick = false;
-        }
-
-        private void ImagesGridView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            DragAndDropHelper.DraggedItems.Clear();
-            DragAndDropHelper.DraggedItems.AddRange(imagesGridView.SelectedItems);
-        }
-
-        private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
-        {
-            var imageItem = (sender as Image).DataContext as ImageItem;
-
-            if (!imagesGridView.SelectedItems.Contains(imageItem))
-            {
-                imagesGridView.SelectedItems.Clear();
-                imagesGridView.SelectedItems.Add(imageItem);
-            }
-        }
-
-        private void ImagesGridView_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            if (DragAndDropHelper.DropSuccessful)
-            {
-                ReloadFolder();
-                DragAndDropHelper.DropSuccessful = false;
-            }
-
-            DragAndDropHelper.DraggedItems.Clear();
-        }
+        #endregion
     }
 }
