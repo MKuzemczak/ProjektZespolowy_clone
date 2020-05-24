@@ -62,7 +62,9 @@
                             </Image.ContextFlyout>
                         </Image>
                         <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup, Mode=OneWay}" />
-                        <controls:CheckMark IsVisible="{x:Bind Scanned, Mode=OneWay}"/>
+                        <controls:CheckMark IsVisible="{x:Bind Scanned, Mode=OneWay}" />
+                        <controls:WarningMark IsVisible="{x:Bind FileNotFound, Mode=OneWay}"
+                                              ToolTipService.ToolTip="File not found"/>
                         <!-- here add anything that should be displayed on top of an image thumbnail -->
                     </Grid>
                 </DataTemplate>

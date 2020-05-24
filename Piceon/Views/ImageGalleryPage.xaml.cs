@@ -74,7 +74,6 @@ namespace Piceon.Views
             if (Source != null)
             {
                 imagesGridView.ItemsSource = Source;
-                await SelectedContentFolder.CheckContentAsync();
             }
         }
 
@@ -115,7 +114,6 @@ namespace Piceon.Views
         {
             if (SelectedContentFolder != null)
             {
-                await SelectedContentFolder.CheckContentAsync();
                 SelectedContentFolder.ContentsChanged += SelectedContentFolder_ContentsChanged;
 
                 Source = await ImageLoaderService.GetImageGalleryDataAsync(SelectedContentFolder);

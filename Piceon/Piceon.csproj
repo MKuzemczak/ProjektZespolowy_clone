@@ -161,6 +161,9 @@
     <Compile Include="Controls\GroupBorders.xaml.cs">
       <DependentUpon>GroupBorders.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\WarningMark.xaml.cs">
+      <DependentUpon>WarningMark.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatabaseAccess\DatabaseImage.cs" />
     <Compile Include="DatabaseAccess\DatabaseSimilaritygroup.cs" />
     <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
@@ -253,6 +256,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\WarningMark.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Styles\Image.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -335,7 +342,9 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Icons\broken-image.png" />
     <Content Include="Assets\Icons\check-mark.png" />
+    <Content Include="Assets\Icons\warning.png" />
     <Content Include="Assets\LeftArrow.png" />
     <Content Include="Assets\PlaceholderImage.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
