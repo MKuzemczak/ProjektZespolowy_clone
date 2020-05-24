@@ -50,6 +50,8 @@
                             RightTapped="ThumbnailImage_RightTapped">
                             <Image.ContextFlyout>
                                 <MenuFlyout>
+                                    <MenuFlyoutItem Text="Select group" Click="SelectGroup_Click" />
+                                    <MenuFlyoutSeparator/>
                                     <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
                                     <MenuFlyoutSeparator/>
                                     <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
