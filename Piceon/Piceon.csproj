@@ -152,14 +152,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
-    <Compile Include="Controls\CheckMark.xaml.cs">
-      <DependentUpon>CheckMark.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\EditableTextBlock.xaml.cs">
       <DependentUpon>EditableTextBlock.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\GroupBorders.xaml.cs">
       <DependentUpon>GroupBorders.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ThumbnailProperties.xaml.cs">
+      <DependentUpon>ThumbnailProperties.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\WarningMark.xaml.cs">
       <DependentUpon>WarningMark.xaml</DependentUpon>
@@ -244,10 +244,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Controls\CheckMark.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\EditableTextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -256,9 +252,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\WarningMark.xaml">
+    <Page Include="Controls\ThumbnailProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\WarningMark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Styles\Image.xaml">
       <Generator>MSBuild:Compile</Generator>

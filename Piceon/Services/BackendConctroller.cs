@@ -15,7 +15,8 @@ namespace Piceon.Services
         public enum TaskType : int
         {
             Initialize = 0,
-            Compare = 1
+            Compare = 1,
+            Quality
         };
 
         public static bool Initialized = false;
@@ -186,6 +187,34 @@ namespace Piceon.Services
             {
                 await AddressTaggingService.TagImageAddressAsync(item);
             }
+        }
+
+        public static int CheckImagesQuality(List<ImageItem> imageItems, Action<ControllerTaskResultMessage> actionToCallAfterComplete)
+        {
+            if (imageItems is null)
+            {
+                throw new ArgumentNullException(nameof(imageItems));
+            }
+
+            if (actionToCallAfterComplete is null)
+            {
+                throw new ArgumentNullException(nameof(actionToCallAfterComplete));
+            }
+
+            var message = new ControllerTaskRequestMessage()
+            {
+                taskid = TaskIdCntr++,
+                type = (int)TaskType.Quality
+            };
+            message.images.AddRange(imageItems.
+                Select(i =>
+                {
+                    return new List<string>() { i.DatabaseId.ToString(), i.FilePath };
+                }).ToList());
+
+            RunTask(message, actionToCallAfterComplete);
+
+            return message.taskid;
         }
 
         public static void SendCloseApp()

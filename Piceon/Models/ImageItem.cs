@@ -60,6 +60,13 @@ namespace Piceon.Models
             set { Set(ref _scanned, value); }
         }
 
+        private int _quality;
+        public int Quality
+        {
+            get { return _quality; }
+            set { Set(ref _quality, value); }
+        }
+
         private bool _fileNotFound = false;
         public bool FileNotFound
         {

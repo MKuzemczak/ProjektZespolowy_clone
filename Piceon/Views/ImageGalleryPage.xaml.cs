@@ -179,7 +179,7 @@ namespace Piceon.Views
 
         private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
         {
-            var imageItem = (sender as Image).DataContext as ImageItem;
+            var imageItem = (sender as Grid).DataContext as ImageItem;
             RightTappedImageItem = imageItem;
             if (!imagesGridView.SelectedItems.Contains(imageItem))
             {
