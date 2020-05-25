@@ -123,10 +123,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Calculator.cs" />
-    <Compile Include="Services\ICalculator.cs" />
-    <Compile Include="Services\IVatCalculator.cs" />
-    <Compile Include="Services\VatCalculator.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -160,6 +156,12 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.9</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TestDl.Services\TestDl.Services.csproj">
+      <Project>{0ec3e287-691d-4e97-b4e9-9aa4b0aaa369}</Project>
+      <Name>TestDl.Services</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
