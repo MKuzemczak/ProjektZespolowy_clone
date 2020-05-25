@@ -19,6 +19,7 @@ using Piceon.Models;
 using Piceon.Helpers;
 using Piceon.Services;
 using Piceon.DatabaseAccess;
+using System.Linq;
 
 namespace Piceon.Views
 {
@@ -44,6 +45,8 @@ namespace Piceon.Views
         public event PropertyChangedEventHandler PropertyChanged;
 
         public event EventHandler ImageClicked;
+
+        public event EventHandler<ImageGalleryPageSelectionChangedEventArgs> SelectionChanged;
 
         #endregion
 
@@ -198,6 +201,11 @@ namespace Piceon.Views
 
             DragAndDropHelper.DraggedItems.Clear();
         }
+
+        private void ImagesGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectionChanged?.Invoke(this, new ImageGalleryPageSelectionChangedEventArgs(imagesGridView.SelectedItems.Select(i => i as ImageItem).ToList()));
+        }
         #endregion
 
         #region RIGHT_CLICK_EVENT_HANDLERS
@@ -334,5 +342,16 @@ namespace Piceon.Views
         }
 
         #endregion
+
+    }
+
+    public class ImageGalleryPageSelectionChangedEventArgs : EventArgs
+    {
+        public List<ImageItem> SelectedItems { get; private set; }
+
+        public ImageGalleryPageSelectionChangedEventArgs(List<ImageItem> selectedItems)
+        {
+            SelectedItems = selectedItems;
+        }
     }
 }

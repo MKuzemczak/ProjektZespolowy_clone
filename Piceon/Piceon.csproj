@@ -182,6 +182,7 @@
     <Compile Include="Models\ItemIndexRangeExtensions.cs" />
     <Compile Include="Models\ItemIndexRangeList.cs" />
     <Compile Include="Models\MostRecentStateMessageUpdatedEventArgs.cs" />
+    <Compile Include="Models\TagFilterPageTagItem.cs" />
     <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
     <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />

@@ -63,7 +63,8 @@
             </SplitView.Pane>
             <Grid>
                 <views:ImageGalleryPage x:Name="imageGalleryPage"
-                                        ImageClicked="ImageGalleryPage_ImageClicked"/>
+                                        ImageClicked="ImageGalleryPage_ImageClicked"
+                                        SelectionChanged="ImageGalleryPage_SelectionChanged"/>
             </Grid>
         </SplitView>
     </Grid>

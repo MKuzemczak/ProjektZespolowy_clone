@@ -87,5 +87,15 @@ namespace Piceon.Views
             if (IsPaneOpen)
                 loadingTextBlock.Visibility = Visibility.Collapsed;
         }
+
+        private void ImageGalleryPage_SelectionChanged(object sender, ImageGalleryPageSelectionChangedEventArgs e)
+        {
+            List<string> tagsToHighlight = new List<string>();
+            e.SelectedItems.ForEach(i =>
+            {
+                tagsToHighlight.AddRange(i.Tags);
+            });
+            tagFilterPage.HighlightTags(tagsToHighlight);
+        }
     }
 }

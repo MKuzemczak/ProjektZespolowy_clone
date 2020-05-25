@@ -37,7 +37,8 @@
             IsMultiSelectCheckBoxEnabled="False"
             CanDragItems="True"
             DragItemsStarting="ImagesGridView_DragItemsStarting"
-            DragItemsCompleted="ImagesGridView_DragItemsCompleted">
+            DragItemsCompleted="ImagesGridView_DragItemsCompleted"
+            SelectionChanged="ImagesGridView_SelectionChanged">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
                     <Grid RightTapped="ThumbnailImage_RightTapped">
