@@ -622,11 +622,11 @@ namespace Piceon.DatabaseAccess
             }
             return new Tuple<int, int>(int.Parse(ImageId), tagindb.Item1);
         }
-        public static async Task<DatabaseSimilaritygroup> InsertSimilarityGroup(List<int> similarImagesIds, string name)
-        {
-            if (similarImagesIds.Count == 0)
-                throw new ArgumentException($"Error: input list \"{nameof(similarImagesIds)}\" is empty.");
 
+
+
+        public static async Task<DatabaseSimilaritygroup> InsertSimilarityGroup(string name)
+        {
             using (SqliteCommand command = new SqliteCommand("INSERT INTO SIMILARITYGROUP (name) " +
                         $"VALUES ('{name}')", Database))
             { await command.ExecuteReaderAsync(); }
@@ -639,13 +639,6 @@ namespace Piceon.DatabaseAccess
             if (rowid == 0)
             {
                 throw new SqliteException("SQLite access exception: Something went wrong!", 1);
-            }
-
-            foreach (int id in similarImagesIds)
-            {
-                using (SqliteCommand command = new SqliteCommand("INSERT INTO SIMILARITYGROUP_IMAGE(SIMILARITYGROUP_Id, IMAGE_Id) " +
-                $"VALUES ({rowid}, {id})", Database))
-                { await command.ExecuteReaderAsync(); }
             }
 
             return new DatabaseSimilaritygroup((int)rowid, name);

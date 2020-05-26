@@ -252,15 +252,27 @@ namespace Piceon.Models
             ContentsChanged?.Invoke(this, new EventArgs());
         }
 
-        public async Task GroupImages(List<int> imageIds)
+        public async Task GroupImagesAsync(List<ImageItem> imageItems)
         {
-            var group = await DatabaseAccessService.InsertSimilarityGroup(imageIds, "noname");
-            AllImages.
-                ForEach(i =>
+            var group = await DatabaseAccessService.InsertSimilarityGroup("noname");
+
+            foreach (var item in imageItems)
+            {
+                await item.AddToGroupAsync(group);
+            }
+        }
+
+        public async Task GroupImagesAsync(List<int> imageIds)
+        {
+            var group = await DatabaseAccessService.InsertSimilarityGroup("noname");
+
+            foreach (var item in AllImages)
+            {
+                if (imageIds.Remove(item.DatabaseId))
                 {
-                    if (imageIds.Remove(i.DatabaseId))
-                        i.Group = group;
-                });
+                    await item.AddToGroupAsync(group);
+                }
+            }
         }
 
         public List<ImageItem> GetGroupOfImageItems(int groupId)

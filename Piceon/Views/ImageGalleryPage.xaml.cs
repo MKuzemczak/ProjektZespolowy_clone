@@ -267,6 +267,14 @@ namespace Piceon.Views
 
         #region RIGHT_CLICK_EVENT_HANDLERS
 
+        private async void AddToNewGroup_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = imagesGridView.SelectedItems.Select(i => i as ImageItem).ToList();
+
+            await SelectedContentFolder.GroupImagesAsync(selectedItems);
+            SelectedContentFolder.ReorderImages();
+        }
+
         private void SelectGroup_Click(object sender, RoutedEventArgs e)
         {
             if (RightTappedImageItem?.Group is null)

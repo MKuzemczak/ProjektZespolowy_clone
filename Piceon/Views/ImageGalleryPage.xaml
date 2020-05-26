@@ -49,6 +49,7 @@
                           DragOver="ThumbnailGrid_DragOver">
                         <Grid.ContextFlyout>
                             <MenuFlyout>
+                                <MenuFlyoutItem Text="Add to a new group" Click="AddToNewGroup_Click" />
                                 <MenuFlyoutItem Text="Select group" Click="SelectGroup_Click" />
                                 <MenuFlyoutItem Text="Merge groups" Click="MergeGroups_Click" />
                                 <MenuFlyoutSeparator/>

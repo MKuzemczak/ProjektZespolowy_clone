@@ -152,7 +152,7 @@ namespace Piceon.Services
 
             foreach (var group in result.images)
             {
-                await FolderPickFolder[folderPick].GroupImages(group);
+                await FolderPickFolder[folderPick].GroupImagesAsync(group);
             }
 
             await CheckAllTasksInFolderPickDone(folderPick);
