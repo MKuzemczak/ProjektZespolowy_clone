@@ -477,75 +477,6 @@ namespace Piceon.DatabaseAccess
             { await command.ExecuteReaderAsync(); }
         }
 
-        public static async Task<List<Triple<int, string, Helpers.GroupPosition>>> GetImagesInVirtualfolderGroupedBySimilarityAsync(int virtualfolderId)
-        {
-            var result = new List<Triple<int, string, Helpers.GroupPosition>>();
-
-            SqliteCommand selectCommand = new SqliteCommand
-                ($@"SELECT * FROM IMAGE WHERE Id IN
-                    (SELECT DISTINCT FIRST_IMAGE_Id FROM SIMILAR_IMAGES 
-                    WHERE 
-                    FIRST_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}) 
-                    AND
-                    SECOND_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}))", Database);
-
-            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
-
-
-            while (query.Read())
-            {
-                result.Add(new Triple<int, string, Helpers.GroupPosition>(query.GetInt32(0), query.GetString(1), Helpers.GroupPosition.Start));
-            }
-
-            int count = result.Count;
-
-            for (int i = count - 1; i >= 0; i--)
-            {
-                SqliteCommand cmd = new SqliteCommand
-                ($@"SELECT * FROM IMAGE WHERE Id IN
-                    (SELECT SECOND_IMAGE_Id FROM SIMILAR_IMAGES 
-                    WHERE
-                    FIRST_IMAGE_Id = {result[i].Item1}
-                    AND
-                    SECOND_IMAGE_Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId}))", Database);
-
-                SqliteDataReader q = await cmd.ExecuteReaderAsync();
-
-                bool wasFirst = false;
-                while (q.Read())
-                {
-                    Helpers.GroupPosition option = Helpers.GroupPosition.None;
-                    if (!wasFirst)
-                    {
-                        option = Helpers.GroupPosition.End;
-                        wasFirst = true;
-                    }
-                    else
-                    {
-                        option = Helpers.GroupPosition.Middle;
-                    }
-                    result.Insert(i + 1, new Triple<int, string, Helpers.GroupPosition>(q.GetInt32(0), q.GetString(1), option));
-                }
-            }
-
-            selectCommand = new SqliteCommand
-                ($@"SELECT * FROM IMAGE WHERE
-                    Id NOT IN (SELECT FIRST_IMAGE_Id FROM SIMILAR_IMAGES)
-                    AND
-                    Id NOT IN (SELECT SECOND_IMAGE_Id FROM SIMILAR_IMAGES)
-                    AND
-                    Id IN (SELECT IMAGE_Id FROM VIRTUALFOLDER_IMAGE WHERE VIRTUALFOLDER_Id={virtualfolderId})", Database);
-
-            query = await selectCommand.ExecuteReaderAsync();
-
-            while (query.Read())
-            {
-                result.Add(new Triple<int, string, Helpers.GroupPosition>(query.GetInt32(0), query.GetString(1), Helpers.GroupPosition.None));
-            }
-
-            return result;
-        }
-
         public static async Task<List<DatabaseImage>> GetVirtualfolderImagesWithGroupsAndTags(int virtualfolderId)
         {
             var result = new List<DatabaseImage>();
@@ -718,6 +649,27 @@ namespace Piceon.DatabaseAccess
             }
 
             return new DatabaseSimilaritygroup((int)rowid, name);
+        }
+
+        public static async Task UpdateImageToGroup(int imageId, DatabaseSimilaritygroup group)
+        {
+            SqliteCommand selectCommand = new SqliteCommand
+                ($"SELECT * FROM SIMILARITYGROUP_IMAGE " +
+                $"WHERE IMAGE_Id = {imageId} ", Database);
+            SqliteDataReader query = await selectCommand.ExecuteReaderAsync();
+            if (query.HasRows)
+            {
+                using (SqliteCommand command = new SqliteCommand("UPDATE SIMILARITYGROUP_IMAGE " +
+                        $"SET SIMILARITYGROUP_Id = '{group.Id}' " +
+                        $"WHERE IMAGE_Id = {imageId}", Database))
+                { await command.ExecuteReaderAsync(); }
+            }
+            else
+            {
+                using (SqliteCommand command = new SqliteCommand("INSERT INTO SIMILARITYGROUP_IMAGE(SIMILARITYGROUP_Id, IMAGE_Id) " +
+                $"VALUES ({group.Id}, {imageId})", Database))
+                { await command.ExecuteReaderAsync(); }
+            }
         }
     }
 

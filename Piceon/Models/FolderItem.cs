@@ -164,6 +164,11 @@ namespace Piceon.Models
                 AllImages.Add(await ImageItem.FromDatabaseImage(item, viewMode: ImageItem.Options.None));
             }
 
+            ReorderImages();
+        }
+
+        public void ReorderImages()
+        {
             var tmp = AllImages.OrderByDescending(i => i.Group.Id).ToList();
             AllImages = tmp;
             FilteredImages.Clear();
@@ -209,10 +214,9 @@ namespace Piceon.Models
 
                 prevGroupId = currentGroupId;
             }
-            
+
             ContentsChanged?.Invoke(this, new EventArgs());
         }
-
 
         public async Task SetTagsToFilter(List<string> tags)
         {
