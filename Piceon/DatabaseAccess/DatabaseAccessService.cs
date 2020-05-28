@@ -623,7 +623,13 @@ namespace Piceon.DatabaseAccess
             return new Tuple<int, int>(int.Parse(ImageId), tagindb.Item1);
         }
 
-
+        public static async Task DeleteImageTagAsync(int imageId, string tag)
+        {
+            using (SqliteCommand command = new SqliteCommand($"DELETE FROM IMAGE_TAG " +
+                $"WHERE IMAGE_Id = {imageId} " +
+                $"AND TAG_Id IN (SELECT Id FROM TAG WHERE tag = '{tag}')", Database))
+            { await command.ExecuteReaderAsync(); }
+        }
 
         public static async Task<DatabaseSimilaritygroup> InsertSimilarityGroup(string name)
         {

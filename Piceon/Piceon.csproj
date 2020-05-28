@@ -158,6 +158,9 @@
     <Compile Include="Controls\GroupBorders.xaml.cs">
       <DependentUpon>GroupBorders.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TagItem.xaml.cs">
+      <DependentUpon>TagItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\ThumbnailProperties.xaml.cs">
       <DependentUpon>ThumbnailProperties.xaml</DependentUpon>
     </Compile>
@@ -250,6 +253,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\GroupBorders.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TagItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

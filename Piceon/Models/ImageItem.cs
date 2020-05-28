@@ -263,6 +263,21 @@ namespace Piceon.Models
             await props.SavePropertiesAsync();
         }
 
+        public async Task DeleteTagAsync(string tag)
+        {
+            if (File == null)
+            {
+                await SetStorageFileFromPathAsync(FilePath);
+            }
+
+            var props = await File.Properties.GetImagePropertiesAsync();
+            if (props.Keywords.Remove(tag))
+                await props.SavePropertiesAsync();
+
+            await DatabaseAccessService.DeleteImageTagAsync(DatabaseId, tag);
+            Tags.Remove(tag);
+        }
+
         private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
         {
             if (Equals(storage, value))

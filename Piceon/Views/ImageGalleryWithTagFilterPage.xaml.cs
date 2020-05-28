@@ -139,5 +139,15 @@ namespace Piceon.Views
         {
 
         }
+
+        private async void TagFilterPage_DeleteTagClicked(object sender, DeleteTagClickedEventArgs e)
+        {
+            foreach (var item in SelectedImages)
+            {
+                await item.DeleteTagAsync(e.Tag);
+            }
+            await tagFilterPage.AccessFolderAsync(AccessedFolder);
+            SetSelectedTagsFromImages(SelectedImages);
+        }
     }
 }

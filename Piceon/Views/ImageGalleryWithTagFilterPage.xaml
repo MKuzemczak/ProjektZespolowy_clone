@@ -58,6 +58,7 @@
                     <views:TagFilterPage x:Name="tagFilterPage"
                                         Grid.Row="1"
                                         SelectedTagsChanged="TagFilterPage_SelectedTagsChanged"
+                                         DeleteTagClicked="TagFilterPage_DeleteTagClicked"
                                         Visibility="Collapsed"/>
                     <Button x:Name="openAddTagsFlyoutButton"
                             Grid.Row="1"

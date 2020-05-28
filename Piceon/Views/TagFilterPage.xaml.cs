@@ -1,4 +1,5 @@
-﻿using Piceon.Models;
+﻿using Piceon.Controls;
+using Piceon.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,6 +27,7 @@ namespace Piceon.Views
         public ObservableCollection<TagFilterPageTagItem> SelectedTags = new ObservableCollection<TagFilterPageTagItem>();
 
         public event EventHandler<SelectedTagsChangedEventArgs> SelectedTagsChanged;
+        public event EventHandler<DeleteTagClickedEventArgs> DeleteTagClicked;
 
         private FolderItem AccessedFolder { get; set; }
 
@@ -113,6 +115,7 @@ namespace Piceon.Views
                     if (tags.Contains(i.Text))
                     {
                         i.Color = HighlightedColorBrush;
+                        i.Deletable = true;
                         return true;
                     }
                     return false;
@@ -144,6 +147,7 @@ namespace Piceon.Views
             foreach (var item in FilteredTags)
             {
                 item.Color = NotHighlightedColorBrush;
+                item.Deletable = false;
             }
             foreach (var item in SelectedTags)
             {
@@ -156,6 +160,12 @@ namespace Piceon.Views
             return new TagFilterPageTagItem(text, NotHighlightedColorBrush);
         }
 
+        private void TagItem_DeleteClicked(object sender, EventArgs e)
+        {
+            var tag = ((sender as TagItem).DataContext as TagFilterPageTagItem).Text;
+
+            DeleteTagClicked?.Invoke(this, new DeleteTagClickedEventArgs(tag));
+        }
     }
 
     public class SelectedTagsChangedEventArgs : EventArgs
@@ -165,6 +175,16 @@ namespace Piceon.Views
         public SelectedTagsChangedEventArgs(List<string> selectedTags)
         {
             SelectedTags = selectedTags;
+        }
+    }
+
+    public class DeleteTagClickedEventArgs : EventArgs
+    {
+        public string Tag { get; }
+
+        public DeleteTagClickedEventArgs(string tag)
+        {
+            Tag = tag;
         }
     }
 }
