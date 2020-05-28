@@ -23,8 +23,13 @@ namespace Piceon.Views
     /// </summary>
     public sealed partial class ImageGalleryWithTagFilterPage : Page
     {
+        private FolderItem AccessedFolder { get; set; }
+        private List<ImageItem> SelectedImages { get; set; } = new List<ImageItem>();
+
         public bool IsPaneOpen = false;
         public bool IsLoading = false;
+
+
 
         public event EventHandler ImageClicked;
 
@@ -41,8 +46,9 @@ namespace Piceon.Views
         }
         public async Task AccessFolder(FolderItem folder)
         {
+            AccessedFolder = folder;
             ShowTagsLoadingIndicator();
-            await tagFilterPage.AccessFolder(folder);
+            await tagFilterPage.AccessFolderAsync(folder);
             HideTagsLoadingIndicator();
             await imageGalleryPage.AccessFolder(folder);
         }
@@ -88,14 +94,45 @@ namespace Piceon.Views
                 loadingTextBlock.Visibility = Visibility.Collapsed;
         }
 
-        private void ImageGalleryPage_SelectionChanged(object sender, ImageGalleryPageSelectionChangedEventArgs e)
+        public void SetSelectedTagsFromImages(List<ImageItem> images)
         {
             List<string> tagsToHighlight = new List<string>();
-            e.SelectedItems.ForEach(i =>
+            images.ForEach(i =>
             {
                 tagsToHighlight.AddRange(i.Tags);
             });
             tagFilterPage.HighlightTags(tagsToHighlight);
+        }
+
+        private void ImageGalleryPage_SelectionChanged(object sender, ImageGalleryPageSelectionChangedEventArgs e)
+        {
+            SelectedImages.Clear();
+            SelectedImages.AddRange(e.SelectedItems);
+            SetSelectedTagsFromImages(SelectedImages);
+            if (e.SelectedItems.Any())
+                openAddTagsFlyoutButton.Visibility = Visibility.Visible;
+            else
+                openAddTagsFlyoutButton.Visibility = Visibility.Collapsed;
+        }
+
+        private async void addTagsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tags = addTagsFlyoutTextBox.Text.Split(';').ToList();
+            addTagsFlyoutTextBox.Text = "";
+            addTagsFlyout.Hide();
+
+            foreach (var item in SelectedImages)
+            {
+                await item.AddTagsAsync(tags);
+            }
+
+            await tagFilterPage.AccessFolderAsync(AccessedFolder);
+            SetSelectedTagsFromImages(SelectedImages);
+        }
+
+        private void openAddTagsFlyoutButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

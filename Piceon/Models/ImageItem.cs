@@ -246,6 +246,23 @@ namespace Piceon.Models
             await DatabaseAccessService.UpdateImageToGroup(DatabaseId, group);
         }
 
+        public async Task AddTagsAsync(List<string> tags)
+        {
+            if (File == null)
+            {
+                await SetStorageFileFromPathAsync(FilePath);
+            }
+
+            var props = await File.Properties.GetImagePropertiesAsync();
+            foreach (var item in tags)
+            {
+                props.Keywords.Add(item);
+                await DatabaseAccessService.InsertImageTagAsync(DatabaseId.ToString(), item);
+                Tags.Add(item);
+            }
+            await props.SavePropertiesAsync();
+        }
+
         private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
         {
             if (Equals(storage, value))

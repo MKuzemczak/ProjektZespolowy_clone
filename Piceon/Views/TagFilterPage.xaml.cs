@@ -40,7 +40,7 @@ namespace Piceon.Views
             UpdateFiltered();
         }
 
-        public async Task AccessFolder(FolderItem folder)
+        public async Task AccessFolderAsync(FolderItem folder)
         {
             if (folder is null)
             {

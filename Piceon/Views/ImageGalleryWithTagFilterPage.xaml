@@ -59,6 +59,35 @@
                                         Grid.Row="1"
                                         SelectedTagsChanged="TagFilterPage_SelectedTagsChanged"
                                         Visibility="Collapsed"/>
+                    <Button x:Name="openAddTagsFlyoutButton"
+                            Grid.Row="1"
+                            Content="&#xE710;"
+                            FontSize="14"
+                            Width="40"
+                            Height="40"
+                            Padding="{StaticResource SmallLeftRightMargin}"
+                            VerticalAlignment="Bottom"
+                            VerticalContentAlignment="Center"
+                            HorizontalAlignment="Left"
+                            FontFamily="Segoe MDL2 Assets"
+                            Background="Transparent"
+                            Click="openAddTagsFlyoutButton_Click" 
+                            ToolTipService.ToolTip="Add tags"
+                            Visibility="Collapsed">
+                        <Button.Flyout>
+                            <Flyout x:Name="addTagsFlyout">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text="Add tags to selected images" />
+                                    <TextBox Width="200"
+                                             x:Name="addTagsFlyoutTextBox" />
+                                    <Button x:Name="addTagsButton"
+                                            Click="addTagsButton_Click"
+                                            Content="Add"
+                                            HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </Grid>
             </SplitView.Pane>
             <Grid>
