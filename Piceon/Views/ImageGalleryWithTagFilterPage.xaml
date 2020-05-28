@@ -79,7 +79,8 @@
                                 <StackPanel Spacing="10">
                                     <TextBlock Text="Add tags to selected images" />
                                     <TextBox Width="200"
-                                             x:Name="addTagsFlyoutTextBox" />
+                                             x:Name="addTagsFlyoutTextBox"
+                                             PlaceholderText="tag1; tag2..."/>
                                     <Button x:Name="addTagsButton"
                                             Click="addTagsButton_Click"
                                             Content="Add"

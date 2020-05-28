@@ -121,6 +121,11 @@ namespace Piceon.Views
             addTagsFlyoutTextBox.Text = "";
             addTagsFlyout.Hide();
 
+            for (int i = 0; i < tags.Count; i++)
+            {
+                var s = tags[i].Trim();
+                tags[i] = s;
+            }
             foreach (var item in SelectedImages)
             {
                 await item.AddTagsAsync(tags);
