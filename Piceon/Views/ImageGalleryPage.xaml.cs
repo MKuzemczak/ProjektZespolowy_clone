@@ -20,6 +20,7 @@ using Piceon.Helpers;
 using Piceon.Services;
 using Piceon.DatabaseAccess;
 using System.Linq;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Piceon.Views
 {
@@ -182,12 +183,35 @@ namespace Piceon.Views
 
         private void ThumbnailImage_RightTapped(object sender, Windows.UI.Xaml.Input.RightTappedRoutedEventArgs e)
         {
-            var imageItem = (sender as Grid).DataContext as ImageItem;
+            var grid = sender as Grid;
+            var selectedImages = imagesGridView.SelectedItems;
+            var imageItem = grid.DataContext as ImageItem;
+
             RightTappedImageItem = imageItem;
-            if (!imagesGridView.SelectedItems.Contains(imageItem))
+            if (!selectedImages.Contains(imageItem))
             {
-                imagesGridView.SelectedItems.Clear();
-                imagesGridView.SelectedItems.Add(imageItem);
+                selectedImages.Clear();
+                selectedImages.Add(imageItem);
+            }
+
+            var menuFlyout = grid.ContextFlyout as MenuFlyout;
+            menuFlyout.Items[2].Visibility = Visibility.Collapsed;
+            if (selectedImages.Count > 1)
+            {
+                bool differentGroups = false;
+                int prevGroupId = (selectedImages[0] as ImageItem).Group.Id;
+                foreach (ImageItem item in selectedImages)
+                {
+                    if (item.Group.Id != prevGroupId)
+                    {
+                        differentGroups = true;
+                        break;
+                    }
+                }
+                if (differentGroups)
+                {
+                    menuFlyout.Items[2].Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -202,6 +226,36 @@ namespace Piceon.Views
             DragAndDropHelper.DraggedItems.Clear();
         }
 
+        private void ThumbnailGrid_DragOver(object sender, DragEventArgs e)
+        {
+            var targetGroup = ((sender as Grid).DataContext as ImageItem).Group;
+            if (targetGroup is null || targetGroup.Id < 0)
+                return;
+            e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = "Add to group";
+            e.DragUIOverride.IsCaptionVisible = true;
+            e.DragUIOverride.IsContentVisible = true;
+            e.DragUIOverride.IsGlyphVisible = false;
+        }
+
+        private async void ThumbnailGrid_Drop(object sender, DragEventArgs e)
+        {
+            var targetGroup = ((sender as Grid).DataContext as ImageItem).Group;
+
+            if (targetGroup is null || targetGroup.Id < 0)
+                return;
+
+            foreach (var item in DragAndDropHelper.DraggedItems)
+            {
+                await (item as ImageItem).AddToGroupAsync(targetGroup);
+            }
+
+            if (DragAndDropHelper.DraggedItems.Count > 0)
+            {
+                SelectedContentFolder.ReorderImages();
+            }
+        }
+
         private void ImagesGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectionChanged?.Invoke(this, new ImageGalleryPageSelectionChangedEventArgs(imagesGridView.SelectedItems.Select(i => i as ImageItem).ToList()));
@@ -209,6 +263,14 @@ namespace Piceon.Views
         #endregion
 
         #region RIGHT_CLICK_EVENT_HANDLERS
+
+        private async void AddToNewGroup_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = imagesGridView.SelectedItems.Select(i => i as ImageItem).ToList();
+
+            await SelectedContentFolder.GroupImagesAsync(selectedItems);
+            SelectedContentFolder.ReorderImages();
+        }
 
         private void SelectGroup_Click(object sender, RoutedEventArgs e)
         {
@@ -222,6 +284,40 @@ namespace Piceon.Views
             {
                 imagesGridView.SelectedItems.Add(item);
             }
+        }
+
+        private async void MergeGroups_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedItems = imagesGridView.SelectedItems;
+            var allItems = SelectedContentFolder.GetRawImageItems();
+
+            if (selectedItems.Count < 2)
+                return;
+
+            var baseGroup = (selectedItems[0] as ImageItem).Group;
+            var prevGroup = baseGroup;
+            var selectedGroups = new List<DatabaseSimilaritygroup>();
+            foreach (ImageItem item in selectedItems)
+            {
+                if (item.Group != prevGroup)
+                {
+                    prevGroup = item.Group;
+                    selectedGroups.Add(prevGroup);
+                }
+            }
+
+            bool reorder = false;
+            foreach (var item in allItems)
+            {
+                if (selectedGroups.Contains(item.Group))
+                {
+                    await item.AddToGroupAsync(baseGroup);
+                    reorder = true;
+                }
+            }
+
+            if (reorder)
+                SelectedContentFolder.ReorderImages();
         }
 
         private async void CopyImage_Click(object sender, RoutedEventArgs e)

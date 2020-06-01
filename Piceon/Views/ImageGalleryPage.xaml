@@ -38,13 +38,20 @@
             CanDragItems="True"
             DragItemsStarting="ImagesGridView_DragItemsStarting"
             DragItemsCompleted="ImagesGridView_DragItemsCompleted"
-            SelectionChanged="ImagesGridView_SelectionChanged">
+            SelectionChanged="ImagesGridView_SelectionChanged"
+            AllowDrop="True">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:ImageItem">
-                    <Grid RightTapped="ThumbnailImage_RightTapped">
+                    <Grid x:Name="thumbnailGrid"
+                          RightTapped="ThumbnailImage_RightTapped"
+                          AllowDrop="True"
+                          Drop="ThumbnailGrid_Drop"
+                          DragOver="ThumbnailGrid_DragOver">
                         <Grid.ContextFlyout>
                             <MenuFlyout>
+                                <MenuFlyoutItem Text="Add to a new group" Click="AddToNewGroup_Click" />
                                 <MenuFlyoutItem Text="Select group" Click="SelectGroup_Click" />
+                                <MenuFlyoutItem Text="Merge groups" Click="MergeGroups_Click" />
                                 <MenuFlyoutSeparator/>
                                 <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
                                 <MenuFlyoutSeparator/>

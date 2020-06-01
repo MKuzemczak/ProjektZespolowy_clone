@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Controls;
 using System.IO;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Piceon.Models
 {
@@ -237,6 +238,12 @@ namespace Piceon.Models
         {
             Scanned = true;
             await DatabaseAccessService.SetImageScanned(DatabaseId, true);
+        }
+
+        public async Task AddToGroupAsync(DatabaseSimilaritygroup group)
+        {
+            Group = group;
+            await DatabaseAccessService.UpdateImageToGroup(DatabaseId, group);
         }
 
         private void Set<T>(ref T storage, T value, [CallerMemberName]string propertyName = null)
