@@ -195,6 +195,7 @@ namespace Piceon.Views
             }
 
             var menuFlyout = grid.ContextFlyout as MenuFlyout;
+            menuFlyout.Items[2].Visibility = Visibility.Collapsed;
             if (selectedImages.Count > 1)
             {
                 bool differentGroups = false;
@@ -209,12 +210,8 @@ namespace Piceon.Views
                 }
                 if (differentGroups)
                 {
-                    menuFlyout.Items[1].Visibility = Visibility.Visible;
+                    menuFlyout.Items[2].Visibility = Visibility.Visible;
                 }
-            }
-            else
-            {
-                menuFlyout.Items[1].Visibility = Visibility.Collapsed;
             }
         }
 
