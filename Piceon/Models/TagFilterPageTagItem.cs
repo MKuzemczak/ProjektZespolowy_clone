@@ -25,10 +25,18 @@ namespace Piceon.Models
             set { Set(ref _color, value); }
         }
 
-        public TagFilterPageTagItem(string text, SolidColorBrush color)
+        private bool _deletable;
+        public bool Deletable
+        {
+            get { return _deletable; }
+            set { Set(ref _deletable, value); }
+        }
+
+        public TagFilterPageTagItem(string text, SolidColorBrush color, bool deletable = false)
         {
             Text = text;
             Color = color;
+            Deletable = deletable;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

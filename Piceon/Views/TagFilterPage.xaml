@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mstoolkit="using:Microsoft.Toolkit.Uwp.UI.Controls" 
     xmlns:models="using:Piceon.Models"
+    xmlns:controls="using:Piceon.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -81,11 +82,14 @@
             </GridView.ItemContainerStyle>
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="models:TagFilterPageTagItem">
-                    <Grid Background="{x:Bind Color, Mode=OneWay}" CornerRadius="0">
-                        <TextBlock Height="20"
+                    <Grid x:Name="tagItemGrid" Background="{x:Bind Color, Mode=OneWay}" CornerRadius="0">
+                        <!--<TextBlock Height="20"
                                    Text="{x:Bind Text, Mode=OneWay}"
                                    Margin="10,5,10,5"
-                                   Foreground="White"/>
+                                   Foreground="White"/>-->
+                        <controls:TagItem Text="{x:Bind Text, Mode=OneWay}"
+                                          Deletable="{x:Bind Deletable, Mode=OneWay}"
+                                          DeleteClicked="TagItem_DeleteClicked"/>
                     </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
