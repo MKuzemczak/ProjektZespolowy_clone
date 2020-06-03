@@ -1,28 +1,44 @@
 ﻿<Page
     x:Class="Piceon.Views.MainPage"
+    x:Name="mainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winui="using:Microsoft.UI.Xaml.Controls"
+    xmlns:model="using:Piceon.Models"
+    xmlns:templateSelectors="using:Piceon.TemplateSelectors"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:views="using:Piceon.Views"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
-    <Grid x:Name="ContentArea" Margin="{StaticResource MediumLeftRightMargin}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0"
-            x:Uid="Main_Title"
-            Style="{StaticResource PageTitleStyle}" />
-        <Grid
-            Grid.Row="1" 
-            Background="{ThemeResource SystemControlPageBackgroundChromeLowBrush}">
-            <!--
-                The SystemControlPageBackgroundChromeLowBrush background represents where you should place your content. 
-                Place your content here.
-            -->
+    <Grid x:Name="overlayGrid" >
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="treeViewColumn" MinWidth="150" MaxWidth="350" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <views:TreeViewPage
+                Grid.Column="0"
+                x:Name="treeViewPage"
+                ItemSelected="TreeViewPage_ItemSelected" />
+
+            <views:ImageGalleryWithTagFilterPage
+                Grid.Column="1"
+                x:Name="imageGalleryPage"
+                ImageClicked="imageGalleryPage_ImageClicked"/>
+
+            <controls:GridSplitter
+                Grid.Column="1"
+                GripperCursor="Default"
+                HorizontalAlignment="Left"
+                ResizeDirection="Auto"
+                ResizeBehavior="BasedOnAlignment"
+                CursorBehavior="ChangeOnSplitterHover"
+                Width="16" />
         </Grid>
+        <views:ImageDetailPage x:Name="imageDetailPage"
+                               Visibility="Collapsed"/>
     </Grid>
 </Page>

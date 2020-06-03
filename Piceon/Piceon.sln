@@ -9,6 +9,26 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Piceon.Tests.MSTest", "..\P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Piceon.Core", "..\Piceon.Core\Piceon.Core.csproj", "{2E31D878-13A6-42C6-A37D-0B5521987161}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PythonScripts", "PythonScripts", "{1C53A053-2B24-4365-A5E5-39EE43985C98}"
+	ProjectSection(SolutionItems) = preProject
+		..\PythonScripts\similar_images.py = ..\PythonScripts\similar_images.py
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{D6D1338F-F111-4A25-946F-F538C2A3B480}"
+	ProjectSection(SolutionItems) = preProject
+		..\PythonScripts\db\db_creator.py = ..\PythonScripts\db\db_creator.py
+		..\PythonScripts\db\db_service.py = ..\PythonScripts\db\db_service.py
+		..\PythonScripts\db\query_service.py = ..\PythonScripts\db\query_service.py
+		..\PythonScripts\db\schemat_bazy.jpg = ..\PythonScripts\db\schemat_bazy.jpg
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "..\Launcher\Launcher.csproj", "{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F981A90E-859D-491B-98C8-7E94182FE5F7}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,9 +111,32 @@ Global
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x64.Build.0 = Release|Any CPU
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x86.ActiveCfg = Release|Any CPU
 		{2E31D878-13A6-42C6-A37D-0B5521987161}.Release|x86.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x64.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Debug|x86.Build.0 = Debug|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|ARM64.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x64.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x64.Build.0 = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x86.ActiveCfg = Release|Any CPU
+		{85FB2255-F51A-4F6E-AB2C-BFDE56820F32}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D6D1338F-F111-4A25-946F-F538C2A3B480} = {1C53A053-2B24-4365-A5E5-39EE43985C98}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F950D7BA-548F-4E5C-85E0-C063444AADA8}

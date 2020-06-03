@@ -5,7 +5,8 @@
     xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Piceon.Core.Models"
+    xmlns:models="using:Piceon.Models"
+    xmlns:controls="using:Piceon.Controls"
     NavigationCacheMode="Required"
     Style="{StaticResource PageStyle}"
     mc:Ignorable="d">
@@ -24,21 +25,56 @@
 
         <GridView
             Grid.Row="1"
+            x:Name="imagesGridView"
             Padding="{StaticResource MediumLeftRightMargin}"
             animations:Connected.ListItemElementName="thumbnailImage"
             animations:Connected.ListItemKey="galleryAnimationKey"
             IsItemClickEnabled="True"
             ItemClick="ImagesGridView_ItemClick"
-            ItemsSource="{x:Bind Source, Mode=OneWay}"
-            SelectionMode="None">
+            Tapped="ImagesGridView_Tapped"
+            DoubleTapped="ImagesGridView_DoubleTapped"
+            SelectionMode="Extended"
+            IsMultiSelectCheckBoxEnabled="False"
+            CanDragItems="True"
+            DragItemsStarting="ImagesGridView_DragItemsStarting"
+            DragItemsCompleted="ImagesGridView_DragItemsCompleted"
+            SelectionChanged="ImagesGridView_SelectionChanged"
+            AllowDrop="True">
             <GridView.ItemTemplate>
-                <DataTemplate x:DataType="models:SampleImage">
-                    <Image
-                        x:Name="thumbnailImage"
-                        AutomationProperties.Name="{x:Bind Name}"
-                        Source="{x:Bind Source}"
-                        Style="{StaticResource ThumbnailImageStyle}"
-                        ToolTipService.ToolTip="{x:Bind Name}" />
+                <DataTemplate x:DataType="models:ImageItem">
+                    <Grid x:Name="thumbnailGrid"
+                          RightTapped="ThumbnailImage_RightTapped"
+                          AllowDrop="True"
+                          Drop="ThumbnailGrid_Drop"
+                          DragOver="ThumbnailGrid_DragOver">
+                        <Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Add to a new group" Click="AddToNewGroup_Click" />
+                                <MenuFlyoutItem Text="Select group" Click="SelectGroup_Click" />
+                                <MenuFlyoutItem Text="Merge groups" Click="MergeGroups_Click" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Remove from album" Click="RemoveImageFromAlbum_Click" />
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Copy" Icon="Copy" Click="CopyImage_Click"/>
+                                <MenuFlyoutItem Text="Delete from disk" Icon="Delete" Click="DeleteImageFromDisk_Click"/>
+                                <MenuFlyoutSeparator/>
+                                <MenuFlyoutItem Text="Rename" Click="RenameImage_Click"/>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>
+                        <Image
+                            x:Name="thumbnailImage"
+                            AutomationProperties.Name="{x:Bind Filename}"
+                            Source="{x:Bind ImageData}"
+                            Style="{StaticResource ThumbnailImageStyle}"
+                            ToolTipService.ToolTip="{x:Bind Filename}">
+                        </Image>
+                        <controls:ThumbnailProperties IsCheckMarkVisible="{x:Bind Scanned}"
+                                                      QualityValue="{x:Bind Quality}"/>
+                        <controls:GroupBorders PositionInGroup="{x:Bind PositionInGroup, Mode=OneWay}" />
+                        <controls:WarningMark IsVisible="{x:Bind FileNotFound, Mode=OneWay}"
+                                              ToolTipService.ToolTip="File not found"/>
+                        <!-- here add anything that should be displayed on top of an image thumbnail -->
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

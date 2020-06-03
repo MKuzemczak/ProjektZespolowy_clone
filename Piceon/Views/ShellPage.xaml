@@ -24,6 +24,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <winui:MenuBar VerticalAlignment="Top">
                 <!--
@@ -35,7 +36,6 @@
                 </winui:MenuBarItem>
                 <winui:MenuBarItem x:Uid="ShellMenuBarItem_Views">
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_Main" Click="ShellMenuItemClick_Views_Main" />
-                    <MenuFlyoutItem x:Uid="ShellMenuItem_Views_TreeView" Click="ShellMenuItemClick_Views_TreeView" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_ContentGrid" Click="ShellMenuItemClick_Views_ContentGrid" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_DataGrid" Click="ShellMenuItemClick_Views_DataGrid" />
                     <MenuFlyoutItem x:Uid="ShellMenuItem_Views_ImageGallery" Click="ShellMenuItemClick_Views_ImageGallery" />
@@ -43,6 +43,24 @@
             </winui:MenuBar>
             <Grid Grid.Row="1">
                 <Frame x:Name="shellFrame" />
+            </Grid>
+            <Grid x:Name="statusBarGrid"
+                  Grid.Row="2"
+                  Background="{ThemeResource SystemAccentColor}"
+                  Height="25"
+                  Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="5"
+                            Margin="10,0,0,0">
+                    <ProgressRing x:Name="progressRing"
+                                  IsActive="True"
+                                  VerticalAlignment="Center"
+                                  Foreground="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                    <TextBlock x:Name="statusBarTextBlock"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Margin="10,0,0,0"/>
+                </StackPanel>
             </Grid>
         </Grid>
     </SplitView>

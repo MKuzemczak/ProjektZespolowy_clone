@@ -1,17 +1,19 @@
-﻿using Piceon.Core.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Piceon.Models;
 
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Piceon.TemplateSelectors
 {
-    public class SampleDataTemplateSelector : DataTemplateSelector
+    public class DirectoryTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate CompanyTemplate { get; set; }
-
-        public DataTemplate OrderTemplate { get; set; }
-
-        public DataTemplate OrderDetailTemplate { get; set; }
+        public DataTemplate DirectoryTemplate { get; set; }
 
         protected override DataTemplate SelectTemplateCore(object item)
         {
@@ -27,12 +29,8 @@ namespace Piceon.TemplateSelectors
         {
             switch (item)
             {
-                case SampleCompany company:
-                    return CompanyTemplate;
-                case SampleOrder order:
-                    return OrderTemplate;
-                case SampleOrderDetail orderDetail:
-                    return OrderDetailTemplate;
+                case FolderItem directoryItem:
+                    return DirectoryTemplate;
             }
 
             return null;

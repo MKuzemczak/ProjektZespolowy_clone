@@ -116,6 +116,9 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite">
+      <Version>3.1.3</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.9</Version>
     </PackageReference>
@@ -134,23 +137,73 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json.Schema">
+      <Version>3.0.13</Version>
+    </PackageReference>
+    <PackageReference Include="RabbitMQ.Client">
+      <Version>6.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activation\ActivationHandler.cs" />
+    <Compile Include="Controls\EditableTextBlock.xaml.cs">
+      <DependentUpon>EditableTextBlock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\GroupBorders.xaml.cs">
+      <DependentUpon>GroupBorders.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TagItem.xaml.cs">
+      <DependentUpon>TagItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ThumbnailProperties.xaml.cs">
+      <DependentUpon>ThumbnailProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\WarningMark.xaml.cs">
+      <DependentUpon>WarningMark.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DatabaseAccess\DatabaseImage.cs" />
+    <Compile Include="DatabaseAccess\DatabaseSimilaritygroup.cs" />
+    <Compile Include="DatabaseAccess\DatabaseVirtualFolder.cs" />
+    <Compile Include="Helpers\DragAndDropHelper.cs" />
+    <Compile Include="Helpers\Enums.cs" />
     <Compile Include="Helpers\EnumToBooleanConverter.cs" />
-    <Compile Include="Helpers\ImagesNavigationHelper.cs" />
+    <Compile Include="Helpers\ImageNavigationHelper.cs" />
     <Compile Include="Helpers\MenuNavigationHelper.cs" />
     <Compile Include="Helpers\SettingsStorageExtensions.cs" />
+    <Compile Include="Models\ControllerTaskRequestMessage.cs" />
+    <Compile Include="Models\ControllerTaskResultMessage.cs" />
+    <Compile Include="Models\EditableTextBlockTextChangedEventArgs.cs" />
+    <Compile Include="Models\ImageDataSource.cs" />
+    <Compile Include="Models\ImageItem.cs" />
+    <Compile Include="Models\ItemCacheManager.cs" />
+    <Compile Include="Models\ItemIndexRangeExtensions.cs" />
+    <Compile Include="Models\ItemIndexRangeList.cs" />
+    <Compile Include="Models\MostRecentStateMessageUpdatedEventArgs.cs" />
+    <Compile Include="Models\TagFilterPageTagItem.cs" />
+    <Compile Include="Models\TreeViewItemSelectedEventArgs.cs" />
+    <Compile Include="Models\FolderItem.cs" />
     <Compile Include="Services\ActivationService.cs" />
     <Compile Include="Activation\DefaultActivationHandler.cs" />
+    <Compile Include="DatabaseAccess\DatabaseAccessService.cs" />
+    <Compile Include="Services\AddressTaggingService.cs" />
+    <Compile Include="Services\BackendConctroller.cs" />
+    <Compile Include="Services\Exceptions.cs" />
+    <Compile Include="Services\FolderManagerService.cs" />
+    <Compile Include="Services\ImageLoaderService.cs" />
     <Compile Include="Services\NavigationService.cs" />
+    <Compile Include="Services\RabbitMQCommunicationService.cs" />
+    <Compile Include="Models\StateMessage.cs" />
+    <Compile Include="Services\StateMessagingService.cs" />
     <Compile Include="Services\ThemeSelectorService.cs" />
     <Compile Include="Services\ViewLifetimeControl.cs" />
     <Compile Include="Services\WindowManagerService.cs" />
-    <Compile Include="TemplateSelectors\SampleDataTemplateSelector.cs" />
+    <Compile Include="TemplateSelectors\DirectoryTemplateSelector.cs" />
     <Compile Include="Views\ContentGridDetailPage.xaml.cs">
       <DependentUpon>ContentGridDetailPage.xaml</DependentUpon>
     </Compile>
@@ -160,11 +213,14 @@
     <Compile Include="Views\DataGridPage.xaml.cs">
       <DependentUpon>DataGridPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ImageGalleryDetailPage.xaml.cs">
-      <DependentUpon>ImageGalleryDetailPage.xaml</DependentUpon>
+    <Compile Include="Views\ImageDetailPage.xaml.cs">
+      <DependentUpon>ImageDetailPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ImageGalleryPage.xaml.cs">
       <DependentUpon>ImageGalleryPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ImageGalleryWithTagFilterPage.xaml.cs">
+      <DependentUpon>ImageGalleryWithTagFilterPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -178,6 +234,9 @@
     <Compile Include="Views\ShellPage.xaml.cs">
       <DependentUpon>ShellPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TagFilterPage.xaml.cs">
+      <DependentUpon>TagFilterPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TreeViewPage.xaml.cs">
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
@@ -189,6 +248,26 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\EditableTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\GroupBorders.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TagItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ThumbnailProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\WarningMark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Styles\Image.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -225,13 +304,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\ImageGalleryDetailPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Views\ImageDetailPage.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ImageGalleryPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ImageGalleryWithTagFilterPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -249,9 +332,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\TreeViewPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Views\TagFilterPage.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TreeViewPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -263,7 +350,14 @@
     <Compile Include="Helpers\ResourceExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\PlaceholderImage.png" />
+    <Content Include="Assets\Icons\broken-image.png" />
+    <Content Include="Assets\Icons\check-mark.png" />
+    <Content Include="Assets\Icons\warning.png" />
+    <Content Include="Assets\LeftArrow.png" />
+    <Content Include="Assets\PlaceholderImage.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\RightArrow.png" />
     <Content Include="Assets\SampleData\SamplePhoto1.png" />
     <Content Include="Assets\SampleData\SamplePhoto10.png" />
     <Content Include="Assets\SampleData\SamplePhoto2.png" />
@@ -299,7 +393,12 @@
       <Name>Piceon.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Enums\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
